@@ -9,6 +9,7 @@
     textdomain "update";
 
     import "HTML";
+    import "Update";
 
     string func  = WFM::Args(0);
     map    param = WFM::Args(1);
@@ -25,10 +26,32 @@
 
 	// Fill return map
 
+	list tmp = [];
+
+	if (Update::backup_configs  || Update::backup_sysconfig)
+	{
+	    if (Update::backup_configs) {
+		// Proposal for backup during update
+		tmp = add (tmp, _("Create backup of changed configuration files"));
+	    }
+
+	    if (Update::backup_sysconfig) {
+		// Proposal for backup during update
+		tmp = add (tmp, _("Create backup of directory /etc/sysconfig"));
+	    }
+	}
+	else
+	{    // Proposal for backup during update
+	    tmp = add (tmp, _("Do not create backups"));
+	}
+
+	if (Update::remove_old_backups) {
+	    // Proposal for backup during update
+	    tmp = add (tmp, _("Remove backups from previous updates"));
+	}
+
 	ret = $[ "preformatted_proposal" :
-		 // Proposal for backup during update
-		 HTML::List (["Create of changed files in /var/adm/backup",
-			      "Create complete backup of /etc/sysconfig"])
+		 HTML::List (tmp)
 	];
     }
     else if ( func == "AskUser" )

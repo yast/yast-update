@@ -33,6 +33,10 @@
     // Available rootpartitions (key) and SuSE versions (value)
     global map validRootPartitions = $[];
 
+    global boolean backup_configs = true;
+    global boolean backup_sysconfig = true;
+    global boolean remove_old_backups = false;
+
     // Did we search for root partitions
     global boolean didSearchForRootPartitions = false;
 
@@ -67,7 +71,7 @@
     // (needed if root partition was changed to discard previous settings)
     global map targetMap_bak = $[];
 
-    // map of mountpoints for each found root
+    // map of mountpoints for each found root (seems unused)
     // (key=root partition name, value=map: [device:mountpoint])
     global map partitions_mount = $[];
 

@@ -4,7 +4,7 @@
  * Authors:	Stefan Schubert <schubi@suse.de>
  *		Arvin Schnell <arvin@suse.de>
  *
- * Purpose:	Ask the user for backup the the update process.
+ * Purpose:	Ask the user for backups during the update.
  */
 
 {
@@ -17,79 +17,78 @@
     import "SpaceCalculation";
     import "Wizard";
 
-    string backupPath     = "";
+    string backup_path = "";
 
-  //
-  // Check, if the backup fits to disk
-  //
+    integer min_space = 50;
 
-  define checkBackupPath( list part_info ) ``{
+    //
+    // Check, if the backup fits to disk
+    //
 
-      boolean found = false;
-      integer free_space   = 0;
+    define boolean check_backup_path (list part_info) ``{
 
-      if ( size ( backupPath ) <= 1 ||
-	   substring(backupPath,0,1) != "/" )
-      {
-	  // error popup, user did not enter a valid directory specification
-	  UI::MessagePopup( _("Input is not a path.") );
-	  return ( false );
-      }
+	boolean found = false;
+	integer free_space = 0;
 
-      foreach( `part, part_info,
-	    ``{
-	         string part_name = part["name"]:"";
+	if ( size ( backup_path ) <= 1 ||
+	     substring(backup_path,0,1) != "/" )
+	{
+	    // error popup, user did not enter a valid directory specification
+	    UI::MessagePopup( _("Invalid backup path.") );
+	    return false;
+	}
 
+	foreach( `part, part_info, ``{
 
-		 if ( part_name == "/" && !found )
-		 {
-		     free_space   = part["free"]:0;
-		     y2milestone("Partition :%1", part_name);
-		     y2milestone("free:%1", free_space );
-		 }
+	    string part_name = part["name"]:"";
 
-		 if ( size ( backupPath ) >=2 && part_name != "/")
-		 {
-		     string compare_string = substring ( backupPath, 0 , size ( part_name ) );
-		     if ( compare_string == part_name && !found )
-		     {
-			 free_space   = part["free"]:0;
-			 y2milestone("Partition :%1", part_name );
-			 y2milestone("free:%1", free_space );
-			 found = true;
-		     }
-		     else
-		     {
-			 y2milestone("Partition :%1<->%2", part_name, compare_string);
-		     }
-		 }
-      } );
+	    if ( part_name == "/" && !found )
+	    {
+		free_space = part["free"]:0;
+		y2milestone("Partition :%1", part_name);
+		y2milestone("free:%1", free_space );
+	    }
 
-      if ( free_space >= 50000 ||
-	    Mode::test )
-      {
-	  return( true );
-      }
-      else
-      {
-	  // there is not enough space for the backup during update
-	  // inform the user about this (MB==megabytes)
-	  string message = sformat ( _("Minimum disk space of %1 MB required."), 50);
-	  UI::MessagePopup( message );
-	  return ( false );
-      }
-  };
+	    if ( size ( backup_path ) >=2 && part_name != "/")
+	    {
+		string compare_string = substring ( backup_path, 0 , size ( part_name ) );
+		if (compare_string == part_name && !found)
+		{
+		    free_space   = part["free"]:0;
+		    y2milestone("Partition :%1", part_name );
+		    y2milestone("free:%1", free_space );
+		    found = true;
+		}
+		else
+		{
+		    y2milestone("Partition :%1<->%2", part_name, compare_string);
+		}
+	    }
+	} );
+
+	if (free_space >= min_space || Mode::test)
+	{
+	    return true;
+	}
+	else
+	{
+	    // there is not enough space for the backup during update
+	    // inform the user about this (MB==megabytes)
+	    string message = sformat ( _("Minimum disk space of %1 MB required."), min_space);
+	    UI::MessagePopup (message);
+	    return false;
+	}
+    };
 
     // ------------------------------------------------------------------------
 
-    backupPath = Pkg::GetBackupPath();
-    y2milestone("Current backuppath is %1.", backupPath );
+    // get current backup path
+    backup_path = Pkg::GetBackupPath();
+    y2milestone("Current backup path is %1.", backup_path );
 
     // Get information about available partitions
-
     list partition = SpaceCalculation::GetPartitionInfo();
     y2milestone("evaluate partitions: %1", partition);
-
 
     // screen title for software selection
     string title = _("Backup System Before Update");
@@ -100,14 +99,20 @@
 
     term contents = `HVSquash(
 			      `VBox(
-				    // checkbox label if user wants to backup config files before update
-				    `Left(`CheckBox(`id(`backup),`opt(`notify), _("Create b&ackup"))),
+				    `Left(`CheckBox(`id(`configs),`opt(`notify),
+						    // checkbox label if user wants to backup config files before update
+						    _("Create backup of changed configuration files"))),
+				    `Left(`CheckBox(`id(`sysconfig),`opt(`notify),
+						    // checkbox label if user wants to backup /etc/sysconfig
+						    _("Create complete backup of /etc/sysconfig"))),
+				    `Left(`CheckBox(`id(`remove),`opt(`notify),
+						    // checkbox label if user wants remove old backup stuff
+						    _("Remove old backups from backup directory"))),
 				    `VSpacing(),
 				    // label for text entry or backup path
-				    `TextEntry(`id(`backupPath), _("Backup &path:"))
+				    `TextEntry(`id(`path), _("Backup path:"))
 				    )
 			     );
-
 
     string helptext = _("<p>
 It is possible to make a <b>backup</b> of your existing system.
@@ -116,96 +121,67 @@ configuration files will be saved.
 </p>
 ");
 
-    Wizard::SetContents(title, contents, helptext, Args(0), Args(1));
+    Wizard::SetContents (title, contents, helptext, Args(0), Args(1));
 
-    if ( size ( backupPath ) > 0 )
-    {
-	UI::ChangeWidget(`id(`backup), `Value, true);
-	UI::ChangeWidget(`id(`backupPath), `Enabled, true);
-    }
-    else
-    {
-	UI::ChangeWidget(`id(`backup), `Value, false);
-	UI::ChangeWidget(`id(`backupPath), `Enabled, false);
-    }
-    UI::ChangeWidget(`id(`backupPath), `Value, backupPath);
+    UI::ChangeWidget (`id(`configs), `Value, Update::backup_configs);
+    UI::ChangeWidget (`id(`sysconfig), `Value, Update::backup_sysconfig);
+    UI::ChangeWidget (`id(`remove), `Value, Update::remove_old_backups);
 
+    UI::ChangeWidget (`id(`path), `Value, backup_path);
+    UI::ChangeWidget (`id(`path), `Enabled, Update::backup_configs ||
+		      Update::backup_sysconfig || Update::remove_old_backups);
 
     any ret = nil;
-    boolean error_found = false;
 
     while (true)
     {
 	ret = Wizard::UserInput();
 
-	if ( ret == `abort && CallFunction(`inst_confirm_abort(`painless) ) )
-	{
-	    Wizard::CloseDialog();
-	    return `abort;
-	}
-
-	if ( !UI::QueryWidget(`id(`backup), `Value) )
-	{
-	    UI::ChangeWidget(`id(`backupPath), `Enabled, false);
-	}
-	else
-	{
-	    UI::ChangeWidget(`id(`backupPath), `Enabled, true);
-	    backupPath = UI::QueryWidget(`id(`backupPath), `Value);
-	    if ( size ( backupPath ) <= 0 )
-	    {
-		backupPath = "/var/adm/backup";
-		UI::ChangeWidget(`id(`backupPath), `Value, backupPath);
-	    }
-	}
-	// Add the selection of the basic group
-
-	if (ret == `cancel || ret == `back  )
+	if (ret == `abort && CallFunction (`inst_confirm_abort (`painless)))
 	    break;
 
-	if (  ret == `next )
+	if (ret == `cancel || ret == `back)
+	    break;
+
+	// any backup wanted?
+	boolean tmp1 = UI::QueryWidget (`id(`configs), `Value) ||
+	    UI::QueryWidget (`id(`sysconfig), `Value);
+
+	// any backup or remove of old stuff wanted?
+	boolean tmp2 = UI::QueryWidget (`id(`configs), `Value) ||
+	    UI::QueryWidget (`id(`sysconfig), `Value) ||
+	    UI::QueryWidget (`id(`remove), `Value);
+
+	// backup path
+	backup_path = UI::QueryWidget (`id(`path), `Value);
+
+	// enable or disable path widget
+	UI::ChangeWidget(`id(`path), `Enabled, tmp2);
+
+	if (ret == `next)
 	{
-	    if ( UI::QueryWidget(`id(`backup), `Value) )
+	    if (tmp1 && !check_backup_path (partition))
 	    {
-		if ( checkBackupPath ( partition ) )
-		{
-		    Pkg::CreateBackups (true);
-		    break;
-		}
-		else
-		{
-		    UI::SetFocus(`id(`backupPath));
-		}
+		UI::SetFocus (`id(`path));
+		continue;
 	    }
-	    else
-	    {
-		Pkg::CreateBackups (false);
-		break;
-	    }
+
+	    Update::backup_configs = UI::QueryWidget (`id(`configs), `Value);
+	    Update::backup_sysconfig = UI::QueryWidget (`id(`sysconfig), `Value);
+	    Update::remove_old_backups = UI::QueryWidget (`id(`remove), `Value);
+
+	    // tell package manager about our plans
+	    Pkg::CreateBackups (Update::backup_configs);
+	    Pkg::SetBackupPath (backup_path);
+
+	    // remember path for continue mode
+	    SCR::Write (.target.string, Installation::destdir + "/var/lib/YaST2/backup_path", backup_path);
+
+	    break;
 	}
     }
 
-    if ( ret == `next )
-    {
-	if ( !UI::QueryWidget(`id(`backup), `Value) )
-	{
-	    backupPath = "";
-	    y2debug( "no backup for update" );
-	}
-	else
-	{
-	    y2debug( "set backupPath to: %1", backupPath );
-	}
-
-	Pkg::SetBackupPath (backupPath);
-
-	// remember path for continue mode
-	SCR::Write(.target.string, Installation::destdir + "/var/lib/YaST2/backup_path", backupPath);
-    }
-
-    y2debug( "inst_sw_backup return: %1", ret );
-
-    Wizard::CloseDialog();
+    Wizard::CloseDialog ();
 
     return ret;
 }
