@@ -22,7 +22,7 @@
     Mode::mode = "update";
 
     Update::disallow_upgrade = true;
-    Update::onlyUpdateSelected = true;
+    Update::onlyUpdateInstalled = true;
     Update::deleteOldPackages = false;
 
     // wizard stage
