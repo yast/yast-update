@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Feb 26 20:35:57 CET 2004 - nashif@suse.de
+
+- Changed proposal file name proposal_* to *_proposal
+
+-------------------------------------------------------------------
 Wed Feb 25 15:55:18 CET 2004 - arvin@suse.de
 
 - also detect RHAS (bug #34983)
