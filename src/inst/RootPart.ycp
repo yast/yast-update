@@ -605,6 +605,11 @@ Check the log file %1.
 	foreach (`device, `description, target_map, ``{
 	    foreach (`partition, description["partitions"]:[], ``{
 
+		// some partitions don't make sense at all
+		if (partition["used_fs"]:`unknown == `swap ||
+		    partition["type"]:`primary == `extended)
+		    continue;
+
 		map freshman = $[];
 
 		if (Mode::test)
