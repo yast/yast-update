@@ -13,6 +13,7 @@
 
     import "Packages";
     import "ProductFeatures";
+    import "Stage";
 
     // number of packages to install
     global integer packages_to_install = 0;
@@ -54,6 +55,8 @@
 
     global string selected_selection = "";
 
+    global boolean products_incompatible = false;
+
 
     /*
      *  Information about old and new product.
@@ -88,12 +91,65 @@
     // see bug #40358
     global boolean manual_interaction = false;
 
+    // are the products (installed and to update) compatible?
+    boolean _products_compatible = nil;
+
+
 
 
     /*-----------------------------------------------------------------------
      * GLOBAL FUNCTIONS
      *-----------------------------------------------------------------------*/
 
+
+/**
+ * Check if installed product and product to upgrade to are compatible
+ * @return boolean true if update is possible
+ */
+global boolean ProductsCompatible () {
+    if (_products_compatible == nil)
+    {
+	if (Stage::normal ())
+	{
+	    // check if name of one of the products on the installation
+	    // media is same as one of the installed products
+	    // assuming that multiple products on installation media
+	    // are compatible and compatibility is transitive
+	    list<map<string,string> > inst = (list<map<string,string> >)
+		Pkg::TargetProducts ();
+	    list<string> inst_names = maplist (map<string,string> p, inst, {
+		return p["name"]:"";
+	    });
+	    list<string> to_install = maplist (integer src,
+		Pkg::SourceGetCurrent (true),
+	    {
+		map<string,string> prod_info = Pkg::SourceProduct (src);
+		return prod_info["name"]:"";
+	    });
+	    y2milestone ("Installed products: %1", inst_names);
+	    y2milestone ("Products on installatino media: %1", to_install);
+
+	    string equal_product = find (string i, inst_names, {
+		string found = find (string u, to_install, {
+		    return u == i;
+		});
+		return found != nil;
+	    });
+	    _products_compatible = equal_product != nil;
+	}
+	else
+	{
+	    _products_compatible = true; // FIXME this is temporary
+	}
+	y2milestone ("Products found compatible: %1", _products_compatible);
+    }
+    return _products_compatible;
+}
+
+global void IgnoreProductCompatibility () {
+    _products_compatible = true;
+
+}
 
     /**
      *
@@ -104,6 +160,8 @@
 	disallow_upgrade = false;
 
 	manual_interaction = false;
+	products_incompatible = false;
+	_products_compatible = nil;
 
 	backup_modified = true;
 	backup_sysconfig = true;

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Feb 18 10:30:42 CET 2005 - jsrain@suse.cz
+
+- check product compatibility if updating running system
+
+-------------------------------------------------------------------
 Wed Feb 16 16:32:23 CET 2005 - jsrain@suse.cz
 
 - display more info about update statistics (#37073)
