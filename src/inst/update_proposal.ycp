@@ -120,10 +120,6 @@
 
 	    SelectKernelPackages ();
 
-	    if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
-		Update::solve_errors = 0;
-	    else
-		Update::solve_errors = Pkg::PkgSolveErrors ();
 	}
 	// check product compatibility
 	if (! (Update::ProductsCompatible () || Update::products_incompatible))
@@ -146,9 +142,22 @@ some applications may not run properly.")))
 	map<symbol, integer> update_sum
 	    = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 	y2milestone ("Update summary: %1", update_sum);
+	if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
+	    Update::solve_errors = 0;
+	else
+	    Update::solve_errors = Pkg::PkgSolveErrors ();
 
-	Update::packages_to_update = update_sum[`Iupdate]:0
-	    + update_sum[`Idowngrade]:0 + update_sum[`Ireplaced]:0;
+	list<string> installed = Pkg::GetPackages (`installed, true);
+	list<string> selected = Pkg::GetPackages (`selected, true);
+	map<string,boolean> installed_m = listmap (string p, installed, {
+	    return $[ p : true ];
+	});
+	y2milestone ("Selected: %1, Installed: %2, SumToInstall: %3",
+	    size (selected), size (installed), update_sum[`SumToInstall]:0);
+	Update::packages_to_update = size (filter (string p, selected, {
+	    return haskey (installed_m, p);
+	}));
+
 	Update::packages_to_install = update_sum[`SumToInstall]:0
 	    - Update::packages_to_update;
 	Update::packages_to_remove = update_sum[`SumToDelete]:0;
