@@ -157,7 +157,7 @@ remove them.</p>
     {
 	ret = Wizard::UserInput();
 
-	if (ret == `abort && CallFunction (`inst_confirm_abort (`painless)))
+	if (ret == `abort && Popup::ConfirmAbort (`painless))
 	    break;
 
 	if (ret == `cancel || ret == `back)
