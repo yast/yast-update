@@ -3,10 +3,10 @@
 # neededforbuild  autoconf automake yast2-devel-packages
 
 @HEADER@
-Requires:	yast2-trans-update yast2
+Requires:	yast2
 
-Provides:       y2c_update
-Obsoletes:      y2c_update
+Provides:       y2c_update yast2-config-update
+Obsoletes:      y2c_update yast2-config-update
 
 BuildArchitectures: noarch
 

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jul  9 11:47:40 CEST 2002 - mvidner@suse.cz
+
+- fixed Provides/Obsoletes.
+
+-------------------------------------------------------------------
 Tue Jul  2 11:14:07 CEST 2002 - kkaempf@suse.de
 
 - rename to yast2-update.
