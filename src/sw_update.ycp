@@ -19,8 +19,9 @@
 
   integer current_stage = -1;
 
-  include "installation_ui.ycp";
+  include "ui/wizard_dialog.ycp";
 
+  UI(`CreateWizardDialog() );
 
   // --------------------------------------------------------------
 
