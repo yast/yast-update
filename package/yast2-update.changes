@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar 25 18:18:19 CET 2004 - arvin@suse.de
+
+- change for new crypto handling
+- better structured data about old and new version
+
+-------------------------------------------------------------------
 Tue Mar 23 18:45:33 CET 2004 - arvin@suse.de
 
 - load dm-mod instead of lvm-mod when searching for root
