@@ -108,7 +108,7 @@
 	list available_base_selections = sort (string x, string y, Pkg::GetSelections (`available, "base"), ``{
 	    map xmap = Pkg::SelectionData(x);
 	    map ymap = Pkg::SelectionData(y);
-	    return (xmap["order"]:"" >= ymap["order"]:"");
+	    return (xmap["order"]:"" > ymap["order"]:"");
 	});
 	y2milestone ("available_base_selections %1", available_base_selections);
 	return available_base_selections;
