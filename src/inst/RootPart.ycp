@@ -214,7 +214,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 	did_try_mount_partitions = false;
 
 	foreach (map info, activated, {
-
+	    y2milestone ("Unmounting %1", info);
 	    string type = info[`type]:"";
 
 	    if (type != "")
@@ -222,7 +222,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 		if (type == "mount")
 		{
 		    string file = Installation::destdir + info[`mntpt]:"";
-		    if (SCR::Execute (.target.umount, file) != 0)
+		    if (! (boolean)SCR::Execute (.target.umount, file))
 		    {
 			// error report, %1 is device (eg. /dev/hda1)
 			Report::Error (sformat (_("Cannot unmount partition %1.
@@ -1021,6 +1021,10 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    if (freshman[`arch]:"unknown" == GetArchOfELF ("/bin/bash"))
 		    {
 			freshman[`valid] = true;
+		    }
+		    else
+		    {
+			y2milestone ("Architecture for partition %1 is %2, upgrading %3", p_dev, freshman[`arch]:"unknown", GetArchOfELF ("/bin/bash"));
 		    }
 		}
 

@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Thu Feb 10 15:33:14 CET 2005 - jsrain@suse.cz
+
+- drop message to log if partition cannot be used for upgrade due
+  to different architecture (#50656)
+
+-------------------------------------------------------------------
+Wed Feb  9 10:25:22 CET 2005 - jsrain@suse.cz
+
+- do not report errors on unmounting partition if it was unmounted
+  successfully (#50619)
+
+-------------------------------------------------------------------
 Tue Feb  8 05:01:26 CET 2005 - nashif@suse.de
 
 - #49987: Update running system now has its own control file with
