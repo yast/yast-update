@@ -52,8 +52,9 @@
 	lastResult = result;
 
 	if ( id < 6
-	     || SCR::Read(.package.isCDBooted ) )
+	     || Mode::initial )
 	{
+	    y2milestone ("Calling '%1'", dialog[id]:"");
 	    // calling inst_finish only if CD has been booted
 	    result = eval(dialog[id]:"");
 	}
