@@ -435,20 +435,12 @@
 								 updateVersion,
 								 old_names);
 
-	map <string, string> trans = $[];
 	integer i = 0;
-	while (i < size (old_names))
+	while (i < size (fstab))
 	{
-	    trans[old_names[i]:""] = new_names[i]:"";
+	    string spec = fstab[i,"spec"]:"";
+	    fstab[i,"spec"] = new_names[i]:spec;
 	    i = i + 1;
-	};
-
-	integer j = 0;
-	while (j < size (fstab))
-	{
-	    string spec = fstab[j,"spec"]:"";
-	    fstab[j,"spec"] = trans[spec]:spec;
-	    j = j + 1;
 	};
 
 	return fstab;
