@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  4 15:16:50 CET 2003 - kkaempf@suse.de
+
+- default to 'delete packages without replacement' during
+  update (#24534)
+- 2.7.6
+
+-------------------------------------------------------------------
 Mon Mar 03 12:52:11 CET 2003 - arvin@suse.de
 
 - once more merged proofread texts

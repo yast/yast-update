@@ -20,7 +20,7 @@
     global boolean kernel_affected = false;
     // if the kernel was affected in _normal_ update mode
 
-    global boolean deleteOldPackages = false;
+    global boolean deleteOldPackages = true;
     // Flag is set true if the user decides to delete unmaintained packages
 
     global integer last_runlevel = -1;
