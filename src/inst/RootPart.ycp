@@ -1105,4 +1105,9 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 	y2milestone ("rootPartitions: %1", rootPartitions);
     }
+
+global string GetDistroArch () {
+    return RootPart::GetArchOfELF ("/bin/bash");
+}
+
 }

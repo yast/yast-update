@@ -62,7 +62,8 @@
 	    RootPart::selectedRootPartition = "";
 	}
 
-	if (RootPart::numberOfValidRootPartitions == 0)
+	if (RootPart::numberOfValidRootPartitions == 0
+	    && RootPart::selectedRootPartition == "")
 	{
 	    RootPart::targetOk = false;
 
