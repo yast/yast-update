@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Sep 15 14:53:09 CEST 2003 - arvin@suse.de
+
+- fixed backup of /etc/rc.config
+
+-------------------------------------------------------------------
 Sun Sep 14 15:10:19 CEST 2003 - arvin@suse.de
 
 - rewrote selection handling (bug #30460 and hopefully many more)
