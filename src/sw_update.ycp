@@ -5,24 +5,24 @@
  */
 
 {
-    textdomain "sw_update";
+    textdomain "update";
 
     import "Arch";
     import "Installation";
     import "Mode";
     import "Boot";
     Mode::normal = true;
-    
+
     import "InstMedia";
     // always use package information from source medium
     InstMedia::source_medium = true;
-    
+
     import "MediaUI";
     import "Wizard";
 
     include "ui/common_popups.ycp";
     include "ui/common_functions.ycp";
-  
+
     // wizard stage
     integer current_stage = -1;
 
@@ -30,15 +30,13 @@
     InstMedia::initializeInstMedia ($[]);
     integer medium_number = InstMedia::MountMedium ( 1 );	// don't show additional popup
 
-    // create initial dialog 
+    // create initial dialog
     Wizard::CreateDialog();
-    
+
     while ( medium_number != 0 )		// correct medium available
     {
 	any ret = UI::ContinueCancelPopup(_("No access to source media used on previous installation.
 Continue with choosing new installation source?"));
-      
-	textdomain "sw_single";            
 
 	if ( ret )		// choose new installation source
 	{
@@ -56,7 +54,6 @@ Continue with choosing new installation source?"));
 	    UI::CloseDialog();
 	    return `cancel;
 	}
-	textdomain "sw_update";
     }
 
     // Calling inst_updateControl
@@ -69,7 +66,7 @@ Continue with choosing new installation source?"));
     if ( ret_single == `finish )
     {
 	Wizard::OpenNextBackDialog();
-	
+
 	list install_list = SCR::Read (.package.updatePackageNames);
 	boolean bootCalled = false;
 	foreach ( `package, install_list,
@@ -82,14 +79,14 @@ Continue with choosing new installation source?"));
 		bootCalled = true;
 	    }
 	});
-	
+
 	CallFunction( `inst_suseconfig (false, false) );
-	Wizard::CloseDialog();	
+	Wizard::CloseDialog();
     }
 
     // Kill package agent, in order to release file-handles
     SCR::UnmountAgent(.package);
-    
+
     InstMedia::UnmountMedium ();
     UI::CloseDialog();
 
