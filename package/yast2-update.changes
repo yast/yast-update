@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Mar 16 07:23:12 CET 2004 - nashif@suse.de
+
+- Dont format list partitions (autoinst mode)
+
+-------------------------------------------------------------------
 Mon Mar 15 16:20:49 CET 2004 - arvin@suse.de
 
 - adapted to changed mode stuff
