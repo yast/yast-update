@@ -39,6 +39,9 @@
     // Did we search for root partitions
     global boolean didSearchForRootPartitions = false;
 
+    // We successfully mounted the target partitions
+    global boolean targetOk = false;
+
 
     global boolean backup_configs = true;
     global boolean backup_sysconfig = true;
@@ -90,7 +93,7 @@
     /**
      * List of mounted partitions, activated swap partitions and loop devices.
      * Used for reversing action if mode is changed from update to new
-     * installation or if root directory for update is changed. Each item is
+     * installation or if root partition for update is changed. Each item is
      * list [string value, string type], where type is "mount", "swap", "loop",
      * value is path to mounted directory, swap partition name or loop device
      * name according to type value.
@@ -584,10 +587,10 @@ Check the log file %1.
      */
     global define string GetSelection () ``{
 
-	list selections = Pkg::GetSelections (`installed, "base");
+	list selections = Pkg::GetSelections (`selected, "base");
 
 	if (selections == nil || selections == [])
-	    selections = Pkg::GetSelections (`selected, "base");
+	    selections = Pkg::GetSelections (`installed, "base");
 
 	if (selections == nil || selections == [])
 	    selections = ["default"];

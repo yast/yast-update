@@ -61,10 +61,12 @@
 
 	if (size (Update::validRootPartitions) == 0)
 	{
+	    Update::targetOk = false;
+
 	    ret = $[ "warning" :
 		     // Proposal for system to update
 		     _("No root partition found"),
-		     "warning_level" : `blocker
+		     "warning_level" : `fatal
 	    ];
 	}
 	else
@@ -82,9 +84,9 @@
 		{
 		    symbol result = WFM::CallFunction (`inst_rootpart (true, true, `update_popup));
 		}
-	    }
 
-	    mount_target ();
+		Update::targetOk = mount_target ();
+	    }
 
 	    if (size (Update::validRootPartitions) == 1)
 	    {
@@ -100,6 +102,13 @@
 				    Update::validRootPartitions[Update::selectedRootPartition]:"error",
 				    Update::selectedRootPartition) ]
 		];
+	    }
+
+	    if (!Update::targetOk)
+	    {
+		// inform user in the proposal about the failed mount
+		ret = add (ret, "warning", _("Failed to mount target"));
+		ret = add (ret, "warning_level", `fatal);
 	    }
 	}
     }
@@ -119,7 +128,7 @@
 	if (Update::selectedRootPartition != tmp)
 	{
 	    Update::Detach ();
-	    mount_target ();
+	    Update::targetOk = mount_target ();
 	}
 
 	// Fill return map
@@ -130,8 +139,6 @@
     else if ( func == "Description" )
     {
 	// Fill return map.
-	//
-	// Static values do just nicely here, no need to call a function.
 
 	if (Mode::normal)
 	{
