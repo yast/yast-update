@@ -516,7 +516,7 @@ y2milestone ("partitionsel (%1)", partitionsel);
 
     term contents = `VBox(
 			  // heading for 'select root partiton' dialogue
-			  `Heading ( _("Select system") ),
+			  `Heading ( _("Select System") ),
 			  `VSpacing(0.7),
 			  `HCenter(
 				   `HSquash(
@@ -534,7 +534,7 @@ y2milestone ("partitionsel (%1)", partitionsel);
 
     // helptext for root-partition
     string help_text = _("<p>
-Choose the <b>root partition</b> to use.
+Select the <b>root partition</b> to use.
 </p>
 ");
 
