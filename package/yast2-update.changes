@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep  6 21:08:07 CEST 2002 - kkaempf@suse.de
+
+- clean up code, use yast2-packager after restart
+- 2.6.6
+
+-------------------------------------------------------------------
 Fri Sep  6 12:50:37 CEST 2002 - kkaempf@suse.de
 
 - write update status for restart
