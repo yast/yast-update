@@ -5,6 +5,8 @@
  */
 
 {
+  textdomain "sw_update";
+
   include "package_utils.ycp";
   Include (`yast_version());
   string version = yast_version ();
@@ -16,6 +18,7 @@
   integer current_stage = -1;
 
   include "installation_ui.ycp";
+
 
   // --------------------------------------------------------------
 

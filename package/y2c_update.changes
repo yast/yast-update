@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 23 11:37:24 CET 2001 - kkaempf@suse.de
+
+- added proper textdomain call
+
+-------------------------------------------------------------------
 Fri Jan 12 15:00:30 MET 2001 - schubi@suse.de
 
 - Reading targetroot via SCR
