@@ -93,7 +93,7 @@ to the previous dialog.
 		  && !Mode::test)
 	      {
 		  // removing old logging
-		  SCR::Execute (.target.bash, "/bin/rm -f" + Installation::destdir + "/var/log/y2logRPM*");
+		  SCR::Execute (.target.bash, "/bin/rm -f " + Installation::destdir + "/var/log/y2logRPM*");
 	      }
 	  }
       }
