@@ -19,7 +19,6 @@
     import "Wizard";
     import "Packages";
     import "Update";
-    import "Kernel";
 
     boolean retval = false;
 
@@ -31,6 +30,10 @@
 
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating update packages. One moment please...")));
 
+	//---------------------------------------
+	Pkg::PkgNeutral ("cups");			// *** neutralize cups
+	//---------------------------------------
+
 	// [ integer affected, integer unknown ]
 	list brokenPackages = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 
@@ -41,6 +44,18 @@
 	    Update::unknown_count = brokenPackages[1]:0;
 	else
 	    Update::unknown_count = 0;
+
+	//****************************************************************
+	// Checking depencenies
+	// if adding more packages via selections (Update::onlyUpdateSelected == false)
+	// prefer already installed packages in conflicts
+
+	if (!Pkg::PkgSolve (!Update::onlyUpdateSelected))
+	{
+	    Update::unknown_count = Update::unknown_count + Pkg::PkgSolveErrors();
+	}
+    
+	//****************************************************************
 
 	y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_count, Update::unknown_count);
 
@@ -190,15 +205,6 @@ if the package should be updated.
 </p>
 ");
 
-    //****************************************************************
-    // Checking depencenies
-    // if adding more packages via selections (Update::onlyUpdateSelected == false)
-    // prefer already installed packages in conflicts
-
-    boolean ok = Pkg::PkgSolve (!Update::onlyUpdateSelected);
-    
-    //****************************************************************
-    
     // Checking disk-space
     SpaceCalculation::ShowPartitionWarning();
     

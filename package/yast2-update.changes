@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 11 20:42:30 CEST 2002 - kkaempf@suse.de
+
+- neutralize "cups" during update
+- 2.6.15
+
+-------------------------------------------------------------------
 Wed Sep 11 15:09:48 CEST 2002 - kkaempf@suse.de
 
 - fix syntax error
