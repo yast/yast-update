@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Mar 10 17:41:13 CET 2004 - arvin@suse.de
+
+- maybe fixed root partition detection
+
+-------------------------------------------------------------------
 Thu Mar 04 10:52:33 CET 2004 - arvin@suse.de
 
 - handle ProductFeatures::delete_old_packages (bug #35235)

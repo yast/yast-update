@@ -612,7 +612,7 @@ Check the log file %1.
 	    Storage::SetTargetMap ((map) SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
 
-	map<map,map> target_map = (map<map,map>)Storage::GetOndiskTarget ();
+	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
 	y2milestone ("target_map: %1", target_map);
 
 	rootPartitions = $[];
@@ -621,7 +621,7 @@ Check the log file %1.
 	SCR::Write(.md.activate, "");
 	SCR::Write(.lvm.activate, "");
 
-	foreach (map device, map description, target_map, ``{
+	foreach (string device, map description, target_map, ``{
 	    foreach (map partition, description["partitions"]:[], ``{
 
 		// some partitions don't make sense at all
