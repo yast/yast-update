@@ -47,7 +47,7 @@
 
 
     // Only an update, NOT an upgrade
-    global boolean onlyUpdateInstalled = ProductFeatures::onlyUpdateSelected;
+    global boolean onlyUpdateInstalled = ProductFeatures::onlyUpdateInstalled;
 
     global string selected_selection = "";
 
