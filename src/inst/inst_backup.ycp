@@ -1,12 +1,10 @@
 /**
- * Module: 		inst_sw_backup.ycp
+ * Module: 	inst_backup.ycp
  *
- * Authors:		Stefan Schubert <schubi@suse.de>
+ * Authors:	Stefan Schubert <schubi@suse.de>
+ *		Arvin Schnell <arvin@suse.de>
  *
- * Purpose:
- * Ask the user for backup the the update process.
- *
- * $Id$
+ * Purpose:	Ask the user for backup the the update process.
  */
 
 {
@@ -20,7 +18,7 @@
     import "Wizard";
 
     string backupPath     = "";
-    
+
   //
   // Check, if the backup fits to disk
   //
@@ -98,6 +96,8 @@
 
     // Build and show dialog
 
+    Wizard::OpenAcceptDialog();
+
     term contents = `HVSquash(
 			      `VBox(
 				    // checkbox label if user wants to backup config files before update
@@ -116,30 +116,33 @@ configuration files will be saved.
 </p>
 ");
 
-    Wizard::SetContents(title, contents, helptext, Args(0),Args(1));
+    Wizard::SetContents(title, contents, helptext, Args(0), Args(1));
 
     if ( size ( backupPath ) > 0 )
     {
 	UI::ChangeWidget(`id(`backup), `Value, true);
-	UI::ChangeWidget(`id(`backupPath), `Enabled, true);	
+	UI::ChangeWidget(`id(`backupPath), `Enabled, true);
     }
     else
     {
 	UI::ChangeWidget(`id(`backup), `Value, false);
-	UI::ChangeWidget(`id(`backupPath), `Enabled, false);	
+	UI::ChangeWidget(`id(`backupPath), `Enabled, false);
     }
     UI::ChangeWidget(`id(`backupPath), `Value, backupPath);
 
 
     any ret = nil;
     boolean error_found = false;
+
     while (true)
     {
-
 	ret = Wizard::UserInput();
 
 	if ( ret == `abort && CallFunction(`inst_confirm_abort(`painless) ) )
+	{
+	    Wizard::CloseDialog();
 	    return `abort;
+	}
 
 	if ( !UI::QueryWidget(`id(`backup), `Value) )
 	{
@@ -157,7 +160,8 @@ configuration files will be saved.
 	}
 	// Add the selection of the basic group
 
-	if (ret == `cancel || ret == `back  ) break;
+	if (ret == `cancel || ret == `back  )
+	    break;
 
 	if (  ret == `next )
 	{
@@ -181,6 +185,8 @@ configuration files will be saved.
 	}
     }
 
+    Wizard::CloseDialog();
+
     if ( ret == `next )
     {
 	if ( !UI::QueryWidget(`id(`backup), `Value) )
@@ -198,6 +204,7 @@ configuration files will be saved.
 	// remember path for continue mode
 	SCR::Write(.target.string, Installation::destdir + "/var/lib/YaST2/backup_path", backupPath);
     }
+
     y2debug( "inst_sw_backup return: %1", ret );
 
     return ret;

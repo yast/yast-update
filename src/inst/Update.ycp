@@ -76,6 +76,7 @@
      */
     list activated = [];
 
+
     /*-----------------------------------------------------------------------
      * GLOBAL FUNCTIONS
      *-----------------------------------------------------------------------*/
@@ -119,7 +120,7 @@
 	    }
 	);
 
-        SCR::Write(.lvm.deactivate, "");
+	SCR::Write(.lvm.deactivate, "");
 	SCR::Write(.md.deactivate, "");
 
 	// clear activated list
@@ -128,7 +129,8 @@
 
     /**
      * Add information about mounted partition to internal list.
-     * @param partinfo partinfo has to be list with exactly two strings, see description of list "activated"
+     * @param partinfo partinfo has to be list with exactly two strings,
+     * see description of list "activated"
      * @return void
      */
     global define void AddMountedPartition(list partinfo) ``{
@@ -138,5 +140,3 @@
     }
 
 }
-
-
