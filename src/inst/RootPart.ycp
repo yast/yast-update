@@ -358,7 +358,7 @@
 	else
 	{
 	    installedVersion["name"] = substring (old_name, 0, p);
-	    installedVersion["version"] = substring (old_name, p);
+	    installedVersion["version"] = substring (old_name, p + 1);
 	    Update::fill_version_map (installedVersion);
 	}
 
