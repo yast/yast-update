@@ -80,7 +80,7 @@
 	{
 	    string date = timestring ("%Y%m%d", time(), false);
 
-	    if (SCR::Read (.target.size, "/etc/sysconfig") > 0)
+	    if (SCR::Read (.target.size, Installation::destdir + "/etc/sysconfig") > 0)
 	    {
 		string filename = "";
 		integer num = 0;
@@ -104,8 +104,8 @@
 					   "/var/log/YaST2/y2log"));
 		}
 	    }
-	    else if (SCR::Read (.target.size, "/etc/rc.config") > 0 &&
-		     SCR::Read (.target.size, "/etc/rc.config.d"))
+	    else if (SCR::Read (.target.size, Installation::destdir + "/etc/rc.config") > 0 &&
+		     SCR::Read (.target.size, Installation::destdir + "/etc/rc.config.d"))
 	    {
 		string filename = "";
 		integer num = 0;
