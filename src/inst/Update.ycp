@@ -63,6 +63,9 @@
      *  They may contain:
      *    major (integer), e.g. "9"
      *    minor (integer, e.g. "1"
+     *
+     *  They are not initialized during the mounting of the filesystems so don't
+     *  be so foolish to used them in RootPart.ycp.
      */
 
     // Version of the targetsystem
