@@ -15,9 +15,11 @@
     import "Packages";
     import "PackageCallbacks";
 
+    import "Installation";
 
-    string func  = WFM::Args(0);
-    map    param = WFM::Args(1);
+
+    string func  = (string) WFM::Args(0);
+    map    param = (map) WFM::Args(1);
     map    ret   = $[];
 
 
@@ -73,7 +75,7 @@
 		list available_addons = Pkg::GetSelections (`available, "");
 		list installed_addons = Pkg::GetSelections (`installed, "");
 
-		foreach (`installed, installed_addons,
+		foreach (string installed, installed_addons,
 		``{
 		    if (contains (available_addons, installed))		// we have a newer selection for an installed one
 		    {
@@ -167,7 +169,7 @@
 	//
 	// sequence = DummyMod::AskUser( has_next );
 
-	symbol result = WFM::CallFunction (`inst_update (true, has_next));
+	symbol result = (symbol) WFM::CallFunction ("inst_update", [true, has_next]);
 
 	if (result == `next)
 	{
