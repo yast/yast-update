@@ -66,10 +66,10 @@
 	}
 	else
 	{
-	    map product = Pkg::SourceProduct (Packages::theSources[number_of_sources-1]:0);
+	    map product = Pkg::SourceProductData (Packages::theSources[number_of_sources-1]:0);
 	    y2milestone ("First source product %1", product);
 	    if (product == nil) product = $[];
-	    Update::updateVersion = product["product"]:"?";
+	    Update::updateVersion = product["productname"]:"?" + " " + product["productversion"]:"";
 	    string product_package = product["requires"]:"";
 	    boolean requires_selected = Pkg::IsSelected (product_package);
 	    if (requires_selected == nil) requires_selected = false;
@@ -81,7 +81,7 @@
 	    }
 	    Update::updateBasePackages = requires_selected;
 	}
-
+ 
 	// do not delete "aps" if it is in use
 	if (SCR::Execute(.target.bash, sformat("grep -q apsfilter %1/etc/printcap", Installation::destdir)) == 0)
 	{
@@ -93,10 +93,6 @@
 	{
 	    Pkg::PkgInstall ("vnc");
 	}
-
-//*************** FIXME #19071
-	Pkg::PkgInstall ("grub");
-//*************** FIXME #19071
 
 	UI::CloseDialog();
 
@@ -242,8 +238,8 @@ if the package should be updated.
 	    if (Update::affected_count <= 0 )
 	    {
 		UI::MessagePopup(_("There is nothing to update."));
-// FIXME		ret = `again;
-// FIXME		break;
+		ret = `again;
+		break;
 	    }
 	    if (!seen_details
 		&& Update::unknown_count > 0 )
