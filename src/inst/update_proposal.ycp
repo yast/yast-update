@@ -157,7 +157,8 @@
 		// Can't find any software data, probably a installation media error
 		// error message
 		return $[ "warning" : _("Cannot read package data from installation media. Media error?"),
-			  "warning_level" : `blocker ];
+			  "warning_level" : `blocker,
+			  "raw_proposal" : [] ];
 	    }
 	}
 
@@ -166,7 +167,8 @@
 	    if (false)		// FIXME
 	    {
 		return $[ "warning" : _("Updating to another version is not supported from the running system."),
-			  "warning_level" : `fatal ];
+			  "warning_level" : `fatal,
+			  "raw_proposal" : [] ];
 	    }
 	}
 

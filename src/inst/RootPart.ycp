@@ -604,8 +604,8 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 		    {
 			y2milestone( "Raidarray for partition %1 on device %2 found",
 				     fspath, spec );
-			string command = "/sbin/raidstart --all --configfile "
-			    + Installation::destdir + "/etc/raidtab";
+			string command = "/sbin/raidstart --all --configfile " +
+			    Installation::destdir + "/etc/raidtab";
 
 			integer ret_from_shell = (integer) SCR::Execute (.target.bash, command);
 			if ( ret_from_shell != 0 )
