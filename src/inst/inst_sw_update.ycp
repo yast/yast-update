@@ -269,7 +269,7 @@ if the package should be updated.
 	{
 	    if (Update::affected_count <= 0 )
 	    {
-		UI::MessagePopup(_("There is nothing to update."));
+		Popup::Message(_("There is nothing to update."));
 		ret = `again;
 		break;
 	    }
@@ -285,7 +285,7 @@ but you should have a look at it.
 Would you like to browse though these packages?
 ");
 
-		if ( UI::YesNoPopup(message) )
+		if ( Popup::YesNo(message) )
 		{
 		    import "SpaceCalculation";
 		    SpaceCalculation::GetPartitionInfo();
@@ -320,7 +320,7 @@ Would you like to browse though these packages?
 	    // FIXME
 	    if (false)
 	    {
-		UI::MessagePopup( _("Base packages can only be updated
+		Popup::Message( _("Base packages can only be updated
 if the system has been booted from CD.
 Boot from CD.
 ") );

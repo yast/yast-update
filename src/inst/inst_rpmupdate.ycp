@@ -29,7 +29,6 @@
     import "SlideShow";
 
     include "showlog_defines.ycp";
-    include "ui/common_popups.ycp";
 
 
     string rebuild_message = _("Checking package database. This process can take some time.");

@@ -215,7 +215,7 @@ be missing, such as new YaST2 modules.
 	    Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
 	    if (!Update::userChangedState
 			// yes/no question
-		|| UI::YesNoPopup(_("Do you really want\nto reset your detailed selection?") ) )
+		|| Popup::YesNo(_("Do you really want\nto reset your detailed selection?") ) )
 	    {
 		if ( save_sel != current_sel
 		     && !UI::QueryWidget(`id(`notupgrade), `Value))

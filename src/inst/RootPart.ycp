@@ -12,6 +12,8 @@
     module "RootPart";
 
     import "Storage";
+    import "Popup";
+
 
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
@@ -438,7 +440,7 @@ Check the log file %1.
 
 	if ( !success )
 	{
-	    UI::MessagePopup(message);
+	    Popup::Message(message);
 
 	    // some mount failed, unmount all mounted fs
 	    UnmountPartitions();

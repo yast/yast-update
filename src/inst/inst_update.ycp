@@ -17,6 +17,7 @@
     import "Installation";
     import "Language";
     import "Wizard";
+    import "Popup";
     import "RootPart";
     import "Update";
     import "Packages";
@@ -174,7 +175,7 @@ be missing, such as new YaST2 modules.
 	    if (something_changed)
 	    {
 		// yes/no question
-		if (!UI::YesNoPopup (_("Do you really want\nto reset your detailed selection?")))
+		if (!Popup::YesNo (_("Do you really want\nto reset your detailed selection?")))
 		    continue;
 	    }
 	}

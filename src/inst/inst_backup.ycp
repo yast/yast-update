@@ -16,6 +16,8 @@
     import "Update";
     import "SpaceCalculation";
     import "Wizard";
+    import "Popup";
+
 
     string backup_path = "";
 
@@ -34,7 +36,7 @@
 	     substring(backup_path,0,1) != "/" )
 	{
 	    // error popup, user did not enter a valid directory specification
-	    UI::MessagePopup( _("Invalid backup path.") );
+	    Popup::Message( _("Invalid backup path.") );
 	    return false;
 	}
 
@@ -75,7 +77,7 @@
 	    // there is not enough space for the backup during update
 	    // inform the user about this (MB==megabytes)
 	    string message = sformat ( _("Minimum disk space of %1 MB required."), min_space);
-	    UI::MessagePopup (message);
+	    Popup::Message (message);
 	    return false;
 	}
     };
