@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Feb 27 13:23:40 CET 2004 - arvin@suse.de
+
+- initialize old product name during update
+
+-------------------------------------------------------------------
 Thu Feb 26 20:35:57 CET 2004 - nashif@suse.de
 
 - Changed proposal file name proposal_* to *_proposal

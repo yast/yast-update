@@ -78,11 +78,21 @@
      */
     global define boolean GetProductName () ``{
 
+	// get old product name
+
+	list all_products = Pkg::TargetProducts ();
+	map last_product = all_products[0]:$[];
+
+	installedVersion = last_product["productname"]:"?" + " " +
+	    last_product["productversion"]:"";
+
+	// get new product name
+
 	integer num = size (Packages::theSources);
 	if (num <= 0)
 	{
 	    y2error ("No source");
-	    Update::updateVersion = "?";
+	    updateVersion = "?";
 	    return false;
 	}
 
@@ -91,12 +101,15 @@
 	if (product == nil)
 	{
 	    y2error ("Screwed source");
-	    Update::updateVersion = "?";
+	    updateVersion = "?";
 	    return false;
 	}
 
-	Update::updateVersion = product["productname"]:"?" + " " +
+	updateVersion = product["productname"]:"?" + " " +
 	    product["productversion"]:"";
+
+	y2milestone ("update from %1 to %2", installedVersion, updateVersion);
+
 	return true;
     }
 
