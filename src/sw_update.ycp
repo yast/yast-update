@@ -13,7 +13,7 @@
 			     "menuentry"    : UI(_("Update packages")),
 			     "arguments"    : [ ],
 			     "widget"       : `RichText(
-						       UI(_( "<P>Launch this module to update existing packages.
+						       UI(_("<P>Launch this module to update existing packages.
 </P>
 Please insert <b>CD 1</b> before proceeding.
 <P>You need to be logged in as <i>root</i> in order to
@@ -101,27 +101,28 @@ do this.</P>"))),
 	  if ( how_to == `painless )
 	  {
 	      // Warning text for aborting an installation before anything is installed
-	      what_will_happen = _( "If you abort the installation now,
+	      what_will_happen = _("If you abort the installation now,
 SuSE Linux will not be installed.
-Your hard disk will remain untouched." );
+Your hard disk will remain unchanged.
+");
 	  }
 	  else if ( how_to == `incomplete )
 	  {
 	      // Warning text for aborting an installation during the install process
 	      // - After some installation steps have been performed - e.g.
 	      // disks formatted / some packages already installed
-	      what_will_happen = _( "If you abort the installation now, you will
+	      what_will_happen = _("If you abort the installation now, you will
 have an incomplete SuSE Linux system
 which may or may not be usable.
-You may need to reinstall." );
+You may need to reinstall.");
 	  }
 	  else if ( how_to == `unusable )
 	  {
 	      // Warning text for aborting an installation during the install process
 	      // right in the middle of some critical process (e.g. formatting)
-	      what_will_happen = _( "If you abort the installation now,
+	      what_will_happen = _("If you abort the installation now,
 SuSE Linux will be unusable.
-You will need to reinstall." );
+You will need to reinstall.");
 	  }
 	  else
 	  {
@@ -151,7 +152,7 @@ You will need to reinstall." );
 				       `HStretch(),
 
 				       // Button that will continue with the installation
-				       `PushButton(`id(`continue), `opt(`default), _("&Continue Installation" ) )
+				       `PushButton(`id(`continue), `opt(`default), _("&Continue Installation") )
 				       ),
 				 `VSpacing(0.2)
 				 ),
