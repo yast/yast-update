@@ -159,13 +159,19 @@ Check the log file /var/log/y2log
 	media_number = 1;
     }
 
-    // returns [ int successful, list failed, list remaining ]
+    // returns [ int successful, list failed, list remaining, list srcremaining ]
     list commit_result = PackageInstallation::CommitPackages( media_number, 0 );
 
     //*********************************************************
 
 	integer count = commit_result[0]:0;
 	y2milestone ("%1 packages installed", count);
+
+	if (count < 0)
+	{
+	    UI::CloseDialog();
+	    return `abort;
+	}
 
 	list failed = commit_result[1]:[];
 	if (size (failed) > 0)

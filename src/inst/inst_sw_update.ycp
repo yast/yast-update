@@ -233,7 +233,12 @@ if the package should be updated.
 	    {
 		UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector))); 
 	    }
+	    Pkg::SaveState();
 	    ret = UI::RunPkgSelection (`id(`selector));
+	    if (ret == `accept)
+		Pkg::ClearSaveState();
+	    else
+		Pkg::RestoreState();
 	    UI::CloseDialog();
 
 	    ret = `again;		// stay in loop
@@ -262,11 +267,23 @@ Would you like to browse though these packages?
 		if ( UI::YesNoPopup(message) )
 		{
 		    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector), `opt(`updateMode ))); 
+
+		    Pkg::SaveState();
+
 		    ret = UI::RunPkgSelection (`id(`selector));
+
 		    UI::CloseDialog();
 
 		    if ( ret == `cancel )
+		    {
+			Pkg::RestoreState();
 			ret = `again;
+		    }
+		    else
+		    {
+			Pkg::ClearSaveState();
+		    }
+
 		    break;
 		}
 	    }
