@@ -30,11 +30,12 @@
     Wizard::CreateDialog ();
 
     // calling inst_proposal
-    any ret = WFM::CallFunction ("inst_proposal", [true, true, `ini]);
+    symbol ret = (symbol) WFM::CallFunction ("inst_proposal", [true, true, `ini]);
 
     if (ret == `next)
     {
-	WFM::CallFunction ("inst_rpmupdate", [false, false]);
+	WFM::CallFunction ("inst_kickoff", [false, false]);
+	WFM::CallFunction ("inst_rpmcopy", [false, false]);
 
 	Wizard::OpenNextBackDialog();
 	WFM::CallFunction ("inst_suseconfig", [false, false]);
