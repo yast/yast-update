@@ -19,15 +19,14 @@
     import "Popup";
 
 
-    string backup_path = Update::backup_path;
-
-    integer min_space = 50;
-
     //
     // Check, if the backup fits to disk
     //
 
     define boolean check_backup_path (list part_info) ``{
+
+	backup_path = Update::backup_path;
+	integer min_space = 50;
 
 	boolean found = false;
 	integer free_space = 0;
@@ -105,10 +104,7 @@
 				    `VSpacing (1),
 				    `Left(`CheckBox(`id(`remove),`opt(`notify),
 						    // checkbox label if user wants remove old backup stuff
-						    _("Remove old backups from the backup directory"))),
-				    `VSpacing(),
-				    // label for text entry or backup path
-				    `TextEntry(`id(`path), _("Backup path:"))
+						    _("Remove old backups from the backup directory")))
 				    )
 			      );
 
@@ -149,9 +145,8 @@ update, there may be old configuration file backups. Select this option to
 remove them.</p>");
 
     // help text for backup dialog during update 8/8
-    help_text = help_text + _("<p><b>Backup path:</b> is the location where
-the backup is stored. Leave it as it is unless you have good reason to change
-it.</p>");
+    help_text = help_text + sformat (_("<p>All backups are placed in %1.</p>"),
+				     Update::backup_path);
 
 
     Wizard::SetContents (title, contents, help_text, Args(0), Args(1));
@@ -159,10 +154,6 @@ it.</p>");
     UI::ChangeWidget (`id(`configs), `Value, Update::backup_configs);
     UI::ChangeWidget (`id(`sysconfig), `Value, Update::backup_sysconfig);
     UI::ChangeWidget (`id(`remove), `Value, Update::remove_old_backups);
-
-    UI::ChangeWidget (`id(`path), `Value, backup_path);
-    UI::ChangeWidget (`id(`path), `Enabled, Update::backup_configs ||
-		      Update::backup_sysconfig || Update::remove_old_backups);
 
     any ret = nil;
 
@@ -177,32 +168,17 @@ it.</p>");
 	    break;
 
 	// any backup wanted?
-	boolean tmp1 = UI::QueryWidget (`id(`configs), `Value) ||
+	boolean tmp = UI::QueryWidget (`id(`configs), `Value) ||
 	    UI::QueryWidget (`id(`sysconfig), `Value);
-
-	// any backup or remove of old stuff wanted?
-	boolean tmp2 = UI::QueryWidget (`id(`configs), `Value) ||
-	    UI::QueryWidget (`id(`sysconfig), `Value) ||
-	    UI::QueryWidget (`id(`remove), `Value);
-
-	// backup path
-	backup_path = UI::QueryWidget (`id(`path), `Value);
-
-	// enable or disable path widget
-	UI::ChangeWidget(`id(`path), `Enabled, tmp2);
 
 	if (ret == `next)
 	{
-	    if (tmp1 && !check_backup_path (partition))
-	    {
-		UI::SetFocus (`id(`path));
+	    if (tmp && !check_backup_path (partition))
 		continue;
-	    }
 
 	    Update::backup_configs = UI::QueryWidget (`id(`configs), `Value);
 	    Update::backup_sysconfig = UI::QueryWidget (`id(`sysconfig), `Value);
 	    Update::remove_old_backups = UI::QueryWidget (`id(`remove), `Value);
-	    Update::backup_path = backup_path;
 
 	    break;
 	}

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jul 15 09:44:55 CEST 2003 - arvin@suse.de
+
+- make backup (archive) of /etc/sysconfig (bug #25283)
+
+-------------------------------------------------------------------
 Thu Jul 10 18:22:16 CEST 2003 - arvin@suse.de
 
 - fixed help text for dialog to select root partition (bug #8014)

@@ -39,6 +39,17 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
 
     /**
+     *  Some misc preparations.
+     */
+    define void prepare_stuff () ``{
+
+	SCR::Execute (.target.mkdir, Installation::destdir + "/var/log/YaST2");
+	Pkg::TargetLogfile (Installation::destdir + "/var/log/YaST2/y2logRPM");
+
+    }
+
+
+    /**
      *  Handle the backup.
      */
     define void backup_stuff () ``{
@@ -63,8 +74,9 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
 	if (Update::backup_sysconfig)
 	{
-	    // FIXME
-	    string filename = Update::backup_path + "/" + "haha" + ".tar.bz2";
+	    string filename = timestring ("%Y%m%d", time(), false);
+	    filename = Update::backup_path + "/" + "etc-sysconfig-" + timestring + ".tar.bz2";
+
 	    if (SCR::Execute (.target.bash, "/bin/tar cjf " + Installation::destdir + filename +
 			      " " + Installation::destdir + "/etc/sysconfig") != 0)
 	    {
@@ -126,6 +138,7 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
     if ( Mode::initial )
     {
+	prepare_stuff ();
 	backup_stuff ();
 
 	// check passwd and group of target
@@ -187,8 +200,6 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
     }
 
     integer media_number = 0;
-
-    Pkg::TargetLogfile (Installation::destdir + "/var/log/YaST2/y2logRPM");
 
     if ( Mode::initial )
     {

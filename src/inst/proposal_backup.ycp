@@ -31,7 +31,6 @@
 	    Update::backup_configs = true;
 	    Update::backup_sysconfig = true;
 	    Update::remove_old_backups = false;
-	    Update::backup_path = "/var/adm/backup";
 	}
 
 	list tmp = [];
