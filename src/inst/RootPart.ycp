@@ -475,6 +475,21 @@ Check the log file %1.
 	return success;
     }
 
+    global define boolean SetFormatPartitions () ``{
+        map <string, map> target_map = Storage::GetTargetMap ();
+
+        y2milestone("partitions_mount: %1", partitions_mount );
+        foreach (string mntpt, string part, partitions_mount, ``{
+                target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
+                target_map = Storage::SetPartitionData (target_map, part, "format", true);
+                target_map = Storage::SetPartitionData (target_map, part, "delete", false);
+                target_map = Storage::SetPartitionData (target_map, part, "create", false);
+                });
+
+        y2milestone("tm: %1", target_map );
+        Storage::SetTargetMap (target_map);
+        return true;
+    }
 
     /**
      * Make a nice name for a system out of the long name.
