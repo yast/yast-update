@@ -87,7 +87,7 @@
 
     // Checking: already selected addons or single selection?
 
-    if (Upgrade::userChangedState)		// check if state changed
+    if (Update::userChangedState)		// check if state changed
     {
 	// Display warning message
 	wrn_msg = _("\

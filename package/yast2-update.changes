@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 18 11:32:41 CET 2003 - sh@suse.de
+
+- Fixed complaints about undeclared variable Upgrade::userChangedState
+  (it's Update::userChangedState) 
+
+-------------------------------------------------------------------
 Mon Mar 17 11:52:45 CET 2003 - kkaempf@suse.de
 
 - if no product can be determined, use /etc/*-release
