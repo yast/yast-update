@@ -9,6 +9,8 @@
     textdomain "update";
 
     import "HTML";
+    import "SpaceCalculation";
+
 
     string func  = WFM::Args(0);
     map    param = WFM::Args(1);
@@ -54,7 +56,7 @@
 
 	// Fill return map
 
-	// FIXME: add space check
+	SpaceCalculation::ShowPartitionWarning ();
 
 	list tmp = [];
 
