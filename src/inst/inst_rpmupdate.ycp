@@ -34,9 +34,8 @@
 
     string rebuild_message = _("Checking package database. This process can take some time.");
     // popup message, %1 will be replace with the name of the logfile
-    string rebuild_message_error = sformat (_("Checking package database has returned an error.
-Check the log file %1.
-"), "/var/log/YaST2/y2log");
+    string rebuild_message_error = sformat (_("Package database check has returned an error.
+Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
     integer maxnumbercds = 8;
 
