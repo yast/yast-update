@@ -151,7 +151,8 @@
 	string rebuild_message = _("Checking package database. This process can take some time.");
 
 	UI::OpenDialog(`opt(`decorated),
-		       `VBox( `Heading( _("RPM DB rebuild")) ,
+		       // heading of popup
+		       `VBox( `Heading( _("Checking Package Database")) ,
 			      `VBox( `Label(rebuild_message),
 				     `HSpacing(60),
 				     `HBox(
