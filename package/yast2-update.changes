@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jul  2 11:14:07 CEST 2002 - kkaempf@suse.de
+
+- rename to yast2-update.
+
+-------------------------------------------------------------------
 Mon Mar 25 12:52:09 CET 2002 - schubi@suse.de
 
 - Calling mk_initrd and lilo after updating kernel #15443
