@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 11 15:09:48 CEST 2002 - kkaempf@suse.de
+
+- fix syntax error
+- 2.6.13
+
+-------------------------------------------------------------------
 Wed Sep 11 00:34:00 CEST 2002 - kkaempf@suse.de
 
 - pass "update_installed_only" to solver
