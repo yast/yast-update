@@ -213,6 +213,9 @@ Check the log file %1.
 
 	map parts = $[];
 
+	SCR::Write(.md.activate, "");
+	SCR::Write(.lvm.activate, "");
+
 	FSCKPartition (partition);
 
 	// Mount selected partition to Installation::destdir
