@@ -110,6 +110,8 @@
 
 	if (force_reset)
 	{
+	    Update::Reset ();
+
 	    Update::did_init1 = false;
 	}
 
