@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Sep 18 20:57:47 CEST 2001 - schubi@suse.de
+
+- InstMedia initialized 
+
+-------------------------------------------------------------------
 Fri Sep 14 14:03:23 CEST 2001 - schubi@suse.de
 
 - unmounting Medium correctly before exit #10555 
