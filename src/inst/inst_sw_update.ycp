@@ -49,7 +49,8 @@
 
 	map update_inf = Pkg::TargetUpdateInf (Installation::destdir + "/var/lib/YaST/update.inf");
 
-	Update::installedVersion = update_inf["distname"]:"?" + " " + update_inf["distversion"]:"";
+	Update::installedName = update_inf["distname"]:"?";
+	Update::installedVersion = update_inf["distversion"]:"";
 
 	integer number_of_sources = size (Packages::theSources);
 	if (number_of_sources <= 0)
@@ -100,7 +101,8 @@
     if ( Mode::test )
     {
 	// we have no root-permissions for /var/lib/YaST
-	Update::installedVersion = "SuSE-Linux-full-i386-6.4.0#0";
+	Update::installedName = "SuSE-Linux-full-i386";
+	Update::installedVersion = "6.4.0";
     }
 
     integer automatikUpdate = Update::affected_count;
@@ -109,7 +111,7 @@
     // screen title for software selection
     string title = _("Software Update");
 
-    string labelInstalledVersion   = Update::installedVersion;
+    string labelInstalled   = Update::installedName + " " + Update::installedVersion;
     string labelUpdateVersion      = Update::updateVersion;
     string labelUpdateBasePackages = "";
 
@@ -132,9 +134,9 @@
 					  // update dialogue, label for old version field
 					  `Left(`Label( `id(`InstalledVersion), _("Installed version:") )),
 					  `HWeight( 80,
-						    `Left(`Label( `id(`labelInstalledVersion),
+						    `Left(`Label( `id(`labelInstalled),
 								  `opt(`outputField,`hstretch ),
-								  labelInstalledVersion ))
+								  labelInstalled ))
 						    ),
 					  // update dialogue, label for new version field
 					  `Left(`Label( `id(`UpdateVersion),_("Update version:") )),

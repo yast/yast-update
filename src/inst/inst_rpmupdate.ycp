@@ -98,6 +98,8 @@ Check the log file /var/log/y2log
 
 	// /etc/inittab will be overridden by package aaa_base. So we will
 	// have to save the run-level
+	// The runlevel-values have been changed since version 7.0; So we
+	// have to handle older version in a special case.
 
 	string idfile = SCR::Read(.target.tmpdir) + "/idline";
 
@@ -118,7 +120,19 @@ Check the log file /var/log/y2log
 
 	    y2milestone("run-level %1 found", initdefault);
 
-	    Update::last_runlevel = initdefault;
+	    // versplit = "7", "0", "0"
+	    list versplit = splitstring (Update::installedVersion, ".");
+	    integer oldmajor = tointeger (versplit[0]:"0");
+	    if ((oldmajor != 0)
+		&& ((oldmajor < 7)
+		    || ((oldmajor == 7 && (versplit[1]:"" == "0")))))
+	    {
+		// position == old, value == new
+		list new_levels = [ 0, 0, 3, 5, 4, 4 ];	// 0->0, 1->0, 2->3, 3->5, 4->4, 5->4
+		initdefault = new_levels[initdefault]:5;
+	    }
+
+	    Update::last_runlevel = initdefault;		// evaluated in inst_finish
 	}
     }
 
