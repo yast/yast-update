@@ -17,6 +17,8 @@
     import "Storage";
     import "Popup";
 
+    import "FileSystems";
+
     include "partitioning/partition_defines.ycp";
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_dialogs.ycp";
@@ -76,7 +78,7 @@
      */
     global define void SetSelectedToValid () ``{
 	selectedRootPartition = "";
-	foreach (`p, `i, rootPartitions, ``{
+	foreach (string p, map i, rootPartitions, ``{
 	    if (i[`valid]:false && selectedRootPartition == "")
 		selectedRootPartition = p;
 	});
@@ -205,8 +207,8 @@ Check the log file %1.
 	integer ret_from_shell = 0;
 	boolean ret_bool = true;
 
-	list fstab = [];
-	list crtab = [];
+	list<map> fstab = [];
+	list<map> crtab = [];
 
 	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
 			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
@@ -229,7 +231,7 @@ Check the log file %1.
 		mount_type = "-t " + mount_type;
 	    }
 
-	    ret_bool = SCR::Execute (.target.mount,
+	    ret_bool = (boolean) SCR::Execute (.target.mount,
 				     [partition, Installation::destdir, Installation::mountlog],
 				     mount_type);
 	}
@@ -242,13 +244,13 @@ Check the log file %1.
 	    // Reading fstab and mount all required mount-points to Installation::destdir
 	    if (SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/fstab /etc") == 0)
 	    {
-		fstab = SCR::Read( .etc.fstab );
+		fstab = (list<map>) SCR::Read( .etc.fstab );
 	    }
 
 	    if ((SCR::Read (.target.size, Installation::destdir + "/etc/cryptotab") > 0)
 		&& (SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/cryptotab /etc") == 0))
 	    {
-		crtab = SCR::Read( .etc.cryptotab );
+		crtab = (list<map>) SCR::Read( .etc.cryptotab );
 	    }
 
 	    if (SCR::Read (.target.size, Installation::destdir + "/etc/raidtab") > 0)
@@ -273,7 +275,7 @@ Check the log file %1.
 		y2milestone("fstab :%1", fstab );
 		y2milestone("crtab :%1", crtab );
 
-		foreach (map `mounts, crtab, ``{
+		foreach (map mounts, crtab, ``{
 
 		    string vfstype = mounts["vfstype"]:"";
 		    string mntops  = mounts["opt2"]:"";
@@ -334,7 +336,7 @@ Check the log file %1.
 
 		boolean raidMounted = false;
 
-		foreach (map `mounts, fstab, ``{
+		foreach (map mounts, fstab, ``{
 
 		    string vfstype = mounts["vfstype"]:"";
 		    string mntops  = mounts["mntops"]:"";
@@ -362,7 +364,7 @@ Check the log file %1.
 				    + Installation::destdir
 				    + "/etc/raidtab";
 
-				ret_from_shell = SCR::Execute (.target.bash, command);
+				ret_from_shell = (integer) SCR::Execute (.target.bash, command);
 				if ( ret_from_shell != 0 )
 				{
 				    y2milestone("raidstart failed ( does no matter ): %1", command );
@@ -389,7 +391,7 @@ Check the log file %1.
 				mount_type = "-t " + mount_type;
 			    }
 
-			    ret_bool = SCR::Execute (.target.mount,
+			    ret_bool = (boolean) SCR::Execute (.target.mount,
 						     [ spec, Installation::destdir + mounts["file"]:"",
 						       Installation::mountlog],
 						     mount_type );
@@ -419,7 +421,7 @@ Check the log file %1.
 				command = command + spec;
 
 				// run /sbin/swapon
-				ret_from_shell = SCR::Execute (.target.bash, command);
+				ret_from_shell = (integer) SCR::Execute (.target.bash, command);
 				if ( ret_from_shell != 0 )
 				{
 				    y2error("swapon failed: %1", command );
@@ -489,7 +491,7 @@ Check the log file %1.
      * Get architecture of an elf file.
      */
     define string GetArchOfELF (string filename) ``{
-	map bash_out = SCR::Execute (.target.bash_output, Directory::ybindir +
+	map bash_out = (map) SCR::Execute (.target.bash_output, Directory::ybindir +
 				     "/elf-arch " + filename);
 	if (bash_out["exit"]:1 != 0)
 	    return "unknown";
@@ -516,16 +518,16 @@ Check the log file %1.
 	    contains (possible_root_fs, p_detect_fs))
 	{
 	    // mount (read-only) partition to Installation::destdir
-	    if (SCR::Execute (.target.mount, [p_dev, Installation::destdir, Installation::mountlog], "-o ro"))
+	    if ((boolean) SCR::Execute (.target.mount, [p_dev, Installation::destdir, Installation::mountlog], "-o ro"))
 	    {
 		// Is this a root partition, does /etc/fstab exists?
 		if (SCR::Read (.target.size, Installation::destdir + "/etc/fstab") > 0)
 		{
 		    y2milestone("found fstab on %1", partition);
-		    string suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/SuSE-release", "?"]);
+		    string suse_release = (string) SCR::Read (.target.string, [ Installation::destdir + "/etc/SuSE-release", "?"]);
 		    if (suse_release == "?")
 		    {
-			suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
+			suse_release = (string) SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
 		    }
 		    list release_lines = splitstring (suse_release, "\n");
 		    freshman[`name] = MakeNiceName (release_lines[0]:"?");
@@ -573,7 +575,7 @@ Check the log file %1.
 
 	if (Mode::test)
 	{
-	    Storage::SetTargetMap (SCR::Read (.target.yast2, "test_target_map.ycp"));
+	    Storage::SetTargetMap ((map) SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
 
 	map target_map = Storage::GetOndiskTarget ();
@@ -585,8 +587,8 @@ Check the log file %1.
 	SCR::Write(.md.activate, "");
 	SCR::Write(.lvm.activate, "");
 
-	foreach (map `device, `description, target_map, ``{
-	    foreach (map `partition, description["partitions"]:[], ``{
+	foreach (map device, map description, target_map, ``{
+	    foreach (map partition, description["partitions"]:[], ``{
 
 		// some partitions don't make sense at all
 		if (partition["detected_fs"]:`unknown != `swap &&

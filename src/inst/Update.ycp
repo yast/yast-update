@@ -11,7 +11,8 @@
 {
     module "Update";
 
-
+    import "Packages";
+    
     // number of packages affected by update
     global integer affected_packages = 0;
 
@@ -104,7 +105,7 @@
      */
     global define list GetBaseSelections ()
     ``{
-	list available_base_selections = sort (`x, `y, Pkg::GetSelections (`available, "base"), ``{
+	list available_base_selections = sort (string x, string y, Pkg::GetSelections (`available, "base"), ``{
 	    map xmap = Pkg::SelectionData(x);
 	    map ymap = Pkg::SelectionData(y);
 	    return (xmap["order"]:"" >= ymap["order"]:"");
