@@ -113,7 +113,7 @@ to the previous dialog.
 //-------------------------------------------------------------------------  
 
     string newKernel = Update::newKernel;
-    list filterKernel = filter(string k, Pkg::GetPackages(`installed, true), ``(substring(k, 0, 2) == "k_" ));
+    list filterKernel = filter (string k, Pkg::GetPackages(`installed, true), ``(Pkg::PkgGroup(k) == "System/Kernel"));
     string oldKernel = filterKernel[0]:"";
 
     y2milestone ("newKernel %1, filterKernel %2, oldKernel %3", newKernel, filterKernel, oldKernel);
@@ -132,7 +132,7 @@ to the previous dialog.
 	}
     }
 
-    list kernels = filter(string k, Pkg::GetPackages(`available, true), ``(substring(k, 0, 2) == "k_" ));
+    list kernels = filter (string k, Pkg::GetPackages(`available, true), ``(Pkg::PkgGroup(k) == "System/Kernel"));
     map kernelMap = listmap(string k, kernels, ``([k, Pkg::GetSummary(k)]));
 
     y2milestone ( "Available kernel: %1", kernelMap );

@@ -128,7 +128,7 @@ Check the log file /var/log/y2log
 
     if (Mode::normal)
     {
-	list filterKernel = filter(string k, Pkg::GetPackages(`installed, true), ``(substring(k, 0, 2) == "k_" ));
+	list filterKernel = filter (string k, Pkg::GetPackages(`installed, true), ``(Pkg::PkgGroup(k) == "System/Kernel"));
 	kernel_affected = (size (filterKernel) > 0);
     }
 
