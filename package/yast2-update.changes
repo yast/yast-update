@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan 24 16:58:07 CET 2005 - nashif@suse.de
+
+- Fixed calling of inst_proposal
+
+-------------------------------------------------------------------
 Mon Jan 17 16:43:57 CET 2005 - jsrain@suse.cz
 
 - offer actions to do if mount of a partition fails (#46310)
