@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 17 11:52:45 CET 2003 - kkaempf@suse.de
+
+- if no product can be determined, use /etc/*-release
+- 2.7.11
+
+-------------------------------------------------------------------
 Sat Mar 15 23:14:00 CET 2003 - kkaempf@suse.de
 
 - move the "seen_details" flag to the global Update module (#24927)

@@ -72,6 +72,16 @@
 	    list products = Pkg::TargetProducts();
 	    Update::installedName = products[0,"product"]:"?";
 	    Update::installedVersion = "";
+	    if (Update::installedName == "?")
+	    {
+		string suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/SuSE-release", "?"]);
+		if (suse_release == "?")
+		{
+		    suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
+		}
+		list release_lines = splitstring (suse_release, "\n");
+		Update::installedName = release_lines[0]:"?";
+	    }
 	}
 	else
 	{
