@@ -22,7 +22,6 @@
     Mode::normal = true;
     Mode::installation = false;
     Mode::update = true;
-    Mode::test = true;
 
     // wizard stage
     integer current_stage = -1;
@@ -33,8 +32,7 @@
     // calling inst_proposal
     any ret = CallFunction (`inst_proposal (true, true, `ini));
 
-    /*
-    if (ret == `finish)
+    if (ret == `next)
     {
 	CallFunction (`inst_rpmupdate (false, false));
 
@@ -42,7 +40,6 @@
 	CallFunction (`inst_suseconfig (false, false));
 	Wizard::CloseDialog();
     }
-    */
 
     Wizard::CloseDialog ();
 
