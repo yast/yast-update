@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Apr 02 15:59:59 CEST 2004 - arvin@suse.de
+
+- finally changed license to GPL for good
+
+-------------------------------------------------------------------
 Wed Mar 31 12:26:52 CEST 2004 - kkaempf@suse.de
 
 - Support for /usr/local in gnome-postinstall. (sbrabec@suse.cz)
