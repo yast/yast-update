@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 16 11:07:00 CEST 2004 - arvin@suse.de
+
+- fixed target map computation and thus bootloader update
+  (bug #45332)
+
+-------------------------------------------------------------------
 Tue Sep 14 15:40:40 CEST 2004 - arvin@suse.de
 
 - try to mount partitions even when the device names have changed

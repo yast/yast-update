@@ -61,7 +61,8 @@
      * Type is "mount", "swap" or "loop".
      *
      * Value is path to mounted directory (aka mount point), swap partition
-     * name or loop device name according to type value.
+     * name or loop device name according to type value.  Does not include
+     * Installation::destdir.
      *
      * Device is only present for type "mount" as is the device.
      */
@@ -203,7 +204,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
      */
     global define void UnmountPartitions ()
     {
-	y2milestone ("unmount partitions: %1", activated);
+	y2milestone ("UnmountPartitions");
 
 	did_try_mount_partitions = false;
 
@@ -214,6 +215,8 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 
 	    if (file != "" && type != "")
 	    {
+		file = Installation::destdir + file;
+
 		if (type == "mount")
 		{
 		    if (SCR::Execute (.target.umount, file) != 0)
@@ -309,9 +312,10 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 					      mount_type );
 
 	if (ret)
-	    AddMountedPartition([Installation::destdir + mount_point, "mount", device]);
+	    AddMountedPartition([mount_point, "mount", device]);
 
-	y2milestone ("mounting (%1, %2, %3) yield %4", mount_point, device, mount_type, ret);
+	y2milestone ("mounting (%1, %2, %3) yield %4", Installation::destdir +
+		     mount_point, device, mount_type, ret);
 
 	return ret;
     }
@@ -496,8 +500,8 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 	    string fspath  = mounts["mount"]:"";
 	    string device  = mounts["file"]:"";
 
-	    y2milestone( "vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5",
-			 vfstype, mntops, loop, fspath, device );
+	    y2milestone ("vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5",
+			 vfstype, mntops, loop, fspath, device);
 
 	    boolean crypt_ok = true;
 
@@ -516,7 +520,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 		    crypt_ok = false;
 		}
 
-		y2milestone("crypt pwd ok:%1", crypt_ok );
+		y2milestone ("crypt pwd ok:%1", crypt_ok);
 
 		if (crypt_ok)
 		{
@@ -527,7 +531,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 
 		    crypt_ok = Storage::PerformLosetup( setloop, false );
 
-		    y2milestone("crypt ok: %1", crypt_ok );
+		    y2milestone ("crypt ok: %1", crypt_ok);
 		}
 
 		if (crypt_ok)
@@ -555,7 +559,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
     define boolean var_is_mounted ()
     {
 	foreach (list l, activated, {
-	    if (l[0]:"" == Installation::destdir + "/var")
+	    if (l[0]:"" == "/var")
 		return true;
 	});
 
@@ -833,6 +837,7 @@ Check the log file %1.
 	}
 
 	y2milestone ("MountPartition (%1) = %2", root_device_current, success);
+	y2milestone ("activated %1", activated);
 
 	if (!success)
 	{
