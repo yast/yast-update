@@ -20,7 +20,10 @@ textdomain="update"
                 <proposal_module>update</proposal_module>
                 <proposal_module>packages</proposal_module>
                 <proposal_module>backup</proposal_module>
-                <proposal_module>language</proposal_module>
+                <proposal_module>
+                    <presentation_order>20</presentation_order>
+                    <name>language</name>
+                </proposal_module>
             </proposal_modules>
         </proposal>
     </proposals>

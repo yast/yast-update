@@ -134,7 +134,7 @@
 	if (RootPart::selectedRootPartition != tmp)
 	{
 	    Update::Detach ();
-	    RootPart::UnmountPartitions ();
+	    RootPart::UnmountPartitions (false);
 
 	    RootPart::targetOk = mount_target ();
 	}
