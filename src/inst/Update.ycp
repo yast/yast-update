@@ -13,10 +13,10 @@
 
 
     // number of packages affected by update
-    global integer affected_count = 0;
+    global integer affected_packages = 0;
 
-    // number of packages unknown by update (e.g. non-suse, dropped etc.)
-    global integer unknown_count = 0;
+    // number of errors (packages?) returned by solver
+    global integer solve_errors = 0;
 
     // if the kernel was affected in _normal_ update mode
     global boolean kernel_affected = false;

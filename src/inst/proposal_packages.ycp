@@ -19,15 +19,7 @@
 
 	Update::seen_details = true;
 
-	if (Update::unknown_count > 0)
-	{
-	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector),
-								  `opt(`updateMode )));
-	}
-	else
-	{
-	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
-	}
+	UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
 
 	Pkg::SaveState();
 
@@ -68,14 +60,10 @@
 
 	// proposal for packages during update
 	tmp = add (tmp, sformat (_("Affected Packages: %1"),
-				 Update::affected_count));
+				 Update::affected_packages));
 
-	if (Update::unknown_count > 0)
+	if (Update::solve_errors > 0)
 	{
-	    // proposal for packages during update
-	    tmp = add (tmp, sformat (_("Packages to Check Manually: %1"),
-				     Update::unknown_count));
-
 	    ret = $[ "preformatted_proposal" : HTML::List (tmp),
 		     // the proposal for the packages requires manual intervention
 		     "warning" : "Requires manual intervention",
@@ -96,7 +84,11 @@
 	// sequence = DummyMod::AskUser( has_next );
 
 	symbol result = call_packageselector ();
-	Update::unknown_count = 0;
+
+	if (Pkg::PkgSolve (!Update::onlyUpdateSelected))
+	    Update::solve_errors = 0;
+	else
+	    Update::solve_errors = Pkg::PkgSolveErrors ();
 
 	// Fill return map
 
