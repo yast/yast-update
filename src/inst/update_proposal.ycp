@@ -16,6 +16,7 @@
 
     import "Installation";
     import "Kernel";
+    import "Popup";
 
 
     string func = (string) WFM::Args(0);
@@ -135,7 +136,22 @@
 	    else
 		Update::solve_errors = Pkg::PkgSolveErrors ();
 	}
-
+	// check product compatibility
+	if (! (Update::ProductsCompatible () || Update::products_incompatible))
+	{
+	    if (Popup::ContinueCancel (
+_("The installed product is not compatible with the product
+on the installation media. If you go on update using
+current installation media, the system may not start or
+some applications may not run properly.")))
+	    {
+		Update::IgnoreProductCompatibility ();
+	    }
+	    else
+	    {
+		Update::products_incompatible = true;
+	    }
+	}
     }
 
 
@@ -159,6 +175,16 @@
 	// Fill return map
 
 	init_stuff ();
+
+	if (Update::products_incompatible)
+	{
+	    return $[
+		// error message in proposal
+		"warning" : _("The installed product is not compatible with the product on the installatin media."),
+		"warning_level" : `fatal,
+		"raw_proposal" : [],
+	    ];
+	}
 
 	if (true)
 	{
