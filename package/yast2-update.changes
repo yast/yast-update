@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 02 12:41:05 CEST 2004 - arvin@suse.de
+
+- add kernel's nongpl package during installation (bug #44394)
+
+-------------------------------------------------------------------
 Fri Aug 27 15:07:49 CEST 2004 - arvin@suse.de
 
 - merged proof read messages
