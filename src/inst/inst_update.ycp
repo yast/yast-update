@@ -59,7 +59,7 @@ You will lose that selection if you change the basic selection.");
     // Build and show dialog
 
     string from_version = RootPart::validRootPartitions[RootPart::selectedRootPartition]:"error";
-    string to_version = "FIXME";
+    string to_version = Update::updateVersion;
 
     term contents = `HVSquash(
 	`VBox(

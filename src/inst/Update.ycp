@@ -70,10 +70,37 @@
      * GLOBAL FUNCTIONS
      *-----------------------------------------------------------------------*/
 
+    /**
+     *
+     */
+    global define boolean GetProductName () ``{
+
+	integer num = size (Packages::theSources);
+	if (num <= 0)
+	{
+	    y2error ("No source");
+	    Update::updateVersion = "?";
+	    return false;
+	}
+
+	map product = Pkg::SourceProductData (Packages::theSources[num-1]:0);
+	y2milestone ("First source product %1", product);
+	if (product == nil)
+	{
+	    y2error ("Screwed source");
+	    Update::updateVersion = "?";
+	    return false;
+	}
+
+	Update::updateVersion = product["productname"]:"?" + " " +
+	    product["productversion"]:"";
+	return true;
+    }
+
 
     /**
-     * Find out which base selection is installed on the target system. Reset to
-     * "default" if it can't be determined.
+     * Find out which base selection is selected or as fallback installed on
+     * the target system. Returns "default" if selection can't be determined.
      */
     global define string GetSelection () ``{
 

@@ -11,6 +11,7 @@
     import "HTML";
     import "Update";
     import "Mode";
+    import "Packages";
 
     string func  = WFM::Args(0);
     map    param = WFM::Args(1);
@@ -19,12 +20,6 @@
 
     define void init_stuff () ``{
 
-	// initialize target
-	if (true)
-	{
-	    Pkg::TargetInit (Installation::destdir, false);
-	}
-
 	// initialize package manager
 	if (true)
 	{
@@ -32,9 +27,16 @@
 			    // intermediate popup while initializing internal packagemanagement
 			    `Label(_("Reading package information. One moment please...")));
 	    Packages::Init (true);
-	    sleep (500);
 
 	    UI::CloseDialog();
+
+	    Update::GetProductName ();
+	}
+
+	// initialize target
+	if (true)
+	{
+	    Pkg::TargetInit (Installation::destdir, false);
 	}
 
 	// connect target with package manager
@@ -47,6 +49,7 @@
 	    if (!Pkg::PkgSolve (!Update::onlyUpdateSelected))
 		Update::unknown_count = Update::unknown_count + Pkg::PkgSolveErrors ();
 	}
+
     }
 
 
@@ -65,7 +68,7 @@
 
 	list tmp = [];
 
-	tmp = add (tmp, _("Update to FIXME"));
+	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion));
 
 	if (Update::onlyUpdateSelected)
 	{
