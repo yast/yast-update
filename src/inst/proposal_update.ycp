@@ -18,9 +18,9 @@
     import "Installation";
 
 
-    string func  = (string) WFM::Args(0);
-    map    param = (map) WFM::Args(1);
-    map<string, any>    ret   = $[];
+    string func = (string) WFM::Args(0);
+    map param = (map) WFM::Args(1);
+    map <string, any> ret = $[];
 
 
     define void init_stuff () ``{
@@ -128,6 +128,15 @@
 		// error message
 		return $[ "warning" : _("Cannot read package data from installation media. Media error?"),
 			  "warning_level" : `blocker ];
+	    }
+	}
+
+	if (Update::disallow_upgrade)
+	{
+	    if (false)		// FIXME
+	    {
+		return $[ "warning" : _("Update to another version is not supported from the running system."),
+			  "warning_level" : `fatal ];
 	    }
 	}
 

@@ -1,7 +1,14 @@
 -------------------------------------------------------------------
+Tue Feb 24 17:18:13 CET 2004 - arvin@suse.de
+
+- readded update in running system (bug #34538)
+- set default to "only update" when updating in running system
+
+-------------------------------------------------------------------
 Thu Feb 19 13:50:50 CET 2004 - mvidner@suse.cz
 
-- changed sort to use "<" instead of "<=" because of the switch to std::sort
+- changed sort to use "<" instead of "<=" because of the switch
+  to std::sort
 
 -------------------------------------------------------------------
 Tue Feb 10 17:53:34 CET 2004 - arvin@suse.de
