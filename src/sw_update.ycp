@@ -39,104 +39,6 @@ do this.</P>"))),
 	current_stage = stage;
     };
 
-  
-  // mount CD 
-
-  define MyChangeCD(integer cdnum) ``{
-      boolean ret = true;
-      
-      Shell ("/bin/mount /dev/cdrom /var/adm/mount");
-	
-      integer|void actcdnum = nil;
-      while (true) {
-	  // reading /cdrom/.S.u.S.E-disk-001.2000032902 file
-	  actcdnum = SCR(`Read(.yast2.instsource.cdnum));
-	  if (actcdnum == cdnum) return true;
-	  else {
-	      Shell ("/bin/umount /var/adm/mount");
-
-	      // advise user to insert the right CD
-	      string message = sformat(UI(_("Please insert CD %1.")), cdnum);
-	      if (is(actcdnum, integer)) 
-		  // inform user about current CD
-		  message = sformat(UI(_("%1\nCurrently CD %2 is inserted.")), message, actcdnum);
-
-	      ret = UI(`ContinueCancel(message, _("&OK"), _("&Cancel")) );
-
-	      if ( ret == false )
-		  break;
-	      else
-		  Shell ("/bin/mount /dev/cdrom /var/adm/mount");
-	  }
-      }
-
-      return ret;
-  };
-
-  // map user_settings contains:
-  // - install_info -> module inst_rpmcopy
-  // - delete_info  -> module inst_rpmcopy
-  // - continue_mode -> module inst_rpmcopy
-  // - language -> module inst_rpmcopy
-  
-  map user_settings = $[];
-  
-  string language = UI( `GetLanguage() );
-
-  string default_language = "en";
-  string default_architecture = "i386";
-
-  map lang2yast1 = $[
-		     "en_GB"    : "english",
-		     "en_US"    : "english",
-		     "en"	 : "english",
-		     "de_DE"    : "german",
-		     "de_CH"    : "german",
-		     "de" 	 : "german",
-		     "br_FR"    : "french",
-		     "fr_FR"    : "french",
-		     "fr_CH"    : "french",
-		     "fr"       : "french",
-		     "it_IT"    : "italian",
-		     "es_ES"    : "spanish",
-		     "nl_NL"    : "dutch",
-		     "pt_PT"    : "portuguese",
-		     "pt_BR"    : "brazilian",
-		     "hu_HU"    : "hungarian",
-		     "pl_PL"    : "polish",
-		     "el_GR"    : "greek",
-		     "ru_RU.KOI8-R" : "russian",
-		     "cs_CZ"    : "czech",
-		     "sk_SK"    : "slovak"
-  ];
-
-  string  long_language 	= lookup(lang2yast1, language, "english");
-  
-  // informations needed in all following frames
-  user_settings = add(user_settings, "updateTarget", "/");		    
-  user_settings = add( user_settings, "language", language );
-  user_settings = add( user_settings, "continue_mode", false );
-  
-  // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
-  // user_settings = add(user_settings, "test_mode", true );
-  // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
-
-
-  // mount CD 1 BEFORE initializing pkginfo-Server
-  // (needed to get commom.pkd)
-
-  boolean go_on = MyChangeCD(1);
-
-  if ( !go_on )
-  {
-      // quit dialog
-      return `cancel;
-  }
-  
-   
-  PKGINFO( `setDebugLevel(3) );
-
-  
   // ==================================================================================
 
   UI(``{
@@ -561,6 +463,107 @@ You will need to reinstall." );
   });	// UI defines END
 
   // --------------------------------------------------------------
+
+    
+  
+  // mount CD 
+
+  define MyChangeCD(integer cdnum) ``{
+      boolean ret = true;
+      
+      Shell ("/bin/mount /dev/cdrom /var/adm/mount");
+	
+      integer|void actcdnum = nil;
+      while (true) {
+	  // reading /cdrom/.S.u.S.E-disk-001.2000032902 file
+	  actcdnum = SCR(`Read(.yast2.instsource.cdnum));
+	  if (actcdnum == cdnum) return true;
+	  else {
+	      Shell ("/bin/umount /var/adm/mount");
+
+	      // advise user to insert the right CD
+	      string message = sformat(UI(_("Please insert CD %1.")), cdnum);
+	      if (is(actcdnum, integer)) 
+		  // inform user about current CD
+		  message = sformat(UI(_("%1\nCurrently CD %2 is inserted.")), message, actcdnum);
+
+	      ret = UI(`ContinueCancel(message, _("&OK"), _("&Cancel")) );
+
+	      if ( ret == false )
+		  break;
+	      else
+		  Shell ("/bin/mount /dev/cdrom /var/adm/mount");
+	  }
+      }
+
+      return ret;
+  };
+
+  // map user_settings contains:
+  // - install_info -> module inst_rpmcopy
+  // - delete_info  -> module inst_rpmcopy
+  // - continue_mode -> module inst_rpmcopy
+  // - language -> module inst_rpmcopy
+  
+  map user_settings = $[];
+  
+  string language = UI( `GetLanguage() );
+
+  string default_language = "en";
+  string default_architecture = "i386";
+
+  map lang2yast1 = $[
+		     "en_GB"    : "english",
+		     "en_US"    : "english",
+		     "en"	 : "english",
+		     "de_DE"    : "german",
+		     "de_CH"    : "german",
+		     "de" 	 : "german",
+		     "br_FR"    : "french",
+		     "fr_FR"    : "french",
+		     "fr_CH"    : "french",
+		     "fr"       : "french",
+		     "it_IT"    : "italian",
+		     "es_ES"    : "spanish",
+		     "nl_NL"    : "dutch",
+		     "pt_PT"    : "portuguese",
+		     "pt_BR"    : "brazilian",
+		     "hu_HU"    : "hungarian",
+		     "pl_PL"    : "polish",
+		     "el_GR"    : "greek",
+		     "ru_RU.KOI8-R" : "russian",
+		     "cs_CZ"    : "czech",
+		     "sk_SK"    : "slovak"
+  ];
+
+  string  long_language 	= lookup(lang2yast1, language, "english");
+  
+  // informations needed in all following frames
+  user_settings = add(user_settings, "updateTarget", "/");		    
+  user_settings = add( user_settings, "language", language );
+  user_settings = add( user_settings, "continue_mode", false );
+  
+  // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
+  // user_settings = add(user_settings, "test_mode", true );
+  // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
+
+
+  // mount CD 1 BEFORE initializing pkginfo-Server
+  // (needed to get commom.pkd)
+
+  boolean go_on = MyChangeCD(1);
+
+  if ( !go_on )
+  {
+      // quit dialog
+      UI( `CloseDialog() );      
+      return `cancel;
+  }
+  
+   
+  PKGINFO( `setDebugLevel(3) );
+
+  
 
   Include (`misc_defines());
     
