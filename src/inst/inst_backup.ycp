@@ -25,7 +25,7 @@
 
     define boolean check_backup_path (list part_info) ``{
 
-	backup_path = Update::backup_path;
+	string backup_path = Update::backup_path;
 	integer min_space = 50;
 
 	boolean found = false;
