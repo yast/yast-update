@@ -29,8 +29,6 @@
 
     import "SlideShow";
 
-    include "showlog_defines.ycp";
-
 
     string rebuild_message = _("Checking package database. This process can take some time.");
     // popup message, %1 will be replace with the name of the logfile
