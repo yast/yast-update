@@ -15,13 +15,6 @@
     import "Update";
 
 
-    if ( !Mode::initial )
-    {
-	// Update has been started from installed system.
-	return `auto;
-    }
-
-
     // This dialog comes in three different flavors: `update_dialog,
     // `update_popup and `boot_popup
     symbol flavor = WFM::Args (2);
@@ -52,7 +45,8 @@
 						      `Left (`Label (_("Select System:"))),
 						      `Table (
 							      `id (`partition),
-							      `header (_("System"), _("Partition")),
+							      `header (_("System"),
+								       _("Root Partition")),
 							      partition_list
 							      )
 						      )

@@ -109,14 +109,20 @@
 	//
 	// Static values do just nicely here, no need to call a function.
 
-	ret =
-	    $[
-	      // this is a heading
-	      "rich_text_title"	:	_( "Selected for update"  ),
-	      // this is a menu entry
-	      "menu_title"	:	_( "&Selected for update" ),
-	      "id"		:	"rootpart_stuff"
+	if (Mode::normal)
+	{
+	    ret = $[];
+	}
+	else
+	{
+	    ret = $[
+		    // this is a heading
+		    "rich_text_title"	:	_( "Selected for update"  ),
+		    // this is a menu entry
+		    "menu_title"	:	_( "&Selected for update" ),
+		    "id"		:	"rootpart_stuff"
 	    ];
+	}
     }
 
     return ret;
