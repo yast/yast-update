@@ -28,7 +28,7 @@
     import "Packages";
     import "SlideShow";
 
-    if (!Mode::Update)
+    if (!Mode::update)
 	return `auto;
 
     string rebuild_message = _("Checking package database. This process can take some time.");
