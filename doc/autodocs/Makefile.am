@@ -7,5 +7,5 @@ htmldir = @docdir@/autodocs
 html_DATA = index.html $(wildcard *.html)
 CLEANFILES = $(html_DATA)
 
-index.html: $(srcdir)/../../src/inst/*.ycp
-	@ybindir@/ycpdoc -d. $(srcdir)/../../src/inst/*.ycp
+index.html: $(srcdir)/../../src/*/*.ycp
+	@ybindir@/ycpdoc -d. $(srcdir)/../../src/*/*.ycp
