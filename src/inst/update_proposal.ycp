@@ -117,9 +117,16 @@
 
 	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
 
-	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
-	    Update::affected_packages = tmp1[0]:0;
-	    Update::unknown_packages = tmp1[1]:0;
+	    map<symbol, integer> update_sum
+		= Pkg::PkgUpdateAll (Update::deleteOldPackages);
+	    y2milestone ("Update summary: %1", update_sum);
+
+	    Update::packages_to_update = update_sum[`Iupdate]:0
+		+ update_sum[`Idowngrade]:0 + update_sum[`Ireplaced]:0;
+	    Update::packages_to_install = update_sum[`SumToInstall]:0
+		- Update::packages_to_update;
+	    Update::packages_to_remove = update_sum[`SumToDelete]:0;
+	    Update::unknown_packages = update_sum[`ProblemListSze]:0;
 
 	    SelectKernelPackages ();
 

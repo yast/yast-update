@@ -14,8 +14,14 @@
     import "Packages";
     import "ProductFeatures";
 
-    // number of packages affected by update
-    global integer affected_packages = 0;
+    // number of packages to install
+    global integer packages_to_install = 0;
+
+    // number of packages to update
+    global integer packages_to_update = 0;
+
+    // number of packages to remove
+    global integer packages_to_remove = 0;
 
     // number of packages unknown (problematic) by update
     global integer unknown_packages = 0;
