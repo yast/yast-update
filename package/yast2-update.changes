@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 05 15:02:11 CEST 2004 - arvin@suse.de
+
+- load module dm-snapshort at to prevent hangs if LVM contains
+  snapshot LVs (#36422)
+
+-------------------------------------------------------------------
 Fri Apr 02 15:59:59 CEST 2004 - arvin@suse.de
 
 - finally changed license to GPL for good

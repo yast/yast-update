@@ -626,6 +626,7 @@ Check the log file %1.
 	ModuleLoading::Load ("multipath", "", "Linux", "Multipath", Mode::manual, true);
 	ModuleLoading::Load ("dm-mod", "", "Linux", "DM", Mode::manual, true);
 	SCR::Execute (.target.bash, "/sbin/devmap_mknod.sh");
+	ModuleLoading::Load ("dm-snapshot", "", "Linux", "DM", Mode::manual, true);
 
 	if (Mode::test)
 	{
