@@ -443,9 +443,8 @@
 	    i = i + 1;
 	};
 
-
 	integer j = 0;
-	while (i < size (fstab))
+	while (j < size (fstab))
 	{
 	    string spec = fstab[j,"spec"]:"";
 	    fstab[j,"spec"] = trans[spec]:spec;
