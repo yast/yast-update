@@ -47,7 +47,7 @@
 
     string wrn_msg = "";
 
-    if (Update::userChangedState)		// check if state changed
+    if (Pkg::RestoreState (true))		// check if state changed
     {
 	// Display warning message
 	wrn_msg = _("\
@@ -142,8 +142,6 @@ packages during the update.</p>
 
     any ret = nil;
 
-    Update::userChangedState = true;
-
     while (true)
     {
 	ret = Wizard::UserInput ();
@@ -161,7 +159,7 @@ packages during the update.</p>
 	    continue;
 	}
 
-	if (ret == `next && Update::userChangedState)
+	if (ret == `next && Pkg::RestoreState (true))
 	{
 	    boolean something_changed = false;
 
@@ -193,7 +191,6 @@ packages during the update.</p>
 	Update::deleteOldPackages = UI::QueryWidget (`id(`delete), `Value);
 
 	Update::updateEvaluated = false;
-	Update::userChangedState = false;
 
 	if (Update::onlyUpdateSelected)
 	    Pkg::SetSelection ("default");

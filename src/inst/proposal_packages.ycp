@@ -19,8 +19,6 @@
 
     define symbol call_packageselector () ``{
 
-	Update::seen_details = true;
-
 	UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
 
 	Pkg::SaveState();
@@ -28,10 +26,6 @@
 	symbol ret = UI::RunPkgSelection (`id(`selector));
 	if (ret == `accept)
 	{
-	    if (Pkg::RestoreState(true))
-	    {
-		Update::userChangedState = true;
-	    }
 	    Pkg::ClearSaveState();
 	}
 	else

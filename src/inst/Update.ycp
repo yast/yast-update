@@ -60,11 +60,6 @@
     // counter for installed packages
     global integer packagesInstalled = 0;
 
-    // Flag, if user changed the packager state
-    global boolean userChangedState = false;
-
-    // Flag, if user has seen all the glory update details
-    global boolean seen_details = false;
 
 
     /*-----------------------------------------------------------------------
