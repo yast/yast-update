@@ -85,7 +85,7 @@
 
     // map of mountpoints (key = device, value = mountpoint)
     // TODO: combine partitions_mount and activated?
-    global map partitions_mount = $[];
+    map partitions_mount = $[];
 
     /**
      * List of mounted partitions, activated swap partitions and loop devices.
@@ -107,7 +107,7 @@
      * devices. Uses list activated to make actions in reverse order.
      * @return void
      */
-    global define void UnmountPartitions() ``{
+    global define void UnmountPartitions () ``{
 
 	y2milestone ("unmount partitions: %1", activated);
 
@@ -170,7 +170,7 @@
      * see description of list "activated"
      * @return void
      */
-    global define void AddMountedPartition(list partinfo) ``{
+    define void AddMountedPartition (list partinfo) ``{
 	y2debug("Added partition info: %1", partinfo);
 	activated = prepend(activated, partinfo);
 	y2debug("Total partition info: %1", activated);
@@ -249,7 +249,7 @@ Check the log file %1.
 
 	if ( ret_bool )
 	{
-	    Update::AddMountedPartition([Installation::destdir, "mount"]);
+	    AddMountedPartition([Installation::destdir, "mount"]);
 	    parts["/"] = partition;
 
 	    // Reading fstab and mount all required mount-points to Installation::destdir
@@ -343,7 +343,7 @@ Check the log file %1.
 					    "passno" : 0,
 					    "vfstype": vfstype ];
 			    fstab = prepend( fstab, add_fs );
-			    Update::AddMountedPartition([loop, "loop"]);
+			    AddMountedPartition([loop, "loop"]);
 			}
 
 		    }
@@ -450,7 +450,7 @@ Check the log file %1.
 				}
 				else
 				{
-				    Update::AddMountedPartition([Installation::destdir + mounts["file"]:"", "mount"]);
+				    AddMountedPartition([Installation::destdir + mounts["file"]:"", "mount"]);
 				    parts[mounts["file"]:""] = mounts["spec"]:"";
 				}
 			    }
@@ -476,7 +476,7 @@ Check the log file %1.
 				}
 				else
 				{
-				    Update::AddMountedPartition([spec, "swap"]);
+				    AddMountedPartition([spec, "swap"]);
 				}
 			    }
 			}
