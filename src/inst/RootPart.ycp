@@ -537,8 +537,8 @@ Check the log file %1.
 	if ((p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
 	    contains (possible_root_fs, p_used_fs))
 	{
-	    // mount partition to Installation::destdir
-	    if (SCR::Execute (.target.mount, [p_dev, Installation::destdir, Installation::mountlog]))
+	    // mount (read-only) partition to Installation::destdir
+	    if (SCR::Execute (.target.mount, [p_dev, Installation::destdir, Installation::mountlog], "-o ro"))
 	    {
 		// Is this a root partition, does /etc/fstab exists?
 		if (SCR::Read (.target.size, Installation::destdir + "/etc/fstab") > 0)
