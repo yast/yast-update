@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jan  4 17:41:13 CET 2001 - kkaempf@suse.de
+
+- declare needed global vars correctly
+
+-------------------------------------------------------------------
 Wed Dec 13 19:11:27 MET 2000 - schubi@suse.de
 
 - new menue-entry 
