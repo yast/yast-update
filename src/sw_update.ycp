@@ -12,21 +12,8 @@
   y2milestone ( "YaST2-version: %1", version );
   
   // Menuentry for the YaST2 menu
-  if (Args() == [ "get_menuentry" ]) 
-      return [ 
-	      "sw_update", $[
-			     "menuentry"    : UI(_("Update packages")),
-			     "arguments"    : [ ],
-			     "widget"       : `RichText(
-						       UI(_("<P>Launch this module to update existing packages.
-</P>
-Please insert <b>CD 1</b> before proceeding.
-<P>You need to be logged in as <i>root</i> in order to
-do this.</P>"))),
-			     "codefragment" : nil ]
-      ];
 
-    integer current_stage = -1;
+  integer current_stage = -1;
   
     define SetWizardStage( integer stage, boolean force ) ``{
 
