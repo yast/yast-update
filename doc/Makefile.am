@@ -2,6 +2,8 @@
 # Makefile.am for y2c_update/doc
 #
 
+SUBDIRS = autodocs
+
 docdir = @DOCDIR@
 htmldir = $(docdir)
 
