@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 27 15:07:49 CEST 2004 - arvin@suse.de
+
+- merged proof read messages
+
+-------------------------------------------------------------------
 Fri Aug 13 14:59:15 CEST 2004 - nashif@suse.de
 
 - added yast2-xml to neededforbuild
