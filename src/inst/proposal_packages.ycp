@@ -96,6 +96,7 @@
 	// sequence = DummyMod::AskUser( has_next );
 
 	symbol result = call_packageselector ();
+	Update::unknown_count = 0;
 
 	// Fill return map
 

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug 26 12:33:16 CEST 2003 - arvin@suse.de
+
+- set counter of unknown packages to zero after entering
+  package selector (bug #29320)
+
+-------------------------------------------------------------------
 Fri Aug 22 11:26:37 CEST 2003 - arvin@suse.de
 
 - only run inst_rpmupdate during update
