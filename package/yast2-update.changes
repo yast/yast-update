@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 07 15:08:15 CEST 2004 - arvin@suse.de
+
+- don't use product information from Update module in RootPart
+  module but instead gather it oneself (bug #44724)
+
+-------------------------------------------------------------------
 Mon Sep 06 15:17:07 CEST 2004 - arvin@suse.de
 
 - major cleanup of RootPart.ycp in preparation for bug #44286

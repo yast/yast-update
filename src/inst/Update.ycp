@@ -133,6 +133,9 @@
      */
     global define boolean GetProductName ()
     {
+	installedVersion = $[];
+	updateVersion = $[];
+
 	/*
 	 *  Be careful: The maps returned by from Pkg::TargetProducts and
 	 *  Pkg::SourceProductData have different content.
