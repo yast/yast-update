@@ -1,0 +1,157 @@
+#! /bin/sh
+
+# Re-generate GConf database. Clean-up obsolete and orphan GNOME stuff.
+#
+#
+# NOTE: This script requires find, mktemp, mail and coreutils installed.
+#
+TRASH=/var/adm/backup/GNOME
+
+TEMP=$(mktemp -d /tmp/tmp.gnome-postinstall.XXXXXX) || { echo "could not create temp dir" >&2; exit 1; }
+echo -n "" >$TEMP/list
+
+# Inspect all backed-up schemas (back-up was done by
+# gnome-preinstall). If no update was done, re-generate gconf database
+# entries. Otherwise it was done during package update.
+
+shopt -s nullglob
+
+# Re-generate old entries in GConf database.
+if test -d /etc/opt/gnome/gconf/schemas-old
+then
+    # Did user install gconf2?
+    if test -e /opt/gnome/bin/gconftool-2
+    then
+	# Create default directories for database.
+	mkdir -p /etc/opt/gnome/gconf/gconf.xml.defaults /etc/opt/gnome/gconf/gconf.xml.mandatory
+	export GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source`
+	cd /etc/opt/gnome/gconf/schemas-old
+	# FIXME: We do not search for *.entries. Those are only in
+	# gnome-panel package, and this code expects it was upgraded
+	# since last SuSE Linux.
+	for SCHEMAS in *.schemas
+	do
+	    # Files were backed-up by hardlink. If both still exists and
+	    # have the same inode, file was not updated.
+	    if test $SCHEMAS -ef ../schemas/$SCHEMAS
+	    then
+		echo "File $SCHEMAS survived upgrade. Re-generating GConf entries."
+		/opt/gnome/bin/gconftool-2 --makefile-install-rule /etc/opt/gnome/gconf/schemas/$SCHEMAS >/dev/null
+	    fi
+	    rm $SCHEMAS
+	done
+	cd -
+	# Directory should be empty.
+	rmdir /etc/opt/gnome/gconf/schemas-old
+    else
+	# User does not want gconf.
+	rm -rf /etc/opt/gnome/gconf/schemas-old
+    fi
+fi
+
+# User does not care about saved files and didn't anything with them
+# since last installation. Remove it!
+if test -d $TRASH
+then
+    rm -rf $TRASH
+fi
+
+# These directories should be inspected for empty sub-directories,
+# not owned by any package.
+for DIR in \
+/etc/opt/gnome \
+/opt/gnome
+  do
+  echo >$TEMP/found
+  while test -f $TEMP/found
+    do
+    rm $TEMP/found
+    find 2>/dev/null "$DIR" -empty -type d -exec sh -c "
+	if ! rpm >/dev/null --quiet -qf \"{}\"
+	then
+	    echo >$TEMP/found
+	    rmdir -v \"{}\"
+	fi
+    " \;
+  done
+done
+
+function mvtrash {
+    mkdir -p $TRASH
+    cat >$TRASH/README <<EOF
+THIS DIRECTORY CONTAINS OBSOLETE DIRECTORIES AND SHOULD BE REMOVED!!!
+
+Filesystem hierarchy was significantly changed in SuSE Linux 9.0 and
+all GNOME/GTK related programs now reside in /opt/gnome.
+
+Please check if there is anything useful and then remove this
+directory.
+
+GNOME themes can be simply moved to /opt/gnome/share/themes, all other
+programs must be re-installed.
+
+Your SuSE GNOME team
+EOF
+    mkdir -p "$TRASH/${1%/*}"
+    mv -v "$1" "$TRASH/${1%/*}"
+}
+
+# These directories are obsolete and should be removed.
+for DIR in \
+/etc/gtk-2.0 \
+/etc/opt/gnome2 \
+/etc/pango \
+/opt/gnome2 \
+/usr/include/gtk-xmhtml \
+/usr/lib/gtk-2.0 \
+/usr/lib/orbit-2.0 \
+/usr/lib/pango \
+/usr/share/gnome \
+/usr/share/gtk-doc \
+/var/opt/gnome2
+do
+  echo >$TEMP/found
+  while test -f $TEMP/found
+  do
+    rm $TEMP/found
+    if ! test -d "$DIR"
+    then
+      continue
+    fi
+    rm -f "$DIR"/REMOVE_IN_PROGRESS
+    find 2>/dev/null "$DIR" -empty -type d -exec sh -c "
+	echo >$TEMP/found
+	rmdir -v \"{}\"
+      " \;
+  done
+  if test -d "$DIR"
+  then
+      echo "Directory $DIR should be empty, moving to $TRASH!"
+      echo "$DIR" >>$TEMP/list
+      mvtrash "$DIR"
+  fi
+done
+
+if test ! -z "`cat $TEMP/list`"
+then
+    echo "Sending warning to root."
+    mail -s "WARNING: GNOME purge after SuSE Linux upgrade" root <<EOF
+Hallo SuSE Linux user.
+
+Filesystem hierarchy was significantly changed in SuSE Linux 9.0 and
+all GNOME/GTK related programs now reside in /opt/gnome.
+
+Following directories was removed from live system and moved to
+$TRASH:
+`cat $TEMP/list`
+
+Please check if there is anything useful and then remove them.
+
+GNOME themes can be simply moved to /opt/gnome/share/themes, all other
+programs must be re-installed.
+
+Your SuSE GNOME team
+EOF
+fi
+
+rm -r $TEMP
