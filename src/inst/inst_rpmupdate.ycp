@@ -142,14 +142,12 @@ Check the log file /var/log/y2log
 
     any ret = `ok;
 
-    boolean kernel_affected = false;
-
     if (Mode::normal)
     {
 	// check if kernel is affected by this update
 
 	list filterKernel = filter (string k, Pkg::GetPackages(`selected, true), ``(Pkg::PkgGroup(k) == "System/Kernel"));
-	kernel_affected = (size (filterKernel) > 0);
+	Update::kernel_affected = (size (filterKernel) > 0);
     }
 
     integer media_number = 0;
@@ -197,12 +195,19 @@ Check the log file /var/log/y2log
     // when running from inst-sys. The latter case is handled
     // by inst-finish
 
-    if (kernel_affected)			// kernel affected
+    if (Mode::normal)
     {
-	y2milestone ("Boot::Write()");
-	Kernel::switched = true;
-	import "Boot";
-	Boot::Write();				// re-write initrd and bootloader
+	if (Update::kernel_affected)		// kernel affected
+	{
+	    y2milestone ("Boot::Write()");
+	    Kernel::switched = true;
+	    import "Boot";
+	    Boot::Write();			// re-write initrd and bootloader
+	}
+	else
+	{
+	    Kernel::switched = false;		// so inst_finish doesnt ask for a reboot
+	}
     }
 
     // Now that we know how many packages to install, we can show the dialog
