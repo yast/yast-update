@@ -20,6 +20,7 @@
     import "ModuleLoading";
     import "FileSystems";
     import "Update";
+    import "Packages";
 
     include "partitioning/partition_defines.ycp";
     include "partitioning/custom_part_helptexts.ycp";
@@ -65,6 +66,30 @@
      * Device is only present for type "mount" as is the device.
      */
     list <list> activated = [];
+
+
+    /*
+     *  Information about old and new product.
+     *
+     *  They do contain:
+     *    name (string), e.g. "SuSE Linux"
+     *    version (string), e.g. "9.1"
+     *    nameandversion (string), e.g. "SuSE Linux 9.1"
+     *
+     *  They may contain:
+     *    major (integer), e.g. "9"
+     *    minor (integer, e.g. "1"
+     *
+     *  These are more or less the same as in Update but we can't ask the
+     *  package database what product is installed before mounting var.  Yes,
+     *  life is hard.
+     */
+
+    // Version of the targetsystem
+    global map <string, any> installedVersion = $[];
+
+    // Version of the source medium
+    global map <string, any> updateVersion = $[];
 
 
     /**
@@ -265,6 +290,61 @@
     /**
      *
      */
+    global define boolean GetProductName ()
+    {
+	/*
+	 *  Be careful: The maps returned by from Pkg::TargetProducts and
+	 *  Pkg::SourceProductData have different content.
+	 */
+
+	// get old product name
+
+	/*
+	list old_products = Pkg::TargetProducts ();
+	map old_product = old_products[0]:$[];
+	y2milestone ("First installed product %1", old_product);
+
+	installedVersion["name"] = old_product["name"]:"?";
+	installedVersion["version"] = old_product["version"]:"?";
+	fill_version_map (installedVersion);
+	*/
+
+	// get new product name
+
+	integer num = size (Packages::theSources);
+	if (num <= 0)
+	{
+	    y2error ("No source");
+	    updateVersion["name"] = "?";
+	    updateVersion["version"] = "?";
+	    Update::fill_version_map (updateVersion);
+	    return false;
+	}
+
+	map new_product = Pkg::SourceProductData (Packages::theSources[num-1]:0);
+	y2milestone ("First source product %1", new_product);
+	if (new_product == nil)
+	{
+	    y2error ("Screwed source");
+	    updateVersion["name"] = "?";
+	    updateVersion["version"] = "?";
+	    Update::fill_version_map (updateVersion);
+	    return false;
+	}
+
+	updateVersion["name"] = new_product["productname"]:"?";
+	updateVersion["version"] = new_product["productversion"]:"?";
+	Update::fill_version_map (updateVersion);
+
+	y2milestone ("update from %1 to %2", installedVersion, updateVersion);
+
+	return true;
+    }
+
+
+    /**
+     *
+     */
     define list <map> TranslateFSTab (list <map> fstab)
     {
 	list <string> old_names = [];
@@ -272,13 +352,10 @@
 	    old_names = add (old_names, m["spec"]:"");
 	});
 
-	/*
-	Update::installedVersion = $[ "haha" : 8 ];
-	Update::updateVersion = $[ "haha" : 9 ];
-	*/
+	GetProductName ();
 
-	list <string> new_names = Storage::GetTranslatedDevices (Update::installedVersion,
-								 Update::updateVersion,
+	list <string> new_names = Storage::GetTranslatedDevices (installedVersion,
+								 updateVersion,
 								 old_names);
 
 	map <string, string> trans = $[];

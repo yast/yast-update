@@ -112,7 +112,7 @@
     /**
      *
      */
-    define void fill_version_map (map <string, any>& data)
+    global define void fill_version_map (map <string, any>& data)
     {
 	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
 
