@@ -267,16 +267,30 @@
      */
     define list <map> TranslateFSTab (list <map> fstab)
     {
-	integer i = 0;
+	list <string> old_names = [];
+	foreach (map m, fstab, {
+	    old_names = add (old_names, m["spec"]:"");
+	});
 
+	list <string> new_names = Storage::GetTranslatedDevices (Update::installedVersion,
+								 Update::updateVersion,
+								 old_names);
+
+	map <string, string> trans = $[];
+	integer i = 0;
+	while (i < size (old_names))
+	{
+	    trans[old_names[i]:""] = new_names[i]:"";
+	    i = i + 1;
+	};
+
+
+	integer j = 0;
 	while (i < size (fstab))
 	{
-	    string spec = fstab[i,"spec"]:"";
-	    list <string> tmp = Storage::GetTranslatedDevices (Update::installedVersion,
-							       Update::updateVersion, [spec]);
-	    fstab[i,"spec"] = tmp[0]:spec;
-
-	    i = i + 1;
+	    string spec = fstab[j,"spec"]:"";
+	    fstab[j,"spec"] = trans[spec]:spec;
+	    j = j + 1;
 	};
 
 	return fstab;
