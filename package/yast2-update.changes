@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jan 16 12:13:54 CET 2004 - arvin@suse.de
+
+- restore callbacks after slideshow
+
+-------------------------------------------------------------------
 Mon Sep 29 14:22:39 CEST 2003 - arvin@suse.de
 
 - removed module for update from running system (bug #31824)
