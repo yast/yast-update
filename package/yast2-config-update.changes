@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Apr  6 11:42:00 MEST 2001 - gs@suse.de
+
+- package rename, use of common popups, map user_settings added 
+
+-------------------------------------------------------------------
 Tue Jan 23 11:37:24 CET 2001 - kkaempf@suse.de
 
 - added proper textdomain call
