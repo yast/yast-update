@@ -134,25 +134,17 @@ Check the log file /var/log/y2log
 	kernel_affected = (size (filterKernel) > 0);
     }
 
-    list commit_result = [];
-
-    SlideShow::UpdateAllCdProgress (false);
-    SlideShow::StartTimer();
+    integer media_number = 0;
 
     Pkg::TargetLogfile (Installation::destdir+"/var/log/YaST2/y2logRPM");
 
     if ( Mode::initial )
     {
-	y2milestone ("Pkg::PkgCommit(1)");
-	commit_result = Pkg::PkgCommit(1);
-    }
-    else
-    {
-	y2milestone ("Pkg::PkgCommit(0)");
-	commit_result = Pkg::PkgCommit(0);
+	media_number = 1;
     }
 
-    SlideShow::StopTimer();
+    // returns [ int successful, list failed, list remaining ]
+    list commit_result = PackageInstallation::CommitPackages( media_number, 0 );
 
     //*********************************************************
 

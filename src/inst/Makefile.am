@@ -5,9 +5,6 @@
 module_DATA = \
 	Update.ycp
 
-ydata_DATA = \
-	forceUpdate.ycp
-
 client_DATA = \
 	inst_sw_backup.ycp			\
 	inst_sw_update.ycp			\
@@ -18,4 +15,4 @@ client_DATA = \
 	inst_prepost_update.ycp			\
 	inst_rootpart.ycp
 
-EXTRA_DIST = $(module_DATA) $(client_DATA) $(ydata_DATA)
+EXTRA_DIST = $(module_DATA) $(client_DATA)
