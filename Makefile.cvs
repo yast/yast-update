@@ -1,10 +1,11 @@
 #
-# Makefile.cvs for y2c_update
+# Makefile.cvs
 #
 configure: all
 	./configure
 
 all:
+	y2tool y2autoconf
 	y2tool y2automake
 	autoreconf --force --install
 

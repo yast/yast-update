@@ -1,51 +1,29 @@
-#
-# spec file for package @RPMNAME@
-# 
-# Copyright  (c)  2000  SuSE GmbH  Nuernberg, Germany.
-#
-# please send bugfixes or comments to @MAINTAINER@
-#
-
+@HEADER-COMMENT@
 # neededforbuild yast2-devtools  autoconf automake ydoc
 
-Vendor:       SuSE GmbH, Nuernberg, Germany
-Distribution: SuSE Linux 7.0 (i386)
-Name:         @RPMNAME@
-Release:      1
-Copyright:    (c) 2000 SuSE GmbH
-Group:        System Environment/YaST
+@HEADER@
 Requires:	yast2-trans-update yast2
-BuildArchitectures: noarch
 
-Packager:     @MAINTAINER@
-
-Summary:      YaST2 Modules for installation
-Version:      @VERSION@
-Source0:      @RPMNAME@-@VERSION@.tar.bz2
 Provides:       y2c_update
 Obsoletes:      y2c_update
+
+BuildArchitectures: noarch
+
+Summary:      YaST2 Modules for installation
 
 %description
 -
 
-%prep
+@PREP@
 
-%setup -n @RPMNAME@-@VERSION@
+@BUILD-YCP@
 
-%build
+@INSTALL-YCP@
 
-./configure
-make
-
-%install
-
-make install
-
-%{?suse_check}
+@CLEAN@
 
 %files
-
-%dir @YAST2DIR@/clients
-%dir @YAST2DIR@/menuentries
+%defattr(-,root,root)
 @YAST2DIR@/menuentries/menuentry_sw_update.y2cc
 @YAST2DIR@/clients/sw_update.ycp
+%doc @DOCDIR@
