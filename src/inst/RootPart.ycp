@@ -268,7 +268,7 @@ Check the log file %1.
 		y2milestone("fstab :%1", fstab );
 		y2milestone("crtab :%1", crtab );
 
-		foreach ( `mounts, crtab, ``{
+		foreach (map `mounts, crtab, ``{
 
 		    string vfstype = mounts["vfstype"]:"";
 		    string mntops  = mounts["opt2"]:"";
@@ -329,7 +329,7 @@ Check the log file %1.
 
 		boolean raidMounted = false;
 
-		foreach ( `mounts, fstab, ``{
+		foreach (map `mounts, fstab, ``{
 
 		    string vfstype = mounts["vfstype"]:"";
 		    string mntops  = mounts["mntops"]:"";
@@ -574,26 +574,25 @@ Check the log file %1.
 	rootPartitions = $[];
 	numberOfValidRootPartitions = 0;
 
-	foreach (`device, `description, target_map, ``{
-	    foreach (`partition, description["partitions"]:[], ``{
+	foreach (map `device, `description, target_map, ``{
+	    foreach (map `partition, description["partitions"]:[], ``{
 
 		// some partitions don't make sense at all
-		if (partition["detected_fs"]:`unknown == `swap ||
-		    partition["type"]:`primary == `extended)
-		    continue;
+		if (partition["detected_fs"]:`unknown != `swap &&
+		    partition["type"]:`primary != `extended)
+		{
+		    map freshman = $[];
 
-		map freshman = $[];
+		    if (Mode::test)
+			freshman = $[`valid : true, `name : "SuSE Linux 4.2", `arch : "i286" ];
+		    else
+			freshman = CheckPartition (partition);
 
-		if (Mode::test)
-		    freshman = $[`valid : true, `name : "SuSE Linux 4.2", `arch : "i286" ];
-		else
-		    freshman = CheckPartition (partition);
+		    rootPartitions = add (rootPartitions, partition["device"]:"error", freshman);
 
-		rootPartitions = add (rootPartitions, partition["device"]:"error", freshman);
-
-		if (freshman[`valid]:false)
-		    numberOfValidRootPartitions = numberOfValidRootPartitions + 1;
-
+		    if (freshman[`valid]:false)
+			numberOfValidRootPartitions = numberOfValidRootPartitions + 1;
+		}
 	    });
 	});
 
