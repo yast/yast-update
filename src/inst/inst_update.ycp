@@ -152,10 +152,10 @@ packages during the update.</p>
 
     if (!current_is_available)
     {
-	ChangeWidget (`id(`baseconf), `CurrentButton, available_base_selections[0]:"");
+	UI::ChangeWidget (`id(`baseconf), `CurrentButton, available_base_selections[0]:"");
     }
 
-    // grey out radio buttons if only already installed packages should be updated 
+    // grey out radio buttons if only already installed packages should be updated
 
     foreach (`sel, available_base_selections, ``{
 	UI::ChangeWidget(`id(sel), `Enabled, !Update::onlyUpdateSelected);
