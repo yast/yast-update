@@ -169,10 +169,14 @@ Check the log file /var/log/y2log
 
 
     //*********************************************************
+    // kernel_affected only triggers in 'normal' mode not
+    // when running from inst-sys. The latter case is handled
+    // by inst-finish
 
     if (kernel_affected)			// kernel affected
     {
 	y2milestone ("Boot::Write()");
+	Kernel::switched = true;
 	import "Boot";
 	Boot::Write();				// re-write initrd and bootloader
     }
