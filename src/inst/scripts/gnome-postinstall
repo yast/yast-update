@@ -43,11 +43,20 @@ then
 	    rm $SCHEMAS
 	done
 	cd -
-	# Directory should be empty.
-	rmdir /etc/opt/gnome/gconf/schemas-old
-    else
-	# User does not want gconf.
-	rm -rf /etc/opt/gnome/gconf/schemas-old
+	# Update entries for all files in /usr/local.
+	if test -d /usr/local/etc/gconf/schemas ; then
+	    echo "Re-generating GConf entries fin /usr/local/etc/gconf/schemas."
+	    cd /usr/local/etc/gconf/schemas
+	    # FIXME: We do not search for *.entries. Those are only in
+	    # gnome-panel package, and this code expects it was
+	    # upgraded since last SuSE Linux.
+	    for SCHEMAS in *.schemas
+	    do
+		echo "Re-generating /usr/local GConf entry for $SCHEMAS."
+		/opt/gnome/bin/gconftool-2 --makefile-install-rule /usr/local/etc/gconf/schemas/$SCHEMAS >/dev/null
+	    done
+	    cd -
+	fi
     fi
 fi
 
