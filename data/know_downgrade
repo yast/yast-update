@@ -1,0 +1,7 @@
+# list of known downgrades
+
+Package: libpng
+Version old: 2.1.0.12
+Version new: 1.2.3
+-- 
+
