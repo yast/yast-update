@@ -1,5 +1,6 @@
 @HEADER-COMMENT@
-# neededforbuild yast2-devtools  autoconf automake ydoc
+
+# neededforbuild  autoconf automake yast2-devtools ydoc
 
 @HEADER@
 Requires:	yast2-trans-update yast2
@@ -16,9 +17,9 @@ Summary:      YaST2 Modules for installation
 
 @PREP@
 
-@BUILD-YCP@
+@BUILD@
 
-@INSTALL-YCP@
+@INSTALL@
 
 @CLEAN@
 
