@@ -12,6 +12,7 @@
     import "Update";
     import "Packages";
     import "PackageCallbacks";
+    import "SpaceCalculation";
 
     import "Installation";
     import "Kernel";
@@ -194,6 +195,9 @@
 	    tmp = add (tmp, sformat (_("Update Based on Selection \"%1\""),
 				     selection_summary));
 	}
+
+	// recalculate the disk space usage data
+	SpaceCalculation::GetPartitionInfo();
 
 	if (Update::deleteOldPackages)
 	{
