@@ -19,7 +19,15 @@
 
     define symbol call_packageselector () ``{
 
-	UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
+	if (true)		// FIXME
+	{
+	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector),
+								  `opt(`updateMode)));
+	}
+	else
+	{
+	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
+	}
 
 	Pkg::SaveState();
 

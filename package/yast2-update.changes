@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 11 22:39:29 CEST 2003 - arvin@suse.de
+
+- update mode for package selector is back (bug #29906)
+
+-------------------------------------------------------------------
 Thu Sep 11 17:58:34 CEST 2003 - kkaempf@suse.de
 
 - move Pkg::SetLocale() to Packages::Init() (#30438)
