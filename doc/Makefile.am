@@ -1,5 +1,5 @@
 #
-# Makefile.am for y2c_update/doc
+# Makefile.am for update/doc
 #
 
 SUBDIRS = autodocs

@@ -5,7 +5,7 @@
 ; $Id$
 ;
 
-[Y2Module sw_update]
+[Y2Module update]
 
 ; name of the entry, shown in y2cc
 Name = _("System Update")

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep  4 09:45:55 CEST 2002 - msvec@suse.cz
+
+- provide/obsolete old translation packages
+- rename clients from sw_update to simply update
+- 2.6.1
+
+-------------------------------------------------------------------
 Tue Jul  9 11:47:40 CEST 2002 - mvidner@suse.cz
 
 - fixed Provides/Obsoletes.

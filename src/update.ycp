@@ -1,0 +1,100 @@
+/**
+ * File:	clients/update.ycp
+ * Module:	System update
+ * Summary:	Main update client
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "update";
+
+import "Arch";
+import "Boot";
+import "Installation";
+import "InstMedia";
+import "MediaUI";
+import "Mode";
+import "Wizard";
+
+/* Set normal mode */
+Mode::normal = true;
+
+/* Always use package information from source medium */
+InstMedia::source_medium = true;
+
+include "ui/common_popups.ycp";
+include "ui/common_functions.ycp";
+
+/* Wizard stage */
+integer current_stage = -1;
+
+// --------------------------------------------------------------
+InstMedia::initializeInstMedia ($[]);
+integer medium_number = InstMedia::MountMedium ( 1 );	// don't show additional popup
+
+// create initial dialog
+Wizard::CreateDialog();
+
+while ( medium_number != 0 )		// correct medium available
+{
+    any ret = UI::ContinueCancelPopup(_("No access to source media used on previous installation.
+Continue with choosing new installation source?"));
+
+    if ( ret )		// choose new installation source
+    {
+	any result = `next;
+	result = CallFunction( `inst_source( true, true ) );
+	if ( result != `next )
+	{
+	    UI::CloseDialog();
+	    return `cancel;
+	}
+	medium_number = InstMedia::MountMedium ( 1 );	// don't show additional popup
+    }
+    else			// exit the installation dialog
+    {
+	UI::CloseDialog();
+	return `cancel;
+    }
+}
+
+// Calling inst_updateControl
+any ret_single = CallFunction( `inst_updateControl( ) );
+
+y2debug( "SW: Return inst_updateControl %1", ret_single );
+
+any ret_rpm = nil;
+
+if ( ret_single == `finish )
+{
+    Wizard::OpenNextBackDialog();
+
+    list install_list = SCR::Read (.package.updatePackageNames);
+    boolean bootCalled = false;
+    foreach ( `package, install_list,
+	      ``{
+	if( substring ( package, 0, 2) == "k_"
+	    && !bootCalled )
+	{
+	    // calling mk_initrd and lilo if kernel has been updated
+	    Boot::Write();
+	    bootCalled = true;
+	}
+    });
+
+    CallFunction( `inst_suseconfig (false, false) );
+    Wizard::CloseDialog();
+}
+
+// Kill package agent, in order to release file-handles
+SCR::UnmountAgent(.package);
+
+InstMedia::UnmountMedium ();
+UI::CloseDialog();
+
+return `next;
+
+}

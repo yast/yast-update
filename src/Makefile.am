@@ -1,9 +1,9 @@
 #
-# Makefile.am for y2c_update/src
+# Makefile.am for update/src
 #
 
-client_SCRIPTS = sw_update.ycp
+client_DATA = update.ycp
 
-config_DATA = sw_update.y2cc
+config_DATA = update.y2cc
 
-EXTRA_DIST = $(client_SCRIPTS) $(config_DATA)
+EXTRA_DIST = $(client_DATA) $(config_DATA)
