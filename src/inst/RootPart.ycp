@@ -488,11 +488,43 @@ Check the log file %1.
 
 
     /**
+     * Read release information.
+     */
+    define string GetRelease () ``{
+
+	string release = "?";
+
+	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/SuSE-release", "?"]);
+	if (release != "?")
+	{
+	    list lines = splitstring (release, "\n");
+	    return MakeNiceName (lines[0]:"?");
+	}
+
+	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/UnitedLinux-release", "?"]);
+	if (release != "?")
+	{
+	    list lines = splitstring (release, "\n");
+	    return MakeNiceName (lines[0]:"?");
+	}
+
+	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/redhat-release", "?"]);
+	if (release != "?")
+	{
+	    list lines = splitstring (release, "\n");
+	    return lines[0]:"?";
+	}
+
+	return "?";
+    }
+
+
+    /**
      * Get architecture of an elf file.
      */
     define string GetArchOfELF (string filename) ``{
 	map bash_out = (map) SCR::Execute (.target.bash_output, Directory::ybindir +
-				     "/elf-arch " + filename);
+					   "/elf-arch " + filename);
 	if (bash_out["exit"]:1 != 0)
 	    return "unknown";
 	return deletechars (bash_out["stdout"]:"unknown", "\n");
@@ -518,19 +550,21 @@ Check the log file %1.
 	    contains (possible_root_fs, p_detect_fs))
 	{
 	    // mount (read-only) partition to Installation::destdir
-	    if ((boolean) SCR::Execute (.target.mount, [p_dev, Installation::destdir, Installation::mountlog], "-o ro"))
+	    if ((boolean) SCR::Execute (.target.mount, [p_dev, Installation::destdir,
+							Installation::mountlog], "-o ro"))
 	    {
 		// Is this a root partition, does /etc/fstab exists?
 		if (SCR::Read (.target.size, Installation::destdir + "/etc/fstab") > 0)
 		{
 		    y2milestone("found fstab on %1", partition);
-		    string suse_release = (string) SCR::Read (.target.string, [ Installation::destdir + "/etc/SuSE-release", "?"]);
-		    if (suse_release == "?")
-		    {
-			suse_release = (string) SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
+
+		    // Get installed release name
+		    string release = GetRelease ();
+		    if (release == "?") {
+			// label for an unknown installed system
+			release = _("Unknown");
 		    }
-		    list release_lines = splitstring (suse_release, "\n");
-		    freshman[`name] = MakeNiceName (release_lines[0]:"?");
+		    freshman[`name] = release;
 
 		    // Right architecture?
 		    freshman[`arch] = GetArchOfELF (Installation::destdir + "/bin/bash");
