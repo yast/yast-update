@@ -67,7 +67,7 @@
 	    }
 	} );
 
-	if (free_space >= min_space || Mode::test)
+	if (free_space >= min_space || Mode::test ())
 	{
 	    return true;
 	}

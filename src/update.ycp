@@ -17,10 +17,13 @@
     import "Directory";
 
     // set normal mode and update
+    Mode::SetMode ("update");
+    /*
     Mode::normal = true;
     Mode::installation = false;
     Mode::update = true;
     Mode::mode = "update";
+    */
 
     Update::disallow_upgrade = true;
     Update::onlyUpdateInstalled = true;

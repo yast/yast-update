@@ -15,6 +15,7 @@
 
     import "Directory";
     import "Mode";
+    import "Linuxrc";
     import "Storage";
     import "Popup";
     import "ModuleLoading";
@@ -276,7 +277,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
      */
     define void FSCKPartition (string partition)
     {
-	if (!Mode::test)
+	if (!Mode::test ())
 	{
 	    symbol detected_fs = FileSystems::DetectFs (partition);
 	    if (detected_fs == `ext2)
@@ -596,7 +597,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 	    {
 		y2milestone ("mounting %1 to %2", spec, fspath);
 
-		if ( !Mode::test )
+		if ( !Mode::test () )
 		{
 		    // Checking for raid systems
 		    if ( issubstring( spec,"/dev/md")
@@ -641,7 +642,7 @@ Check the log file %2.
 	    {
 		y2milestone("mounting %1 to %2", spec, fspath);
 
-		if ( !Mode::test )
+		if ( !Mode::test () )
 		{
 		    string command = "/sbin/swapon ";
 		    if ( spec != "" )
@@ -770,7 +771,7 @@ Check the log file %1.
 	SCR::Write(.lvm.activate, "");
 
 	// Mount selected root partition to Installation::destdir
-	if ( !Mode::test )
+	if ( !Mode::test () )
 	{
 	    ret_bool = fsck_and_mount ("/", root_device_current, "");
 	}
@@ -970,19 +971,19 @@ Check the log file %1.
 	if (didSearchForRootPartitions)
 	    return;
 
-	ModuleLoading::Load ("reiserfs", "", "Linux", "Reiser FS", Mode::manual, true);
-	ModuleLoading::Load ("jfs", "", "Linux", "JFS", Mode::manual, true);
-	ModuleLoading::Load ("xfs", "", "Linux", "XFS", Mode::manual, true);
-	ModuleLoading::Load ("ext3", "", "Linux", "Ext3", Mode::manual, true);
-	ModuleLoading::Load ("raid0", "", "Linux", "Raid 0", Mode::manual, true);
-	ModuleLoading::Load ("raid1", "", "Linux", "Raid 1", Mode::manual, true);
-	ModuleLoading::Load ("raid5", "", "Linux", "Raid 5", Mode::manual, true);
-	ModuleLoading::Load ("multipath", "", "Linux", "Multipath", Mode::manual, true);
-	ModuleLoading::Load ("dm-mod", "", "Linux", "DM", Mode::manual, true);
+	ModuleLoading::Load ("reiserfs", "", "Linux", "Reiser FS", Linuxrc::manual (), true);
+	ModuleLoading::Load ("jfs", "", "Linux", "JFS", Linuxrc::manual (), true);
+	ModuleLoading::Load ("xfs", "", "Linux", "XFS", Linuxrc::manual (), true);
+	ModuleLoading::Load ("ext3", "", "Linux", "Ext3", Linuxrc::manual (), true);
+	ModuleLoading::Load ("raid0", "", "Linux", "Raid 0", Linuxrc::manual (), true);
+	ModuleLoading::Load ("raid1", "", "Linux", "Raid 1", Linuxrc::manual (), true);
+	ModuleLoading::Load ("raid5", "", "Linux", "Raid 5", Linuxrc::manual (), true);
+	ModuleLoading::Load ("multipath", "", "Linux", "Multipath", Linuxrc::manual (), true);
+	ModuleLoading::Load ("dm-mod", "", "Linux", "DM", Linuxrc::manual (), true);
 	SCR::Execute (.target.bash, "/sbin/devmap_mknod.sh");
-	ModuleLoading::Load ("dm-snapshot", "", "Linux", "DM", Mode::manual, true);
+	ModuleLoading::Load ("dm-snapshot", "", "Linux", "DM", Linuxrc::manual (), true);
 
-	if (Mode::test)
+	if (Mode::test ())
 	{
 	    Storage::SetTargetMap ((map) SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
@@ -1005,7 +1006,7 @@ Check the log file %1.
 		{
 		    map freshman = $[];
 
-		    if (Mode::test)
+		    if (Mode::test ())
 			freshman = $[`valid : true, `name : "SuSE Linux 4.2", `arch : "i286" ];
 		    else
 			freshman = CheckPartition (partition);
