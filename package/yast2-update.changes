@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 11 16:47:51 CEST 2003 - arvin@suse.de
+
+- try to backup /etc/rc.config if /etc/sysconfig doesn't exist
+  (bug #30482)
+
+-------------------------------------------------------------------
 Tue Sep  9 10:12:19 CEST 2003 - kkaempf@suse.de
 
 - Fallback to highest ordered base selection if the installed base

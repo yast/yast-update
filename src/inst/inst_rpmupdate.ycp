@@ -80,25 +80,54 @@
 	{
 	    string date = timestring ("%Y%m%d", time(), false);
 
-	    string filename = "";
-	    integer num = 0;
-
-	    while (num < 42)
+	    if (SCR::Read (.target.size, "/etc/sysconfig") > 0)
 	    {
-		filename = Update::backup_path + "/etc.sysconfig-" + date + "-" +
-		    sformat ("%1", num) + ".tar.gz";
-		if (SCR::Read (.target.size, Installation::destdir + filename) == -1)
-		    break;
-		num = num + 1;
+		string filename = "";
+		integer num = 0;
+
+		while (num < 42)
+		{
+		    filename = Update::backup_path + "/etc.sysconfig-" + date + "-" +
+			sformat ("%1", num) + ".tar.gz";
+		    if (SCR::Read (.target.size, Installation::destdir + filename) == -1)
+			break;
+		    num = num + 1;
+		}
+
+		if (SCR::Execute (.target.bash, "cd " + Installation::destdir + " ; /bin/tar czf " +
+				  Installation::destdir + filename + " " + "etc/sysconfig") != 0)
+		{
+		    y2error ("backup of %1 to %2 failed", "/etc/sysconfig", filename);
+		    // FIXME: use same message as below
+		    // an error popup
+		    Popup::Error (sformat (_("Backup of /etc/sysconfig failed. See %1 for details."),
+					   "/var/log/YaST2/y2log"));
+		}
 	    }
-
-	    if (SCR::Execute (.target.bash, "cd " + Installation::destdir + " ; /bin/tar czf " +
-			      Installation::destdir + filename + " " + "etc/sysconfig") != 0)
+	    else if (SCR::Read (.target.size, "/etc/rc.config") > 0 &&
+		     SCR::Read (.target.size, "/etc/rc.config.d"))
 	    {
-		y2error ("backup of /etc/sysconfig to %1 failed", filename);
-		// an error popup
-		Popup::Error (sformat (_("Backup of /etc/sysconfig failed. See %1 for details."),
-				       "/var/log/YaST2/y2log"));
+		string filename = "";
+		integer num = 0;
+
+		while (num < 42)
+		{
+		    filename = Update::backup_path + "/etc.rc.config-" + date + "-" +
+			sformat ("%1", num) + ".tar.gz";
+		    if (SCR::Read (.target.size, Installation::destdir + filename) == -1)
+			break;
+		    num = num + 1;
+		}
+
+		if (SCR::Execute (.target.bash, "cd " + Installation::destdir + " ; /bin/tar czf " +
+				  Installation::destdir + filename + " " + "etc/rc.config" + " " +
+				  "etc/rc.config.d") != 0)
+		{
+		    y2error ("backup of %1 to %2 failed", "/etc/rc.config", filename);
+		    // an error popup
+		    Popup::Error (sformat (_("Backup of %1 failed. See %2 for details."),
+					   "/etc/rc.config", "/var/log/YaST2/y2log"));
+		}
 	    }
 	}
     }
