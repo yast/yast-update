@@ -25,7 +25,6 @@
     import "Update";
     import "Mode";
 
-
     /*
      * Main dialog cycle
      *
