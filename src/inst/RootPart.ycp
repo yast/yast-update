@@ -137,7 +137,7 @@
 	// now remove the mount points of the mounted partitions
 	// in the target map of the storage module
 
-	map target_map = Storage::GetTargetMap ();
+	map <string, map> target_map = Storage::GetTargetMap ();
 
 	foreach (string mntpt, string part, partitions_mount, ``{
 	    target_map = Storage::SetPartitionData (target_map, part, "mount", "");
@@ -461,7 +461,7 @@ Check the log file %1.
 	{
 	    partitions_mount = parts;
 
-	    map target_map = Storage::GetTargetMap ();
+	    map <string, map> target_map = Storage::GetTargetMap ();
 
 	    foreach (string mntpt, string part, partitions_mount, ``{
 		target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt);
