@@ -36,7 +36,11 @@
 
 	// store all those packages to provide the list for inst_sw_single.ycp
 	Update::affected_count = brokenPackages[0]:0;
-	Update::unknown_count = brokenPackages[1]:0;
+
+	if (Mode::initial)
+	    Update::unknown_count = brokenPackages[1]:0;
+	else
+	    Update::unknown_count = 0;
 
 	y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_count, Update::unknown_count);
 
