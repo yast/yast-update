@@ -28,18 +28,18 @@
 
 	if (force_reset)
 	{
-	    Update::backup_configs = true;
+	    Update::backup_modified = true;
 	    Update::backup_sysconfig = true;
 	    Update::remove_old_backups = false;
 	}
 
 	list tmp = [];
 
-	if (Update::backup_configs || Update::backup_sysconfig)
+	if (Update::backup_modified || Update::backup_sysconfig)
 	{
-	    if (Update::backup_configs) {
+	    if (Update::backup_modified) {
 		// Proposal for backup during update
-		tmp = add (tmp, _("Create Backup of Changed Configuration Files"));
+		tmp = add (tmp, _("Create Backup of Modified Files"));
 	    }
 
 	    if (Update::backup_sysconfig) {

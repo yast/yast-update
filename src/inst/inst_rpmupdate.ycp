@@ -57,7 +57,7 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
      */
     define void backup_stuff () ``{
 
-	if (Update::backup_configs)
+	if (Update::backup_modified)
 	{
 	    Pkg::CreateBackups (true);
 	    Pkg::SetBackupPath (Update::backup_path);

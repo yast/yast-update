@@ -95,9 +95,9 @@
 
     term contents = `HVSquash(
 			      `VBox(
-				    `Left(`CheckBox(`id(`configs),`opt(`notify),
-						    // checkbox label if user wants to backup config files
-						    _("Create Backup of Modified Configuration Files"))),
+				    `Left(`CheckBox(`id(`modified),`opt(`notify),
+						    // checkbox label if user wants to backup modified files
+						    _("Create Backup of Modified Files"))),
 				    `Left(`CheckBox(`id(`sysconfig),`opt(`notify),
 						    // checkbox label if user wants to backup /etc/sysconfig
 						    _("Create a Complete Backup of /etc/sysconfig"))),
@@ -108,57 +108,46 @@
 				    )
 			      );
 
-    // help text for backup dialog during update 1/8
-    string help_text = _("<p>During update, some packages may install new
-versions of dedicated configuration files. This could be necessary if the new
-version of a package has configuration options that differ from those in the
-previous version.</p>
+    // help text for backup dialog during update 1/7
+    string help_text = _("<p>To avoid any loss of information during update,
+it is possible to create a <b>backup</b> prior to updating.</p>
 ");
 
-    // help text for backup dialog during update 2/8
-    help_text = help_text + _("<p>To avoid any loss of information 
-in your current configuration files, it is possible to create a
-<b>backup</b> prior to updating.</p>
+    // help text for backup dialog during update 2/7
+    help_text = help_text + _("<p><b>Warning:</b> This will not be a complete
+backup. Only modified files will be saved.</p>
 ");
 
-    // help text for backup dialog during update 3/8
-    help_text = help_text + _("<p><b>Warning:</b> This
-will not be a complete backup. Only your configuration files will be
-saved.</p>
+    // help text for backup dialog during update 3/7
+    help_text = help_text + _("<p>Select the desired options.</p>
 ");
 
-    // help text for backup dialog during update 4/8
-    help_text = help_text + _("<p>Select the desired options.
-</p>
+    // help text for backup dialog during update 4/7
+    help_text = help_text + _("<p><b>Create a Backup of Modified Files:</b>
+Stores those modified files that are replaced during update.</p>
 ");
 
-    // help text for backup dialog during update 5/8
-    help_text = help_text + _("<p><b>Create a Backup of Modified Configuration
-Files:</b> Stores only those configuration files that are replaced during
-update.</p>
-");
-
-    // help text for backup dialog during update 6/8
+    // help text for backup dialog during update 5/7
     help_text = help_text + _("<p><b>Create a Complete Backup of
 /etc/sysconfig:</b> This covers all configuration files that are part of the
 sysconfig mechanism, even those that are not replaced.</p>
 ");
 
-    // help text for backup dialog during update 7/8
+    // help text for backup dialog during update 6/7
     help_text = help_text + _("<p><b>Remove Old Backups from the Backup
 Directory:</b> If your current system already is the result of an earlier
 update, there may be old configuration file backups. Select this option to
 remove them.</p>
 ");
 
-    // help text for backup dialog during update 8/8
+    // help text for backup dialog during update 7/7
     help_text = help_text + sformat (_("<p>All backups are placed in %1.</p>"),
 				     Update::backup_path);
 
 
     Wizard::SetContents (title, contents, help_text, Args(0), Args(1));
 
-    UI::ChangeWidget (`id(`configs), `Value, Update::backup_configs);
+    UI::ChangeWidget (`id(`modified), `Value, Update::backup_modified);
     UI::ChangeWidget (`id(`sysconfig), `Value, Update::backup_sysconfig);
     UI::ChangeWidget (`id(`remove), `Value, Update::remove_old_backups);
 
@@ -175,7 +164,7 @@ remove them.</p>
 	    break;
 
 	// any backup wanted?
-	boolean tmp = UI::QueryWidget (`id(`configs), `Value) ||
+	boolean tmp = UI::QueryWidget (`id(`modified), `Value) ||
 	    UI::QueryWidget (`id(`sysconfig), `Value);
 
 	if (ret == `next)
@@ -183,7 +172,7 @@ remove them.</p>
 	    if (tmp && !check_backup_path (partition))
 		continue;
 
-	    Update::backup_configs = UI::QueryWidget (`id(`configs), `Value);
+	    Update::backup_modified = UI::QueryWidget (`id(`modified), `Value);
 	    Update::backup_sysconfig = UI::QueryWidget (`id(`sysconfig), `Value);
 	    Update::remove_old_backups = UI::QueryWidget (`id(`remove), `Value);
 

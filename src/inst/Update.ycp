@@ -29,7 +29,7 @@
     global integer last_runlevel = -1;
 
 
-    global boolean backup_configs = true;
+    global boolean backup_modified = true;
     global boolean backup_sysconfig = true;
     global boolean remove_old_backups = false;
     global string backup_path = "/var/adm/backup";
