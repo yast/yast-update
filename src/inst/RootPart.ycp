@@ -659,7 +659,7 @@ To abort update, click Cancel."),
 				`HBox (
 				    `PushButton (`id (`cont), Label::ContinueButton ()),
 				    // push button
-				    `PushButton (`id (`cmd), _("&Specify Mount Parameters")),
+				    `PushButton (`id (`cmd), _("&Specify Mount Options")),
 				    `PushButton (`id (`cancel), Label::CancelButton ())
 				)
 			    ));
@@ -678,7 +678,7 @@ To abort update, click Cancel."),
 			    {
 				UI::OpenDialog (`VBox (
 				    // popup heading
-				    `Heading (_("Mount Parameters")),
+				    `Heading (_("Mount Options")),
 				    `VSpacing (0.6),
 				    // text entry label
 				    `TextEntry (`id (`mp), _("&Mount Point"), fspath),
