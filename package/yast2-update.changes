@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan 10 14:05:11 CET 2005 - jsrain@suse.cz
+
+- select kernel according to current hardware (#44342)
+
+-------------------------------------------------------------------
 Wed Nov 24 11:17:21 CET 2004 - arvin@suse.de
 
 - another fix for gnome-postinstall script (bug #42074)
