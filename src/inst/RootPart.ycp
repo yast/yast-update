@@ -223,12 +223,18 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 		    string file = Installation::destdir + info[`mntpt]:"";
 		    if (SCR::Execute (.target.umount, file) != 0)
 		    {
-			y2error("Cannot unmount partition %1", file);
+			// error report, %1 is device (eg. /dev/hda1)
+			Report::Error (sformat (_("Cannot unmount partition %1.
+
+It is being in use, If the partition stays mounted,
+the data may get lost. Unmount the partition manually,
+or restart your computer."), file));
 		    }
 		}
 		else if (type == "swap")
 		{
 		    string device = info[`device]:"";
+		    // FIXME? is it safe?
 		    if (SCR::Execute (.target.bash, "/sbin/swapoff " + device) != 0)
 		    {
 			y2error("Cannot deactivate swap %1", device);
@@ -237,6 +243,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 		else if (type == "loop")
 		{
 		    string device = info[`device]:"";
+		    // FIXME? is it safe?
 		    if (WFM::Execute(.local.bash, "losetup -d " + device) != 0)
 		    {
 			y2error("Cannot deactivate loopback device %1", device);
