@@ -28,15 +28,13 @@
 	// initialize package manager
 	if (true)
 	{
-	    UI::OpenDialog (`opt(`decorated ),
+	    UI::OpenDialog (`opt(`decorated),
 			    // intermediate popup while initializing internal packagemanagement
 			    `Label(_("Reading package information. One moment please...")));
 
 	    Packages::Init (true);
 
 	    UI::CloseDialog();
-
-	    Update::GetProductName ();
 	}
 
 	// initialize target
@@ -45,6 +43,8 @@
 	    PackageCallbacks::SetConvertDBCallbacks ();
 
 	    Pkg::TargetInit (Installation::destdir, false);
+
+	    Update::GetProductName ();
 	}
 
 	// connect target with package manager
