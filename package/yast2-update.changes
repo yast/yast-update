@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 18 11:43:46 CET 2003 - kkaempf@suse.de
+
+- remove unneeded import "Boot" from update.ycp
+- 2.7.13
+
+-------------------------------------------------------------------
 Tue Mar 18 11:32:41 CET 2003 - sh@suse.de
 
 - Fixed complaints about undeclared variable Upgrade::userChangedState

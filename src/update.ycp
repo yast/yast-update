@@ -12,7 +12,6 @@
     textdomain "update";
 
     import "Arch";
-    import "Boot";
     import "Installation";
     import "Mode";
     import "Wizard";
