@@ -50,9 +50,22 @@
 	{
 	    Update::did_init1 = true;
 
+	    Pkg::PkgReset ();
+
 	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 	    Update::affected_packages = tmp1[0]:0;
 	    Update::unknown_packages = tmp1[1]:0;
+
+	    if (!Update::did_init2) {
+		Update::did_init2 = true;
+		Update::ProposeSelection ();
+	    }
+
+	    if (Update::onlyUpdateSelected)
+		Pkg::SetSelection ("");
+	    else
+		Pkg::SetSelection (Update::selected_selection);
+	    Pkg::ActivateSelections ();
 
 	    if (Pkg::PkgSolve (!Update::onlyUpdateSelected))
 		Update::solve_errors = 0;
@@ -84,15 +97,7 @@
 
 	if (true)
 	{
-	    // get all base selections
-	    // and sort them by reverse order
-	    list available_base_selections = sort (`x, `y, Pkg::GetSelections (`available, "base"), ``{
-		map xmap = Pkg::SelectionData(x);
-		map ymap = Pkg::SelectionData(y);
-		return (xmap["order"]:"" >= ymap["order"]:"");
-	    });
-	    y2milestone ("available_base_selections %1", available_base_selections);
-
+	    list available_base_selections = Update::GetBaseSelections ();
 	    if (size (available_base_selections) == 0)
 	    {
 		y2error ("No base selections available");
@@ -114,16 +119,10 @@
 	}
 	else
 	{
-	    string selection = Update::GetSelection ();
-	    if (selection == "")					// hmm, no matching selection
-	    {
-		list base_selections = Update::GetBaseSelections ();	// get highest ordered base as default
-		selection = base_selections[0]:"";
-	    }
-	    map selection_data = Pkg::SelectionData (selection);
+	    map selection_data = Pkg::SelectionData (Update::selected_selection);
 	    string selection_summary = selection_data["summary"]:"error";
 
-	    // Proposal for backup during update
+	    // Proposal for selection during update
 	    tmp = add (tmp, sformat (_("Update Based on Selection \"%1\""),
 				     selection_summary));
 	}

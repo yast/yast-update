@@ -31,6 +31,8 @@
 
     global boolean did_init1 = false;
 
+    global boolean did_init2 = false;
+
 
     global integer last_runlevel = -1;
 
@@ -46,10 +48,6 @@
 
     global string selected_selection = "";
 
-
-
-    // Flag if the updatelist has already evaluated
-    global boolean updateEvaluated = false;
 
     // Name of the targetsystem
     global string installedName = "";
@@ -101,32 +99,12 @@
 
 
     /**
-     * Find out which base selection is selected or as fallback installed on
-     * the target system. Returns "" if selection can't be determined.
-     */
-    global define string GetSelection () ``{
-
-	list selections = Pkg::GetSelections (`selected, "base");
-
-	if (selections == nil || selections == [])
-	    selections = Pkg::GetSelections (`installed, "base");
-
-	if (selections == nil || selections == [])
-	    selections = [""];
-
-	return selections[0]:"";
-    }
-
-
-    /**
      * Get all available base selections sorted in reverse order
-     * (highest ordered bases selection comes first)
+     * (highest ordered bases selection comes first).
      */
-
     global define list GetBaseSelections ()
     ``{
-	list available_base_selections = sort (`x, `y, Pkg::GetSelections (`available, "base"),
-	``{
+	list available_base_selections = sort (`x, `y, Pkg::GetSelections (`available, "base"), ``{
 	    map xmap = Pkg::SelectionData(x);
 	    map ymap = Pkg::SelectionData(y);
 	    return (xmap["order"]:"" >= ymap["order"]:"");
@@ -135,6 +113,48 @@
 	return available_base_selections;
     }
 
+
+    /**
+     * Propose a selection for the update and save it's name in
+     * Update::selected_selection.
+     */
+    global define void ProposeSelection () ``{
+
+	selected_selection = "";
+
+	list available_selections = GetBaseSelections ();
+
+	// first try: installed one
+
+	list tmp1 = Pkg::GetSelections (`installed, "base");
+	if (tmp1 != nil && tmp1 != [])
+	    selected_selection = tmp1[0]:"";
+
+	if (!contains (available_selections, selected_selection))
+	    selected_selection = "";
+
+	if (selected_selection != "") {
+	    y2milestone ("using installed selection: %1", selected_selection);
+	    return;
+	}
+
+	// second try: available selection with highest order
+
+	if (size (available_selections) > 0)
+	    selected_selection = available_selections[0]:"";
+
+	if (selected_selection != "") {
+	    y2milestone ("using highest order selection: %1", selected_selection);
+	    return;
+	}
+
+	// error: no selection available
+
+	y2error ("no selection available");
+
+    }
+
+
     /**
      *
      */
@@ -142,6 +162,7 @@
 
 	Pkg::TargetFinish ();
 	did_init1 = false;
+	did_init2 = false;
 
     }
 
