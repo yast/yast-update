@@ -2,6 +2,7 @@
 Fri Feb 11 13:41:05 CET 2005 - jsrain@suse.cz
 
 - warn in proposal if out-of-disk-space durign update (#50376)
+- 2.11.9
 
 -------------------------------------------------------------------
 Thu Feb 10 15:33:14 CET 2005 - jsrain@suse.cz
