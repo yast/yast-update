@@ -103,6 +103,51 @@
 
 
     /**
+     * Make a nice name for a system out of the long name.
+     */
+    define string MakeNiceName (string longname)
+    {
+	integer p1 = find (longname, "(");
+	if (p1 == -1) return longname;
+	while (p1 > 1 && substring (longname, p1 - 1, 1) == " ")
+	    p1 = p1 - 1;
+	return substring (longname, 0, p1);
+    }
+
+
+    /**
+     * Read release information.
+     */
+    define string GetRelease ()
+    {
+	string release = "?";
+
+	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/SuSE-release", "?"]);
+	if (release != "?")
+	{
+	    list lines = splitstring (release, "\n");
+	    return MakeNiceName (lines[0]:"?");
+	}
+
+	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/UnitedLinux-release", "?"]);
+	if (release != "?")
+	{
+	    list lines = splitstring (release, "\n");
+	    return MakeNiceName (lines[0]:"?");
+	}
+
+	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/redhat-release", "?"]);
+	if (release != "?")
+	{
+	    list lines = splitstring (release, "\n");
+	    return lines[0]:"?";
+	}
+
+	return "?";
+    }
+
+
+    /**
      * Set the selected root partition to some valid one. Only
      * make sense if the number of valid root partition is one.
      */
@@ -292,6 +337,9 @@
      */
     global define boolean GetProductName ()
     {
+	installedVersion = $[];
+	updateVersion = $[];
+
 	/*
 	 *  Be careful: The maps returned by from Pkg::TargetProducts and
 	 *  Pkg::SourceProductData have different content.
@@ -299,15 +347,20 @@
 
 	// get old product name
 
-	/*
-	list old_products = Pkg::TargetProducts ();
-	map old_product = old_products[0]:$[];
-	y2milestone ("First installed product %1", old_product);
+	string old_name = GetRelease ();
 
-	installedVersion["name"] = old_product["name"]:"?";
-	installedVersion["version"] = old_product["version"]:"?";
-	fill_version_map (installedVersion);
-	*/
+	integer p = findlastof (old_name, " ");
+	if (p == nil)
+	{
+	    y2error ("release info is screwed");
+	    installedVersion = $[];
+	}
+	else
+	{
+	    installedVersion["name"] = substring (old_name, 0, p);
+	    installedVersion["version"] = substring (old_name, p);
+	    Update::fill_version_map (installedVersion);
+	}
 
 	// get new product name
 
@@ -807,51 +860,6 @@ about how to solve this problem."),
 
         Storage::SetTargetMap (target_map);
         return true;
-    }
-
-
-    /**
-     * Make a nice name for a system out of the long name.
-     */
-    define string MakeNiceName (string longname)
-    {
-	integer p1 = find (longname, "(");
-	if (p1 == -1) return longname;
-	while (p1 > 1 && substring (longname, p1 - 1, 1) == " ")
-	    p1 = p1 - 1;
-	return substring (longname, 0, p1);
-    }
-
-
-    /**
-     * Read release information.
-     */
-    define string GetRelease ()
-    {
-	string release = "?";
-
-	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/SuSE-release", "?"]);
-	if (release != "?")
-	{
-	    list lines = splitstring (release, "\n");
-	    return MakeNiceName (lines[0]:"?");
-	}
-
-	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/UnitedLinux-release", "?"]);
-	if (release != "?")
-	{
-	    list lines = splitstring (release, "\n");
-	    return MakeNiceName (lines[0]:"?");
-	}
-
-	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/redhat-release", "?"]);
-	if (release != "?")
-	{
-	    list lines = splitstring (release, "\n");
-	    return lines[0]:"?";
-	}
-
-	return "?";
     }
 
 
