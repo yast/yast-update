@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 13 14:59:15 CEST 2004 - nashif@suse.de
+
+- added yast2-xml to neededforbuild
+- 2.10.5
+
+-------------------------------------------------------------------
 Thu Jul 29 15:03:27 CEST 2004 - nashif@suse.de
 
 - When reusing fstab in autoyast, format is set to false by default
