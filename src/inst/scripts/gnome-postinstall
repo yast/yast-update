@@ -18,14 +18,19 @@ echo -n "" >$TEMP/list
 
 shopt -s nullglob
 
-# Re-generate old entries in GConf database.
-if test -d /etc/opt/gnome/gconf/schemas-old
+# Did user install gconf2?
+if test -e /opt/gnome/bin/gconftool-2
 then
-    # Did user install gconf2?
-    if test -e /opt/gnome/bin/gconftool-2
+    # SuSE Linux 9.0 has a bug, which causes deleting of GConf
+    # directories. These directories maybe were re-created on first
+    # subsequent gconftool-2 call, but they have bad permissions. We
+    # must fix it now (#38644).
+    mkdir -p /etc/opt/gnome/gconf/gconf.xml.defaults /etc/opt/gnome/gconf/gconf.xml.mandatory
+    chmod -R og+rX /etc/opt/gnome/gconf/gconf.xml.defaults /etc/opt/gnome/gconf/gconf.xml.mandatory
+
+    # Re-generate old entries in GConf database.
+    if test -d /etc/opt/gnome/gconf/schemas-old
     then
-	# Create default directories for database.
-	mkdir -p /etc/opt/gnome/gconf/gconf.xml.defaults /etc/opt/gnome/gconf/gconf.xml.mandatory
 	export GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source`
 	cd /etc/opt/gnome/gconf/schemas-old
 	# FIXME: We do not search for *.entries. Those are only in
