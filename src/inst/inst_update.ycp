@@ -107,7 +107,7 @@ either case it is recommended to make a backup of your personal data.</p>");
     // help text for dialog "update options" 2/4
     helptext = helptext + _("<p><b>With new software:</b> This default setting
 will update the existing software and install all new features and benefits of
-the new SuSE Linux version. The selection is based on the former pre-defined
+the new &product; version. The selection is based on the former pre-defined
 software selection.</p>");
 
     // help text for dialog "update options" 3/4
