@@ -44,7 +44,7 @@
 
     if ( Mode::test )
     {
-	targetMap = SCR::Read(.target.ycp, "test/test_target_map.ycp");
+	targetMap = SCR::Read(.target.yast2, "test_target_map.ycp");
     }
 
     //------------------------------------------------------------------------
