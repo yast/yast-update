@@ -125,7 +125,7 @@ not available after the update. You might miss advertised features.</p>
 
     // help text for dialog "update options" 4/4
     helptext = helptext + _("<p>After the update, some software might not
-function anymore. Active <b>Delete Unmaintained Packages</b> to delete those
+function anymore. Activate <b>Delete Unmaintained Packages</b> to delete those
 packages during the update.</p>
 ");
 
