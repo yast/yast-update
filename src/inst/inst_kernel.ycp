@@ -89,10 +89,11 @@ to the previous dialog.
 	  else
 	  {
 	      ret = `auto;
-	      if ( !Mode::test )
+	      if (Mode::initial
+		  && !Mode::test)
 	      {
 		  // removing old logging
-		  SCR::Execute (.target.bash, "/bin/rm " + Installation::destdir + "/var/log/y2logRPM*");
+		  SCR::Execute (.target.bash, "/bin/rm -f" + Installation::destdir + "/var/log/y2logRPM*");
 	      }
 	  }
       }
