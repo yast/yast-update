@@ -72,9 +72,10 @@
 
 	if (Update::solve_errors > 0)
 	{
+	     // the proposal for the packages requires manual intervention
 	    ret = $[ "preformatted_proposal" : HTML::List (tmp),
-		     // the proposal for the packages requires manual intervention
-		     "warning" : "Requires manual intervention",
+			/* warning text */
+		     "warning" : _("Requires manual intervention"),
 		     "warning_level" : `blocker ];
 	}
 	else
