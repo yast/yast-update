@@ -99,7 +99,7 @@
 
 	map new_product = Pkg::SourceProductData (Packages::theSources[num-1]:0);
 	y2milestone ("First source product %1", new_product);
-	if (product == nil)
+	if (new_product == nil)
 	{
 	    y2error ("Screwed source");
 	    updateVersion = "?";
