@@ -36,7 +36,7 @@
     // loop through available base selections, create radio button entry for every base selection
     // preselect current selection
 
-    foreach (string selection, available_base_selections, ``{
+    foreach (string selection, available_base_selections, {
 	map selection_data = Pkg::SelectionData (selection);
 	string selection_summary = selection_data["summary"]:"";
 	boolean preselect = (selection == Update::selected_selection);
@@ -141,7 +141,7 @@ packages during the update.</p>
 
     // grey out radio buttons if only already installed packages should be updated
 
-    foreach (string sel, available_base_selections, ``{
+    foreach (string sel, available_base_selections, {
 	UI::ChangeWidget(`id(sel), `Enabled, !Update::onlyUpdateInstalled);
     });
 
@@ -159,7 +159,7 @@ packages during the update.</p>
 	if (ret == `upgrade || ret == `notupgrade)
 	{
 	    boolean tmp = (boolean) UI::QueryWidget (`id(`upgrade), `Value);
-	    foreach (string sel, available_base_selections, ``{
+	    foreach (string sel, available_base_selections, {
 		UI::ChangeWidget(`id(sel), `Enabled, tmp);
 	    });
 

@@ -18,8 +18,8 @@
     map    ret   = $[];
 
 
-    define boolean mount_target () ``{
-
+    define boolean mount_target ()
+    {
 	UI::OpenDialog (`opt(`decorated ),
 			// intermediate popup while mounting partitions
 			`Label(_("Mounting partitions. One moment please...")));

@@ -272,6 +272,11 @@
 	    old_names = add (old_names, m["spec"]:"");
 	});
 
+	/*
+	Update::installedVersion = $[ "haha" : 8 ];
+	Update::updateVersion = $[ "haha" : 9 ];
+	*/
+
 	list <string> new_names = Storage::GetTranslatedDevices (Update::installedVersion,
 								 Update::updateVersion,
 								 old_names);
