@@ -29,7 +29,6 @@ Summary:	YaST2 update
 %defattr(-,root,root)
 @configdir@/update.y2cc
 @clientdir@/update.ycp
-@clientdir@/sw_update.ycp
 
 # inst part
 @ybindir@/update_users_groups

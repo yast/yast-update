@@ -3,7 +3,7 @@
 #
 SUBDIRS = inst
 
-client_DATA = update.ycp sw_update.ycp
+client_DATA = update.ycp
 
 config_DATA = update.y2cc
 
