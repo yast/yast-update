@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Mar  2 13:26:49 CET 2004 - visnov@suse.cz
+
+- added type info for lists/maps 
+
+-------------------------------------------------------------------
 Sat Feb 28 11:04:37 CET 2004 - kkaempf@suse.de
 
 - fix typo from last change

@@ -119,9 +119,9 @@
      * Get all available base selections sorted in reverse order
      * (highest ordered bases selection comes first).
      */
-    global define list GetBaseSelections ()
+    global define list<string> GetBaseSelections ()
     ``{
-	list available_base_selections = sort (string x, string y, Pkg::GetSelections (`available, "base"), ``{
+	list<string> available_base_selections = sort (string x, string y, Pkg::GetSelections (`available, "base"), ``{
 	    map xmap = Pkg::SelectionData(x);
 	    map ymap = Pkg::SelectionData(y);
 	    return (xmap["order"]:"" > ymap["order"]:"");

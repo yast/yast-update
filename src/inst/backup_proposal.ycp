@@ -33,7 +33,7 @@
 	    Update::remove_old_backups = false;
 	}
 
-	list tmp = [];
+	list<string> tmp = [];
 
 	if (Update::backup_modified || Update::backup_sysconfig)
 	{

@@ -66,7 +66,7 @@
 
 	SpaceCalculation::ShowPartitionWarning ();
 
-	list tmp = [];
+	list<string> tmp = [];
 
 	// proposal for packages during update
 	tmp = add (tmp, sformat (_("Affected Packages: %1"),
