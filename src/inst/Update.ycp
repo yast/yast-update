@@ -52,14 +52,25 @@
     global string selected_selection = "";
 
 
-    // Name of the targetsystem
-    global string installedName = "";
+    /*
+     *  Information about old and new product.
+     *
+     *  They do contain:
+     *    name (string), e.g. "SuSE Linux"
+     *    version (string), e.g. "9.1"
+     *    nameandversion (string), e.g. "SuSE Linux 9.1"
+     *
+     *  They may contain:
+     *    major (integer), e.g. "9"
+     *    minor (integer, e.g. "1"
+     */
 
     // Version of the targetsystem
-    global string installedVersion = "";
+    global map <string, any> installedVersion = $[];
 
     // Version of the source medium
-    global string updateVersion = "";
+    global map <string, any> updateVersion = $[];
+
 
     // Flag, if the basesystem have to be installed
     global boolean updateBasePackages = false;
@@ -93,6 +104,26 @@
     /**
      *
      */
+    define void fill_version_map (map <string, any>& data) ``{
+
+	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
+
+	list <string> tmp1 = splitstring (data["version"]:"", ".");
+
+	integer tmp2 = tointeger (tmp1[0]:"-1");
+	if (tmp2 >= 0)
+	    data["major"] = tmp2;
+
+	integer tmp3 = tointeger (tmp1[1]:"-1");
+	if (tmp3 >= 0)
+	    data["minor"] = tmp3;
+
+    }
+
+
+    /**
+     *
+     */
     global define boolean GetProductName () ``{
 
 	/*
@@ -106,8 +137,9 @@
 	map old_product = old_products[0]:$[];
 	y2milestone ("First installed product %1", old_product);
 
-	installedVersion = old_product["name"]:"?" + " " +
-	    old_product["version"]:"";
+	installedVersion["name"] = old_product["name"]:"?";
+	installedVersion["version"] = old_product["version"]:"?";
+	fill_version_map (installedVersion);
 
 	// get new product name
 
@@ -115,7 +147,9 @@
 	if (num <= 0)
 	{
 	    y2error ("No source");
-	    updateVersion = "?";
+	    updateVersion["name"] = "?";
+	    updateVersion["version"] = "?";
+	    fill_version_map (updateVersion);
 	    return false;
 	}
 
@@ -124,12 +158,15 @@
 	if (new_product == nil)
 	{
 	    y2error ("Screwed source");
-	    updateVersion = "?";
+	    updateVersion["name"] = "?";
+	    updateVersion["version"] = "?";
+	    fill_version_map (updateVersion);
 	    return false;
 	}
 
-	updateVersion = new_product["productname"]:"?" + " " +
-	    new_product["productversion"]:"";
+	updateVersion["name"] = new_product["productname"]:"?";
+	updateVersion["version"] = new_product["productversion"]:"?";
+	fill_version_map (updateVersion);
 
 	y2milestone ("update from %1 to %2", installedVersion, updateVersion);
 
