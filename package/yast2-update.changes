@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 31 13:10:21 CEST 2005 - jsrain@suse.cz
+
+- adapted to some code moved to SuSERelease.ycp
+
+-------------------------------------------------------------------
 Tue Mar 29 10:57:13 CEST 2005 - jsrain@suse.cz
 
 - updated the layout of the source files in the repository
