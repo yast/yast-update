@@ -64,7 +64,7 @@
     
 	//****************************************************************
 
-	y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_count, Update::unknown_count);
+	y2milestone ("Update::affected_count %1, unknown_count %2, solve_errors %3", Update::affected_count, Update::unknown_count, Pkg::PkgSolveErrors());
 
 	map update_inf = Pkg::TargetUpdateInf (Installation::destdir + "/var/lib/YaST/update.inf");
 	if (update_inf == nil)
