@@ -153,6 +153,30 @@
 
 
     /**
+     * Check the filesystem of a partition.
+     */
+    define void FSCKPartition (string partition) ``{
+
+	if (!Mode::test)
+	{
+	    symbol used_fs = FileSystems::DetectFs (partition);
+	    if (used_fs == `ext2)
+	    {
+		string out = sformat (_("Checking partition %1"), partition);
+		UI::OpenDialog (`opt(`decorated ), `Label(out));
+
+		sleep (1000);
+
+		y2milestone ("command: /sbin/e2fsck -y %1", partition);
+		SCR::Execute (.target.bash, "/sbin/e2fsck -y " + partition);
+
+		UI::CloseDialog ();
+	    }
+	}
+    }
+
+
+    /**
      * Mounting root-partition; reading fstab and mounting read partitions
      */
     global define boolean MountPartitions (string partition) ``{
@@ -183,28 +207,7 @@ Check the log file %1.
 
 	map parts = $[];
 
-	if ( !Mode::test )
-	{
-	    // Checking filesystem
-	    symbol used_fs = FileSystems::DetectFs( partition );
-	    if ( used_fs == `ext2 )
-	    {
-		// is ext2-fs
-		y2milestone("checking partition: %1", partition );
-		string out = sformat ( _("Checking partition %1"), partition );
-
-		UI::OpenDialog(`opt(`decorated ), `Label(out));
-		y2milestone("command: /sbin/e2fsck -y %1", partition );
-
-		// only for showing, case we have no change
-		// to check the status
-
-		sleep(1500);
-
-		SCR::Execute (.target.bash, "/sbin/e2fsck -y " + partition );
-		UI::CloseDialog();
-	    }
-	}
+	FSCKPartition (partition);
 
 	// Mount selected partition to Installation::destdir
 
@@ -232,19 +235,11 @@ Check the log file %1.
 	    {
 		fstab = SCR::Read( .etc.fstab );
 	    }
-	    else
-	    {
-		fstab = [];
-	    }
 
 	    if ((SCR::Read (.target.size, Installation::destdir + "/etc/cryptotab") > 0)
 		&& (SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/cryptotab /etc") == 0))
 	    {
 		crtab = SCR::Read( .etc.cryptotab );
-	    }
-	    else
-	    {
-		crtab = [];
 	    }
 
 	    if (SCR::Read (.target.size, Installation::destdir + "/etc/raidtab") > 0)
@@ -277,7 +272,8 @@ Check the log file %1.
 		    string fspath  = mounts["mount"]:"";
 		    string device  = mounts["file"]:"";
 
-		    y2milestone( "vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5", vfstype, mntops, loop, fspath, device );
+		    y2milestone( "vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5",
+				 vfstype, mntops, loop, fspath, device );
 		    crypt_ok = true;
 
 		    if (!issubstring (mntops,"noauto"))
@@ -342,92 +338,62 @@ Check the log file %1.
 		    {
 			y2milestone("mounting %1 to %2", spec, fspath);
 
+			FSCKPartition (spec);
+
 			if ( !Mode::test )
 			{
-			    // Checking filesystem, if needed
-			    symbol used_fs = FileSystems::DetectFs( spec );
-			    if ( used_fs == `ext2 )
+			    //Checking for raid systems
+			    if ( issubstring( spec,"/dev/md")
+				 && !raidMounted )
 			    {
-				// is ext2-fs
-				y2milestone("checking partition: %1", spec);
+				y2milestone( "Raidarray for partition %1 on device %2 found",
+					     fspath,
+					     spec );
+				string command = "/sbin/raidstart --all --configfile "
+				    + Installation::destdir
+				    + "/etc/raidtab";
 
-				// before starting update, check the partition (e.g. with fsck)
-				// since this might take awhile, inform the user about this
-				string out = sformat (_("Checking partition %1"), spec);
-
-				UI::OpenDialog(`opt(`decorated ), `Label(out));
-				// only for showing, case we have no change
-				// to check the status
-				sleep(1500);
-				WFM::Execute (.local.bash, "/sbin/e2fsck -y " +	spec );
-				UI::CloseDialog();
+				ret_from_shell = SCR::Execute (.target.bash, command);
+				if ( ret_from_shell != 0 )
+				{
+				    y2milestone("raidstart failed ( does no matter ): %1", command );
+				}
+				else
+				{
+				    y2milestone("raidstart OK: %1", command );
+				    raidMounted = true;
+				}
 			    }
-			}
 
-			if (issubstring(mntops,"ro,")
-			    || issubstring(mntops,",ro")
-			    || mntops == "ro" )
-			{
-			    y2error("Mounting %1 on %2 is only for ro possible after reboot.",
-				    spec, Installation::destdir + fspath);
-			    y2error("Please change /etc/fstab");
-			    success = false;
-			}
-			else
-			{
-			    if ( !Mode::test )
+			    string mount_type = "";
+			    if (vfstype == "proc")
 			    {
-				//Checking for raid systems
-				if ( issubstring( spec,"/dev/md")
-				     && !raidMounted )
-				{
-				    y2milestone( "Raidarray for partition %1 on device %2 found",
-						 fspath,
-						 spec );
-				    string command = "/sbin/raidstart --all --configfile "
-					+ Installation::destdir
-					+ "/etc/raidtab";
+				mount_type = vfstype;
+			    }
+			    else
+			    {
+				mount_type = FileSystems::GetMountString( FileSystems::DetectFs( spec ), "");
+			    }
 
-				    ret_from_shell = SCR::Execute (.target.bash, command);
-				    if ( ret_from_shell != 0 )
-				    {
-					y2milestone("raidstart failed ( does no matter ): %1", command );
-				    }
-				    else
-				    {
-					y2milestone("raidstart OK: %1", command );
-					raidMounted = true;
-				    }
-				}
+			    if (mount_type != "")
+			    {
+				mount_type = "-t " + mount_type;
+			    }
 
-				string mount_type = "";
-				if (vfstype == "proc")
-				{
-				    mount_type = vfstype;
-				}
-				else
-				{
-				    mount_type = FileSystems::GetMountString( FileSystems::DetectFs( spec ), "");
-				}
-
-				if (mount_type != "")
-				{
-				    mount_type = "-t " + mount_type;
-				}
-
-				ret_bool = SCR::Execute (.target.mount,
-							 [ spec, Installation::destdir + mounts["file"]:"", Installation::mountlog],
-							 mount_type );
-				if ( !ret_bool )
-				{
-				    y2error("mounting %1 (type %2) on %3 failed", mounts["spec"]:"", mount_type, "/mnt" + mounts["file"]:"");
-				    success = false;
-				}
-				else
-				{
-				    AddMountedPartition([Installation::destdir + mounts["file"]:"", "mount"]);
-				    parts[mounts["file"]:""] = mounts["spec"]:"";
-				}
+			    ret_bool = SCR::Execute (.target.mount,
+						     [ spec, Installation::destdir + mounts["file"]:"",
+						       Installation::mountlog],
+						     mount_type );
+			    if ( !ret_bool )
+			    {
+				y2error("mounting %1 (type %2) on %3 failed", mounts["spec"]:"",
+					mount_type, "/mnt" + mounts["file"]:"");
+				success = false;
+			    }
+			    else
+			    {
+				AddMountedPartition([Installation::destdir + mounts["file"]:"", "mount"]);
+				parts[mounts["file"]:""] = mounts["spec"]:"";
 			    }
 			}
 		    }  // allowed_fs
@@ -440,7 +406,7 @@ Check the log file %1.
 			    string command = "/sbin/swapon ";
 			    if ( spec != "" )
 			    {
-				//swap-partition
+				// swap-partition
 				command = command + spec;
 
 				// run /sbin/swapon
@@ -478,18 +444,20 @@ Check the log file %1.
 	y2milestone ("mountPartition(%1) = %2", partition, success);
 
 
-	// now enter the mount points of the newly mounted partitions
+	// enter the mount points of the newly mounted partitions
 	// in the target map of the storage module
+	if (success)
+	{
+	    partitions_mount = parts;
 
-	partitions_mount = parts;
+	    map target_map = Storage::GetTargetMap ();
 
-	map target_map = Storage::GetTargetMap ();
+	    foreach (string mntpt, string part, partitions_mount, ``{
+		target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt);
+	    });
 
-	foreach (string mntpt, string part, partitions_mount, ``{
-	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt);
-	});
-
-	Storage::SetTargetMap (target_map);
+	    Storage::SetTargetMap (target_map);
+	}
 
 
 	return success;
