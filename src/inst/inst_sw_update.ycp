@@ -34,7 +34,7 @@
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating update packages. One moment please...")));
 
 	// [ integer affected, integer unknown ]
-	list brokenPackages = Pkg::PkgUpdateAll();
+	list brokenPackages = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 
 	// store all those packages to provide the list for inst_sw_single.ycp
 	Update::affected_count = brokenPackages[0]:0;
