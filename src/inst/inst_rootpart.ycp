@@ -79,7 +79,8 @@ Select the <b>root partition</b> to use.
 	if (flavor == `boot_popup)
 	{
 	    buttons = `HBox (
-			     `HWeight( 1, `PushButton(`id(`next), `opt(`default), UI::OKButtonLabel() ) ),
+			     // pushbutton to (rightaway) boot the system selected above
+			     `HWeight( 1, `PushButton(`id(`next), `opt(`default), _("Boot")) ),
 			     `HSpacing( 1 ),
 			     `HWeight( 1, `PushButton(`id(`cancel), UI::CancelButtonLabel() ) )
 			     );
@@ -103,16 +104,8 @@ Select the <b>root partition</b> to use.
 	UI::OpenDialog (full);
     }
 
-    if (flavor == `update_dialog || flavor == `update_popup)
-    {
-	if (size (Update::selectedRootPartition) > 0)
-	    UI::ChangeWidget (`id(`partition), `CurrentItem, Update::selectedRootPartition);
-    }
-    else
-    {
-	if (size (Update::selectedRootPartitionForBooting) > 0)
-	    UI::ChangeWidget (`id(`partition), `CurrentItem, Update::selectedRootPartitionForBooting);
-    }
+    if (size (Update::selectedRootPartition) > 0)
+	UI::ChangeWidget (`id(`partition), `CurrentItem, Update::selectedRootPartition);
 
     any ret = nil;
 
@@ -132,10 +125,7 @@ Select the <b>root partition</b> to use.
 
     if (ret == `next)
     {
-	if (flavor == `update_dialog || flavor == `update_popup)
-	    Update::selectedRootPartition = UI::QueryWidget (`id(`partition), `CurrentItem);
-	else
-	    Update::selectedRootPartitionForBooting = UI::QueryWidget (`id(`partition), `CurrentItem);
+	Update::selectedRootPartition = UI::QueryWidget (`id(`partition), `CurrentItem);
     }
 
     if (flavor == `update_dialog)

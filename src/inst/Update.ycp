@@ -27,16 +27,13 @@
 
     global integer last_runlevel = -1;
 
-    // selected rootpartition for the update
+    // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
 
-    // selected rootpartition for booting
-    global string selectedRootPartitionForBooting = "";
-
-    // available rootpartitions (key) and SuSE versions (value)
+    // Available rootpartitions (key) and SuSE versions (value)
     global map validRootPartitions = $[];
 
-    // did we search for root partitions
+    // Did we search for root partitions
     global boolean didSearchForRootPartitions = false;
 
     global boolean onlyUpdateSelected = false;
