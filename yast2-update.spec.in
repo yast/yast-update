@@ -4,10 +4,12 @@
 @HEADER@
 Requires:	yast2 yast2-installation
 
-Provides:	y2c_update yast2-config-update
-Obsoletes:	y2c_update yast2-config-update
-Provides:	yast2-trans-update yast2-trans-inst-update y2t_inst-update
-Obsoletes:	yast2-trans-update yast2-trans-inst-update y2t_inst-update
+Provides:	yast2-config-update y2c_update
+Obsoletes:	yast2-config-update y2c_update
+Provides:	yast2-trans-inst-update y2t_inst-update
+Obsoletes:	yast2-trans-inst-update y2t_inst-update
+Provides:	yast2-trans-update y2t_update
+Obsoletes:	yast2-trans-update y2t_update
 
 Summary:	YaST2 update
 
