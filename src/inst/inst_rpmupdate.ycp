@@ -68,7 +68,7 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 	else
 	{
 	    Pkg::CreateBackups (false);
-	    SCR::Write (.target.remove, Installation::destdir + "/var/lib/YaST2/backup_path");
+	    SCR::Execute (.target.remove, Installation::destdir + "/var/lib/YaST2/backup_path");
 	}
 
 	if (Update::remove_old_backups)
