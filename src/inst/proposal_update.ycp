@@ -52,10 +52,6 @@
 
 	    Pkg::PkgReset ();
 
-	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
-	    Update::affected_packages = tmp1[0]:0;
-	    Update::unknown_packages = tmp1[1]:0;
-
 	    if (!Update::did_init2) {
 		Update::did_init2 = true;
 		Update::ProposeSelection ();
@@ -66,6 +62,10 @@
 	    else
 		Pkg::SetSelection (Update::selected_selection);
 	    Pkg::ActivateSelections ();
+
+	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
+	    Update::affected_packages = tmp1[0]:0;
+	    Update::unknown_packages = tmp1[1]:0;
 
 	    if (Pkg::PkgSolve (!Update::onlyUpdateSelected))
 		Update::solve_errors = 0;

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 16 17:11:11 CEST 2003 - kkaempf@suse.de
+
+- when upgrading to new base selection, first activate the
+  selection, then do the update loop. (#31001)
+
+-------------------------------------------------------------------
 Tue Sep 16 11:01:10 CEST 2003 - arvin@suse.de
 
 - fixed backup of /etc/rc.config.d
