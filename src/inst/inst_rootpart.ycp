@@ -42,24 +42,40 @@
     make_partition_list (RootPart::showAllPartitions);
 
 
-    string heading = "";
-    if (flavor == `boot_popup)
-	heading = _("Select System to Boot");
-    else
-	heading = _("Select System to Update");
+    string label = "";
+    string help_text = "";
 
+    if (flavor == `boot_popup)
+    {
+	// label for selection of root partition (for boot)
+	label = _("Select system to boot:");
+
+	// help text for root partition dialog (for boot)
+	help_text = _("<p>
+Select system to boot.
+</p>
+");
+    }
+    else
+    {
+	// label for selection of root partition (for update)
+	label = _("Select system to update:");
+
+	// help text for root partition dialog (for update)
+	help_text = _("<p>
+Select system to update.
+</p>
+");
+    }
 
     term contents =
 	`VBox (
 	       // heading for 'select root partiton' dialogue
-	       `Heading ( heading ),
-	       `VSpacing (0.5),
 	       `HCenter (
 			 `HSquash (
 				   `VBox (
 					  `HSpacing( 40 ),	// force minimum width
-					  // label for selection list of root partitions
-					  `Left (`Label (_("Select System:"))),
+					  `Left (`Label (label)),
 					  `Table (`id (`partition),
 						  `header (_("System"),
 							   _("Partition"),
@@ -73,11 +89,6 @@
 	       `VSpacing (2)
 	       );
 
-    // helptext for root partition
-    string help_text = _("<p>
-Select the <b>root partition</b> to use.
-</p>
-");
 
     if (flavor == `update_dialog)
     {
