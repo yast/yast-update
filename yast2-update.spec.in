@@ -28,4 +28,5 @@ Summary:	YaST2 update
 %defattr(-,root,root)
 @configdir@/update.y2cc
 @clientdir@/update.ycp
+@clientdir@/sw_update.ycp
 %doc @docdir@

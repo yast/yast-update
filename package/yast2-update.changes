@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep  4 12:01:27 CEST 2002 - msvec@suse.cz
+
+- provide the old client name temporarily for compatibility
+- 2.6.2
+
+-------------------------------------------------------------------
 Wed Sep  4 09:45:55 CEST 2002 - msvec@suse.cz
 
 - provide/obsolete old translation packages
