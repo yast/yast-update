@@ -8,6 +8,8 @@
   textdomain "sw_update";
 
   include "package_utils.ycp";
+  include "ui/common_popups.ycp";
+
   Include (`yast_version());
   string version = yast_version ();
 
@@ -90,13 +92,13 @@
   include "misc_defines.ycp";
 
 
-  boolean go_on = ChangeCD( 1, true);
+  boolean go_on = ChangeCD( 1, false );	// don't show additional popup
 	  
   if ( !go_on )
   {
       textdomain "sw_single";            
-      any ret = UI(`ContinueCancel(_("No access to source media used on previous installation.
-Continue with choosing new installation source?"), _("&Yes"), _("&No")));
+      any ret = UI(`ContinueCancelPopup(_("No access to source media used on previous installation.
+Continue with choosing new installation source?")) );
 
       if ( ret )		// choose new installation source
       {
