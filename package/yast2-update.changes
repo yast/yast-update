@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 29 10:58:33 CEST 2003 - arvin@suse.de
+
+- show error when media is broken (bug #29489)
+
+-------------------------------------------------------------------
 Tue Aug 26 12:33:16 CEST 2003 - arvin@suse.de
 
 - solve errors cause a blocker during update (bug #29320)

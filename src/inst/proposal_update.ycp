@@ -74,6 +74,27 @@
 
 	init_stuff ();
 
+	if (true)
+	{
+	    // get all base selections
+	    // and sort them by reverse order
+	    list available_base_selections = sort (`x, `y, Pkg::GetSelections (`available, "base"), ``{
+		map xmap = Pkg::SelectionData(x);
+		map ymap = Pkg::SelectionData(y);
+		return (xmap["order"]:"" >= ymap["order"]:"");
+	    });
+	    y2milestone ("available_base_selections %1", available_base_selections);
+
+	    if (size (available_base_selections) == 0)
+	    {
+		y2error ("No base selections available");
+		// Can't find any software data, probably a installation media error
+		// error message
+		return $[ "warning" : _("Cannot read package data from installation media. Media error?"),
+			  "warning_level" : `blocker ];
+	    }
+	}
+
 	list tmp = [];
 
 	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion));
