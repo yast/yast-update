@@ -68,7 +68,8 @@
 	    ret = $[ "warning" :
 		     // Proposal for system to update
 		     _("No root partition found"),
-		     "warning_level" : `fatal
+		     "warning_level" : `fatal,
+		     "raw_proposal" : []
 	    ];
 	}
 	else
@@ -108,6 +109,7 @@
 		// inform user in the proposal about the failed mount
 		ret = add (ret, "warning", _("Failed to mount target system"));
 		ret = add (ret, "warning_level", `fatal);
+		ret = add (ret, "raw_proposal", []);
 	    }
 	}
     }

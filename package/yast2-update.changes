@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 30 12:42:31 CEST 2004 - arvin@suse.de
+
+- always include at least empty raw_proposal (see bug #46411)
+
+-------------------------------------------------------------------
 Wed Sep 29 22:36:38 CEST 2004 - arvin@suse.de
 
 - partly workaround for bug #42074
