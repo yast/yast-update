@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Nov 11 18:07:40 CET 2004 - arvin@suse.de
+
+- always use Directory::logdir
+
+-------------------------------------------------------------------
 Wed Oct 27 12:42:30 CEST 2004 - arvin@suse.de
 
 - adapted to new Mode.ycp
