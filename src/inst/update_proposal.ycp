@@ -140,6 +140,7 @@
 	if (! (Update::ProductsCompatible () || Update::products_incompatible))
 	{
 	    if (Popup::ContinueCancel (
+// continue-cancel popup
 _("The installed product is not compatible with the product
 on the installation media. If you go on update using
 current installation media, the system may not start or
@@ -204,6 +205,7 @@ some applications may not run properly.")))
 	{
 	    if (false)		// FIXME
 	    {
+		// proposal error
 		return $[ "warning" : _("Updating to another version is not supported from the running system."),
 			  "warning_level" : `fatal,
 			  "raw_proposal" : [] ];
@@ -212,6 +214,7 @@ some applications may not run properly.")))
 
 	list<string> tmp = [];
 
+	// summary text (%1 is package selection)
 	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion["nameandversion"]:"?"));
 
 	if (Update::onlyUpdateInstalled)

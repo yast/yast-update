@@ -291,6 +291,7 @@ or restart your computer."), file));
 	    symbol detected_fs = FileSystems::DetectFs (partition);
 	    if (detected_fs == `ext2)
 	    {
+		// label, %1 is partition
 		string out = sformat (_("Checking partition %1"), partition);
 		UI::OpenDialog (`opt(`decorated ), `Label(out));
 
@@ -760,6 +761,7 @@ Check the log file %2.
 	    if (!fsck_and_mount ("/var", var_device_fstab, ""))
 	    {
 		y2error ("failed to mount /var");
+		// error message
 		message = sformat (_("The /var partition %1 could not be mounted.\n"),
 				   var_device_fstab) + sdb;
 		return false;
@@ -782,6 +784,7 @@ Check the log file %2.
 	    if (!fsck_and_mount ("/var", var_partition_current, ""))
 	    {
 		y2error ("failed to mount /var");
+		// error message
 		message = sformat (_("The /var partition %1 could not be mounted.\n"),
 				     var_partition_current) + sdb;
 		return false;
@@ -799,6 +802,7 @@ Check the log file %2.
 	if (size (realdisks) != 2)
 	{
 	    y2error ("don't know how to handle more than two disks at this point");
+		// error message
 	    message = _("Unable to mount /var partition with this disk configuration.\n") + sdb;
 	    return false;
 	}
@@ -809,6 +813,7 @@ Check the log file %2.
 	if (!fsck_and_mount ("/var", var_partition_current, ""))
 	{
 	    y2error ("failed to mount /var");
+	    // error message
 	    message = sformat (_("The /var partition %1 could not be mounted.\n"),
 				 var_partition_current) + sdb;
 	    return false;
@@ -869,6 +874,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    if (size (fstab) == 0)
 	    {
 		y2error ("no or empty fstab found!");
+		// error message
 		message = _("No fstab found.");
 		success = false;
 	    }
@@ -892,7 +898,9 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    if (!check_root_device (root_device_current, fstab, tmp))
 		    {
 			y2error ("fstab has wrong root device!");
+			// message part 1
 			message = _("The root partition in /etc/fstab has an invalid root device.\n") +
+			// message part 2
 			    sformat (_("It is currently mounted as %1 but listed as %2.\n"),
 				     root_device_current, tmp) + sdb;
 			success = false;
