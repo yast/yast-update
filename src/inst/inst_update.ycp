@@ -26,29 +26,20 @@
     // screen title for update options
     string title = _("Update Options");
 
-    // current selection and list of base selections
-    string current_selection = Update::GetSelection ();
-
     // get available base selection sorted by reverse order (highest ordered base selection first)
     list available_base_selections = Update::GetBaseSelections ();
     y2milestone ("available_base_selections %1, current_selection %2", available_base_selections, current_selection);
 
     // create box with base selections, check if current selection really is available
     term baseconfsbox = `VBox ();
-    boolean current_is_available = false;
 
     // loop through available base selections, create radio button entry for every base selection
     // preselect current selection
 
-    foreach (`selection, available_base_selections,
-    ``{
+    foreach (`selection, available_base_selections, ``{
 	map selection_data = Pkg::SelectionData (selection);
 	string selection_summary = selection_data["summary"]:"";
-	boolean preselect = (selection == current_selection);
-	if (preselect)
-	{
-	    current_is_available = true;
-	}
+	boolean preselect = (selection == Update::selected_selection);
 	baseconfsbox = add (baseconfsbox, `Left(`RadioButton(`id(selection),
 							     `opt(`notify, `autoShortcut),
 							     selection_summary,
@@ -148,13 +139,6 @@ packages during the update.</p>
     UI::ChangeWidget(`id(`upgrade), `Value, !Update::onlyUpdateSelected);
     UI::ChangeWidget(`id(`notupgrade), `Value, Update::onlyUpdateSelected);
 
-    // if current is not available, pre-select the highest ordered base selection
-
-    if (!current_is_available)
-    {
-	UI::ChangeWidget (`id(`baseconf), `CurrentButton, available_base_selections[0]:"");
-    }
-
     // grey out radio buttons if only already installed packages should be updated
 
     foreach (`sel, available_base_selections, ``{
@@ -210,17 +194,11 @@ packages during the update.</p>
 
     if (ret == `next)
     {
+	Update::did_init1 = false;
+
 	Update::onlyUpdateSelected = UI::QueryWidget (`id(`notupgrade), `Value);
 	Update::deleteOldPackages = UI::QueryWidget (`id(`delete), `Value);
-
-	Update::updateEvaluated = false;
-
-	if (Update::onlyUpdateSelected)
-	    Pkg::SetSelection ("default");
-	else
-	    Pkg::SetSelection (UI::QueryWidget(`id(`baseconf), `CurrentButton));
-
-	Pkg::ActivateSelections ();
+	Update::selected_selection = UI::QueryWidget(`id(`baseconf), `CurrentButton);
     }
 
     Wizard::CloseDialog ();
