@@ -475,12 +475,18 @@ Check the log file %1.
 	return success;
     }
 
-    global define boolean SetFormatPartitions () ``{
+    global define boolean SetFormatPartitions (list<map> fstabpart) ``{
         map <string, map> target_map = Storage::GetTargetMap ();
 
         foreach (string mntpt, string part, partitions_mount, ``{
+                map p = select(filter(map pp, fstabpart, ``(pp["mount"]:"" == mntpt)), 0 , $[]);
+                boolean format_partition = true;
+                if (haskey(p, "format"))
+                {
+                    format_partition = p["format"]:false;
+                }
                 target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
-                target_map = Storage::SetPartitionData (target_map, part, "format", true);
+                target_map = Storage::SetPartitionData (target_map, part, "format", format_partition);
                 target_map = Storage::SetPartitionData (target_map, part, "delete", false);
                 target_map = Storage::SetPartitionData (target_map, part, "create", false);
                 });
