@@ -118,8 +118,6 @@ Check the log file /var/log/y2log
 	}
     }
 
-    SlideShow::InitPkgData();
-
     y2milestone ("rpmrebuild");
     // rebuilding RPM-Database only while first run of installation
     rpmrebuild();
