@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jul 20 11:44:06 CEST 2004 - arvin@suse.de
+
+- better text in update proposal (bug #38506)
+
+-------------------------------------------------------------------
 Tue Jul 20 11:26:00 CEST 2004 - arvin@suse.de
 
 - renamed Update::onlyUpdateSelected to onlyUpdateInstalled
