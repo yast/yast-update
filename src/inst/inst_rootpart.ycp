@@ -289,8 +289,14 @@ Check the log file /var/log/y2log.
 				}
 
 				string mount_type = "";
-				if (spec != "proc")
+				if (spec == "proc")
+				{
+				    mount_type = spec;
+				}
+				else
+				{
 				    mount_type = FileSystems::GetMountString( FileSystems::DetectFs( spec ), "");
+				}
 
 				if (mount_type != "")
 				{
