@@ -31,12 +31,23 @@
 			       UI(_("<P>Launch this module to update existing packages.
 </P>
 Please insert <b>CD 1</b> before proceeding.
-<P>You need to be logged in as <i>root</i> in order to
-do this.</P>"))),
+<P>You need to be logged in as <i>root</i> to
+do this.</P>
+"))),
      
       ////////////////////////////////////////////////////////////////////////////////
       // explanation in YaST2 Control Center                                         //
-      `helptext     : UI(_("Update your complete system, please insert CD 1 before proceeding")),
+      `helptext     : UI(_("Update your complete system. Insert CD 1 before proceeding
+
+Project-Id-Version: YaST2
+POT-Creation-Date: 2001-09-28 15:58:06+0200
+PO-Revision-Date: 2001-09-13 17:57+0200
+Last-Translator: Karl Eichwalder <ke@suse.de>
+Language-Team: English_US <i18n@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+")),
    
       ////////////////////////////////////////////////////////////////////////////////
       // leaf nil, experts only ;-)
