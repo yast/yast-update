@@ -1,0 +1,1 @@
+CallModule("sw_update", [ "get_menuentry" ])

@@ -1,0 +1,586 @@
+/* 
+ * 
+ *
+ * $Id$
+ */
+
+{
+  // Menuentry for the YaST2 menu
+  if (Args() == [ "get_menuentry" ]) 
+      return [ 
+	      "sw_update", $[
+			     "menuentry"    : UI(_("Update packages")),
+			     "arguments"    : [ ],
+			     "widget"       : `RichText(
+						       UI(_( "<P>Launch this module to update existing packages.
+</P>
+Please insert <b>CD 1</b> before proceeding.
+<P>You need to be logged in as <i>root</i> in order to
+do this.</P>"))),
+			     "codefragment" : nil ]
+      ];
+
+    integer current_stage = -1;
+  
+    define SetWizardStage( integer stage, boolean force ) ``{
+
+	if ( stage == current_stage && ! force )	// cache
+	{
+	    y2log( .debug, "installation", 666, sformat("Stage %1 cached - doing nothing", stage ) );
+	    return;
+	}
+
+	y2log( .debug, "installation", 666, sformat("Setting stage to %1", stage ) );
+
+	// Set the header image according to the stage
+	UI( `SetWizardImage( ReadByteblock( sformat( "/usr/lib/YaST2/images/stage%1.png", stage ) ) ) );
+
+	// Cache the current stage
+	current_stage = stage;
+    };
+
+  
+  // mount CD 
+
+  define MyChangeCD(integer cdnum) ``{
+      boolean ret = true;
+      
+      Shell ("/bin/mount /dev/cdrom /var/adm/mount");
+	
+      integer|void actcdnum = nil;
+      while (true) {
+	  // reading /cdrom/.S.u.S.E-disk-001.2000032902 file
+	  actcdnum = SCR(`Read(.yast2.instsource.cdnum));
+	  if (actcdnum == cdnum) return true;
+	  else {
+	      Shell ("/bin/umount /var/adm/mount");
+
+	      // advise user to insert the right CD
+	      string message = sformat(UI(_("Please insert CD %1.")), cdnum);
+	      if (is(actcdnum, integer)) 
+		  // inform user about current CD
+		  message = sformat(UI(_("%1\nCurrently CD %2 is inserted.")), message, actcdnum);
+
+	      ret = UI(`ContinueCancel(message, _("&OK"), _("&Cancel")) );
+
+	      if ( ret == false )
+		  break;
+	      else
+		  Shell ("/bin/mount /dev/cdrom /var/adm/mount");
+	  }
+      }
+
+      return ret;
+  };
+
+  // map user_settings contains:
+  // - install_info -> module inst_rpmcopy
+  // - delete_info  -> module inst_rpmcopy
+  // - continue_mode -> module inst_rpmcopy
+  // - language -> module inst_rpmcopy
+  
+  map user_settings = $[];
+  
+  string language = UI( `GetLanguage() );
+
+  string default_language = "en";
+  string default_architecture = "i386";
+
+  map lang2yast1 = $[
+		     "en_GB"    : "english",
+		     "en_US"    : "english",
+		     "en"	 : "english",
+		     "de_DE"    : "german",
+		     "de_CH"    : "german",
+		     "de" 	 : "german",
+		     "br_FR"    : "french",
+		     "fr_FR"    : "french",
+		     "fr_CH"    : "french",
+		     "fr"       : "french",
+		     "it_IT"    : "italian",
+		     "es_ES"    : "spanish",
+		     "nl_NL"    : "dutch",
+		     "pt_PT"    : "portuguese",
+		     "pt_BR"    : "brazilian",
+		     "hu_HU"    : "hungarian",
+		     "pl_PL"    : "polish",
+		     "el_GR"    : "greek",
+		     "ru_RU.KOI8-R" : "russian",
+		     "cs_CZ"    : "czech",
+		     "sk_SK"    : "slovak"
+  ];
+
+  string  long_language 	= lookup(lang2yast1, language, "english");
+  
+  // informations needed in all following frames
+  user_settings = add(user_settings, "updateTarget", "/");		    
+  user_settings = add( user_settings, "language", language );
+  user_settings = add( user_settings, "continue_mode", false );
+  
+  // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
+  // user_settings = add(user_settings, "test_mode", true );
+  // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
+
+
+  // mount CD 1 BEFORE initializing pkginfo-Server
+  // (needed to get commom.pkd)
+
+  boolean go_on = MyChangeCD(1);
+
+  if ( !go_on )
+  {
+      // quit dialog
+      return `cancel;
+  }
+  
+   
+  PKGINFO( `setDebugLevel(3) );
+
+  
+  // ==================================================================================
+
+  UI(``{
+      /**
+       * Create a typical installation wizard dialog.
+       */
+      OpenDialog(
+		 `opt(`defaultsize),
+		 `VBox(
+		       `ReplacePoint( `id(`image ), `Image( `suseheader, "SuSE") ),
+		       `HBox(
+			     `HWeight( 30, `ReplacePoint( `id(`helpSpace), `RichText(`id(`help), ""))),
+			     `HSpacing(1),
+			     `HWeight( 70, `VBox(
+						 `VSpacing(0.2),
+						 `Left(`Heading(`id(`title), _("YaST2\nInitializing ..."))),
+						 `HVCenter(`ReplacePoint(`id(`contents), `Empty())),
+						 `HBox(
+						       // "back" button: Return to the previous dialog
+						       `PushButton(`id(`back), _("&Back")),
+
+						       `HCenter(
+								// "abort" button: The installation will be aborted
+								`ReplacePoint( `id(`rep_abort), `PushButton(`id(`abort), _("&Abort Installation")))
+								),
+
+						       // "next" button: Proceed to the next dialog
+						       `ReplacePoint( `id(`rep_next), `PushButton(`id(`next), _("&Next")) )
+						       ),
+						 `VSpacing(0.2)
+						 )
+				       ),
+			     `HSpacing(1)
+			     )
+		       )
+                 );
+
+
+      /*
+       * Define how the general framework for the installation wizard should
+       * look like. This Macro creates and show a dialog.
+       */
+
+      define SetWizardContents(string title, term contents, string helptext,
+                              boolean has_back, boolean has_next) ``{
+        ChangeWidget(`id(`back), `Enabled, has_back);
+        ChangeWidget(`id(`next), `Enabled, has_next);
+        ChangeWidget(`id(`help), `Value, helptext);
+        ChangeWidget(`id(`title), `Value, title);
+        ReplaceWidget(`id(`contents), contents);
+        SetFocus( `id(`next) );
+      };
+
+
+      define ConfirmAbort( symbol how_to ) ``{
+	  string what_will_happen = "";
+
+
+	  if ( how_to == `painless )
+	  {
+	      // Warning text for aborting an installation before anything is installed
+	      what_will_happen = _( "If you abort the installation now,
+SuSE Linux will not be installed.
+Your hard disk will remain untouched." );
+	  }
+	  else if ( how_to == `incomplete )
+	  {
+	      // Warning text for aborting an installation during the install process
+	      // - After some installation steps have been performed - e.g.
+	      // disks formatted / some packages already installed
+	      what_will_happen = _( "If you abort the installation now, you will
+have an incomplete SuSE Linux system
+which may or may not be usable.
+You may need to reinstall." );
+	  }
+	  else if ( how_to == `unusable )
+	  {
+	      // Warning text for aborting an installation during the install process
+	      // right in the middle of some critical process (e.g. formatting)
+	      what_will_happen = _( "If you abort the installation now,
+SuSE Linux will be unusable.
+You will need to reinstall." );
+	  }
+	  else
+	  {
+	      y2log(.warning, "inst_confirm_abort", 1,
+		    "Unknown symbol for what will happen when aborting - please correct in calling module" );
+	  }
+
+
+	  OpenDialog(
+		     `opt(`decorated),
+		     `HBox(
+			   `HSpacing(1),
+			   `VBox(
+				 `VSpacing(0.2),
+				 `HCenter(
+					  `HSquash(
+						   `VBox(
+							 // Confirm user request to abort installation
+							 `Left( `Label( _("Really abort the installation?") ) ),
+							 `Left( `Label( what_will_happen ) )
+							 )
+						   )
+					  ),
+				 `HBox(
+				       // Button that will really abort the installation
+				       `PushButton(`id(`really_abort), _("&Abort Installation") ),
+				       `HStretch(),
+
+				       // Button that will continue with the installation
+				       `PushButton(`id(`continue), `opt(`default), _("&Continue Installation" ) )
+				       ),
+				 `VSpacing(0.2)
+				 ),
+			   `HSpacing(1)
+			   )
+		     );
+
+	  any ret = UserInput();
+	  CloseDialog();
+
+	  return (ret == `really_abort);
+      };
+
+
+      /*
+       * Change the image at the top of the window.
+       */
+      define SetWizardImage(byteblock|void imagedata) ``{
+          if (imagedata == nil)
+	  {
+	      y2log(.warning, "installation", 1, "SetWizardImage(): Invalid image - using fallback" );
+              ReplaceWidget( `id(`image), `Image(`suseheader, "SuSE") );
+	  }
+          else
+              ReplaceWidget( `id(`image), `Image(imagedata, "SuSE") );
+      };
+
+      /*
+       * Replace the wizard help subwindow with a custom widget.
+       * Call this BEFORE SetWizardContents() to avoid geometry
+       * management problems!
+       *
+       * Remember to restore the help subwindow with
+       * RestoreWizardHelp() before any other module is called!
+       */
+      define ReplaceWizardHelp(term contents) ``{
+          ReplaceWidget(`id(`helpSpace), contents);
+      };
+
+
+      /*
+       * Restore the wizard help subwindow after ReplaceWizardHelp().
+       */
+      define RestoreWizardHelp(string helpText) ``{
+          ReplaceWidget(`id(`helpSpace), `RichText(`id(`help), helpText ) );
+      };
+
+
+      /*
+       * Replace the wizard 'next' button with a custom widget.
+       */
+      define ReplaceWizardNextButton(term contents) ``{
+	  ReplaceWidget(`id(`rep_next), contents);
+      };
+
+
+      /*
+       * Restore the wizard 'next' button after ReplaceWizardNextButton().
+       */
+      define RestoreWizardNextButton() ``{
+	  ReplaceWidget(`id(`rep_next),
+			// next pushbutton: the user input is checked and the next dialog is called
+			`PushButton(`id(`next), _("&Next") )
+			);
+      };
+
+
+      /*
+       * Replace the wizard 'abort' button with a custom widget.
+       */
+      define ReplaceWizardAbortButton(term contents) ``{
+	  ReplaceWidget(`id(`rep_abort), contents);
+      };
+
+
+      /*
+       * Restore the wizard 'abort' button after ReplaceWizardAbortButton().
+       */
+      define RestoreWizardAbortButton() ``{
+	  ReplaceWidget(`id(`rep_abort),
+			// "abort" button: The installation will be aborted
+			`PushButton(`id(`abort), _("&Abort Installation"))
+			);
+      };
+
+
+      /*
+       * Small dialog that has a next, cancel and back button that
+       * appears, if one of the submodules does not work. This is
+       * useful during development.
+       */
+      // DEBUG
+      define ModuleError(string text) ``{
+	  OpenDialog(
+		     `opt(`decorated, `warncolor),
+		     `HBox(
+			   `HSpacing(1),
+			   `VBox(
+				 `VSpacing(0.2),
+				 `Heading(text),
+				 `HBox(
+				       `PushButton(`id(`back),		"&Back"),
+				       `PushButton(`id(`again),		"&Retry"),
+				       `PushButton(`id(`cancel),	"&Quit"),
+				       `PushButton(`id(`next), 		"&Next")
+				       ),
+				 `VSpacing(0.2)
+				 ),
+			   `HSpacing(1)
+			   )
+		     );
+        any r = UserInput();
+        CloseDialog();
+        return r;
+      };
+
+      /*
+       * Displays a message to the user in a small dialog with an OK
+       * button.
+       */
+
+      define DisplayMessage(string message) ``{
+          // ok pushbutton: confirm the dialog
+          OpenDialog(
+		     `opt(`decorated),
+		     `HBox(
+			   `HSpacing(1),
+			   `VBox(
+				 `VSpacing(0.2),
+				 `Label(message),
+				 `PushButton(`opt(`default), _("&OK")),
+				 `VSpacing(0.2)
+				 ),
+			   `HSpacing(1)
+			   )
+		     );
+          UserInput();
+          CloseDialog();
+      };
+
+      /**
+	* Displays a message with timeout to the user in a small dialog
+	* with an OK
+	* button.
+	*/
+
+      define DisplayTimedMessage(string message, integer seconds) ``{
+          OpenDialog(
+		     `opt(`decorated),
+		     `HBox(
+			   `HSpacing(1),
+			   `VBox(
+				 `VSpacing(0.2),
+				 `Label(message),
+				 `HCenter(
+					  `Label(`id(`remaining_time), "" + seconds)
+					  ),
+				 `HBox(
+				       // "Stop" button for timeout message: Stop counting down
+				       // (i.e. leave the popup message open without timeout)
+				       `PushButton(`id(`timed_stop), _("&Stop") ),
+
+				       // "OK" button for timeout message: Close popup dialog
+				       // (i.e. confirm the message)
+				       `PushButton(`id(`timed_ok), `opt(`default), _("&OK") )
+				       ),
+				 `VSpacing(0.2)
+				 )
+			   )
+		     );
+
+	  sleep (1000);
+	  any which_input = `empty;
+	  while (seconds > 0) {
+	    which_input = PollInput();
+	    if (which_input == `timed_ok)
+		break;
+	    if (which_input == `timed_stop) {
+		while (which_input == `timed_stop)
+		    which_input = UserInput();
+		break;
+	    }
+	    sleep (1000);
+	    seconds = seconds - 1;
+	    ChangeWidget (`id(`remaining_time), `Value, ""+seconds);
+	  }
+          CloseDialog();
+      };
+
+      /*
+       * Are your sure?
+       */
+
+      define YesOrNo(any message, string yes_button_message, string no_button_message) ``{
+          OpenDialog(
+		     `opt(`decorated),
+		     `HBox(
+			   `HSpacing(1),
+			   `VBox(
+				 `VSpacing(0.2),
+				 `Label(message),
+				 `HBox(
+				       `PushButton(`id(`yes), `opt(`default), yes_button_message),
+				       `HSpacing(2),
+				       `PushButton( no_button_message )
+				       ),
+				 `VSpacing(0.2)
+				 ),
+			   `HSpacing(1)
+			   )
+		     );
+          any ret = UserInput();
+          CloseDialog();
+          return (ret == `yes);
+      };
+
+      /*
+       * Are your sure? with possibiltity to specify default-Button ( values: `no_default, `yes_default )
+       */
+
+      define YesNoOpt(any message, string yes_button_message, string no_button_message, symbol def_symbol) ``{
+	  term yes_button = `empty();
+	  term no_button = `empty();
+	  
+	  if ( def_symbol == `no_default )
+	  {
+	      yes_button = `PushButton( `id(`yes),  yes_button_message );
+	      no_button  = `PushButton( `id(`no_button), `opt(`default), no_button_message );
+	  }
+	  else
+	  {
+	      yes_button = `PushButton(`id(`yes), `opt(`default), yes_button_message);
+	      no_button = `PushButton( `id(`no_button), no_button_message );
+	  }
+	  
+          OpenDialog(
+		     `opt(`decorated),
+		     `HBox(
+			   `HSpacing(1),
+			   `VBox(
+				 `VSpacing(0.2),
+				 `Label(message),
+				 `HBox(
+				       yes_button,
+				       `HSpacing(2),
+				       no_button
+				       ),
+				 `VSpacing(0.2)
+				 ),
+			   `HSpacing(1)
+			   )
+		     );
+          any ret = UserInput();
+          CloseDialog();
+          return (ret == `yes);
+      };
+
+
+      // Return a pretty description of a byte count, with two fraction digits
+      // and using KB, MB or GB as unit as appropriate.
+      define size_text (integer bytes) ``{
+        float whole = tofloat (bytes) / 1024.0;
+        // KiloByte abbreviated
+        string unit = _("KB");
+        if (whole > 1024.0 || whole < -1024.0)
+          {
+            whole = whole / 1024.0;
+            // MegaByte abbreviated
+            unit = _("MB");
+            if (whole > 1024.0 || whole < -1024.0)
+              {
+                whole = whole / 1024.0;
+                // GigaByte abbreviated
+                unit = _("GB");
+              }
+          }
+        return tostring (whole, 2) + " " + unit;
+      };
+
+      /*
+       * Small dialog that has a cancel and continue button that
+       * appears just befor the video mode is tested.
+       */
+      define ContinueCancel(string message,
+			    string continue_button_message,
+			    string cancel_button_message ) ``{
+	  OpenDialog(
+		     `opt(`decorated),
+		     `HBox(
+			   `HSpacing(1),
+			   `VBox(
+				 `VSpacing(0.2),
+				 `Label(message),
+				 `HBox(
+				       `PushButton(`id(`continue), `opt(`default),continue_button_message),
+				       `HSpacing(2),
+				       `PushButton(`id(`cancel),   cancel_button_message)
+				       ),
+				 `VSpacing(0.2)
+				 ),
+			   `HSpacing(1)
+			   )
+		     );
+        any r = UserInput();
+        CloseDialog();
+        return ( r == `continue );
+      };
+
+
+  });	// UI defines END
+
+  // --------------------------------------------------------------
+
+  Include (`misc_defines());
+    
+
+  // Calling inst_updateControl
+  any ret_single = CallFunction( `inst_updateControl( ) );
+
+  _debug( "SW: Return inst_updateControl ", ret_single );
+
+  any ret_rpm = nil;
+  
+  if ( ret_single == `finish )
+  {
+      CallFunction( `inst_suseconfig (false, false) );
+  }
+
+  // umount CD
+  Shell ("/bin/umount /var/adm/mount");
+  
+  UI( `CloseDialog() );
+  
+  return `next;
+}
