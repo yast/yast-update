@@ -53,6 +53,7 @@
      * List of mounted partitions, activated swap partitions and loop devices.
      * Amongst other things used for reversing action if mode is changed from
      * update to new installation or if root partition for update is changed.
+     * The order of the list if of paramount importance.
      *
      * Each item is list [string value, string type [, string device]] where:
      *
