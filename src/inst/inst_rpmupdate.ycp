@@ -46,7 +46,7 @@ Check the log file /var/log/y2log
     // progress callback
     define void setProgress (integer progress)
     ``{
-	UI::ChangeWidget(`id(`progress), `Value, 0 );
+	UI::ChangeWidget(`id(`progress), `Value, progress );
     }
 
     define void rpmrebuild( )
@@ -155,7 +155,7 @@ Check the log file /var/log/y2log
 	if (size (failed) > 0)
 	{
 	    y2milestone ("failed: %1", failed);
-	    list previous_failed = SCR::Read (.target.ycp, Installation::destdir + "/var/lib/YaST2/failed_packages", []);
+	    list previous_failed = SCR::Read (.target.ycp, [Installation::destdir + "/var/lib/YaST2/failed_packages", []]);
 	    if (size (previous_failed) > 0)
 		failed = union (previous_failed, failed);
 	    SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/failed_packages", failed);
