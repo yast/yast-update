@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep  6 10:29:53 CEST 2001 - kkaempf@suse.de
+
+- properly mount/unmount medium.
+
+-------------------------------------------------------------------
 Mon Aug 20 17:05:21 CEST 2001 - gs@suse.de
 
 - internal: remove deprecated agent calls
