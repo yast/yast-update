@@ -10,21 +10,18 @@
 
     import "HTML";
     import "Update";
-    import "Mode";
-    import "Language";
     import "Packages";
     import "PackageCallbacks";
 
     import "Installation";
+    import "Kernel";
 
 
     string func = (string) WFM::Args(0);
     map param = (map) WFM::Args(1);
     map <string, any> ret = $[];
 
-
-    define void add_kernel_subpackage ()
-    {
+    define void SelectKernelPackages () {
 	list <list> provides = Pkg::PkgQueryProvides ("kernel");
 	y2milestone ("provides: %1", provides);
 
@@ -35,16 +32,25 @@
 	if (size (kernels) != 1)
 	    y2error ("not exactly one package provides tag kernel");
 
-	string kernel = kernels[0,0]:"none";
-	string kernel_nongpl = kernel + "-nongpl";
-
-	if (Pkg::IsAvailable (kernel_nongpl))
+	string selected_kernel = kernels[0,0]:"none";
+//	list<string> recom_kernel = Kernel::ComputePackages ();
+	list<string> recom_kernel = Kernel::kernel_packages;
+	y2milestone ("Selected kernel: %1, recommended kernel: %2",
+	    selected_kernel, recom_kernel);
+	if (! contains (recom_kernel, selected_kernel))
 	{
-	    y2milestone ("adding kernel subpackage %1", kernel_nongpl);
-	    Pkg::PkgInstall (kernel_nongpl);
+	    list<string> to_delete
+//		= Kernel::ComputePackagesForBase (selected_kernel, false);
+		= [ "kernel-smp", "kernel-smp-nongpl"];
+	    foreach (string p, to_delete, {
+		Pkg::PkgDelete (p);
+	    });
 	}
+	list<string> kernel_packs = Kernel::ComputePackages ();
+	foreach (string p, kernel_packs, {
+	    Pkg::PkgInstall (p);
+	});
     }
-
 
     define void init_stuff ()
     {
@@ -116,7 +122,7 @@
 	    Update::affected_packages = tmp1[0]:0;
 	    Update::unknown_packages = tmp1[1]:0;
 
-	    add_kernel_subpackage ();
+	    SelectKernelPackages ();
 
 	    if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
 		Update::solve_errors = 0;
