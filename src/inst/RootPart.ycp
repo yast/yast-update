@@ -108,7 +108,8 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
     global define string GetInfoOfSelected (symbol what)
     {
 	map i = rootPartitions[selectedRootPartition]:$[];
-	return i[what]:"error";
+        // Unkown for unknown system
+	return i[what]:_("Unknown");
     }
 
 
@@ -1008,6 +1009,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 		    // Get installed release name
 		    string release = GetRelease ();
+                    y2debug("release: %1", release );
 		    if (release == "?") {
 			// label for an unknown installed system
 			release = _("Unknown");

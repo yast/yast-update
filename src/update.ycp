@@ -18,6 +18,7 @@
     import "Report";
     import "Kernel";
     import "GetInstArgs";
+    import "ProductControl";
 
     // set normal mode and update
     Mode::SetMode ("update");
@@ -32,15 +33,24 @@
     Update::onlyUpdateInstalled = true;
     Update::deleteOldPackages = false;
 
-    // wizard stage
-    integer current_stage = -1;
+    ProductControl::custom_control_file =  "/usr/share/YaST2/control/update.xml";
 
-    // create initial dialog
-    Wizard::CreateDialog ();
-    Wizard::SetDesktopIcon("update");
+    if (!ProductControl::Init())
+    {
+        y2error("control file %1 not found", ProductControl::custom_control_file );
+    }
+    //Wizard::OpenNextBackStepsDialog();
+    Wizard::OpenNextBackDialog();
+    list<map> stage_mode = [$["stage": "normal",  "mode": Mode::mode() ]];
+    ProductControl::AddWizardSteps(stage_mode);
+
+    symbol ret = ProductControl::Run();
+    // Wizard::SetDesktopIcon("update");
 
     // calling inst_proposal
-    symbol ret = (symbol) WFM::CallFunction ("inst_proposal", [GetInstArgs::ButtonsProposal(true,true,"initial")]);
+    /*
+    symbol ret = (symbol) WFM::CallFunction ("inst_proposal", 
+            [GetInstArgs::ButtonsProposal(true,true,"initial")]);
 
     if (ret == `next)
     {
@@ -62,6 +72,7 @@
 computer to load the new kernel."));
 	}
     }
+    */
 
     Wizard::CloseDialog ();
 
