@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 11 17:58:34 CEST 2003 - kkaempf@suse.de
+
+- move Pkg::SetLocale() to Packages::Init() (#30438)
+
+-------------------------------------------------------------------
 Thu Sep 11 16:47:51 CEST 2003 - arvin@suse.de
 
 - try to backup /etc/rc.config if /etc/sysconfig doesn't exist
