@@ -165,6 +165,7 @@ configuration files will be saved.
 	    {
 		if ( checkBackupPath ( partition ) )
 		{
+		    Pkg::CreateBackups (true);
 		    break;
 		}
 		else
@@ -174,6 +175,7 @@ configuration files will be saved.
 	    }
 	    else
 	    {
+		Pkg::CreateBackups (false);
 		break;
 	    }
 	}
