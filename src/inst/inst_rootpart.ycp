@@ -5,7 +5,7 @@
  *		Arvin Schnell <arvin@suse.de>
  *
  * Purpose:	Select root partition for update or booting.
- *		RootPart::validRootPartitions must be filled before
+ *		RootPart::rootPartitions must be filled before
  *		calling this module.
  */
 {
@@ -14,7 +14,6 @@
     import "Wizard";
     import "Label";
     import "RootPart";
-    import "Storage";
 
 
     // This dialog comes in three different flavors: `update_dialog,
@@ -23,27 +22,13 @@
 
 
     define void make_partition_list (boolean withall) ``{
-
 	partition_list = [];
-
-	if (withall)
-	{
-	    map target_map = Storage::GetTargetMap ();
-	    foreach (`device, `description, target_map, ``{
-		foreach (`partition, description["partitions"]:[], ``{
-		    string r = partition["device"]:"error";
-		    // Label for an "unknown system"
-		    string s = RootPart::validRootPartitions[r]:_("Unknown");
-		    partition_list = add (partition_list, `item (`id (r), s, r));
-		});
-	    });
-	}
-	else
-	{
-	    foreach (`p, `r, RootPart::validRootPartitions, ``{
-		partition_list = add (partition_list, `item (`id (p), r, p));
-	    });
-	}
+	foreach (`p, `i, RootPart::rootPartitions, ``{
+	    if (i[`valid]:false || withall) {
+		string s = i[`longname]:"error";
+		partition_list = add (partition_list, `item (`id (p), s, p));
+	    }
+	});
     }
 
 
@@ -74,7 +59,7 @@
 							   _("Root Partition")),
 						  partition_list),
 					  `Left(`CheckBox(`id(`showall), `opt(`notify),
-							  _("Show all Partition"), false))
+							  _("Show all partitions"), false))
 					  )
 				   )
 			 ),

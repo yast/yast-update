@@ -18,8 +18,13 @@
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
 
-    // Available root partitions (key) and SuSE versions (value)
-    global map validRootPartitions = $[];
+    // Map of all root partitions (key) and information map (value).
+    // The information map contains the keys `valid, `longname and
+    // `shortname.
+    global map rootPartitions = $[];
+
+    // Number of valid root partitions.
+    global integer numberOfValidRootPartitions = 0;
 
     // Show all partitions (not only root partitions) in the dialog.
     global boolean showAllPartitions = false;
@@ -32,6 +37,7 @@
 
     // Did we try to mount the target partitions?
     global boolean did_try_mount_partitions = false;
+
 
     // map of mountpoints (key = device, value = mountpoint)
     map partitions_mount = $[];
@@ -49,9 +55,27 @@
     list activated = [];
 
 
-    /*-----------------------------------------------------------------------
-     * GLOBAL FUNCTIONS
-     *-----------------------------------------------------------------------*/
+    /**
+     * Get the key what of the selected root partition.
+     */
+    global define string GetInfoOfSelected (symbol what) ``{
+	map i = rootPartitions[selectedRootPartition]:$[];
+	return i[what]:"error";
+    }
+
+
+    /**
+     * Set the selected root partition to some valid one. Only
+     * make sense if the number of valid root partition is one.
+     */
+    global define void SetSelectedToValid () ``{
+	selectedRootPartition = "";
+	foreach (`p, `i, rootPartitions, ``{
+	    if (i[`valid]:false && selectedRootPartition == "")
+		selectedRootPartition = p;
+	});
+    }
+
 
     /**
      * Unmount all mounted partitions, deactivate swaps, detach loopback
@@ -473,7 +497,19 @@ Check the log file %1.
 
 
     /**
-     * Find all valid root partitions and place the result in validRootPartitions.
+     * Make the short name for a system out of the long name.
+     */
+    define string MakeShortName (string longname) ``{
+	integer p1 = find (longname, "(");
+	if (p1 == -1) return longname;
+	while (p1 > 1 && substring (longname, p1 - 1, 1) == " ")
+	    p1 = p1 - 1;
+	return substring (longname, 0, p1);
+    }
+
+
+    /**
+     * Find all valid root partitions and place the result in rootPartitions.
      * The partitions are mounted and unmounted again (to Installation::destdir).
      * Loads a bunch of kernel modules.
      * @return void
@@ -504,11 +540,18 @@ Check the log file %1.
 	map target_map = Storage::GetTargetMap ();
 	y2milestone ("target_map: %1", target_map);
 
-	validRootPartitions = $[];
+	rootPartitions = $[];
+	numberOfValidRootPartitions = 0;
 
 	foreach (`device, `description, target_map, ``{
-
 	    foreach (`partition, description["partitions"]:[], ``{
+
+		map freshman = $[`valid : false];
+
+		// Label for an "unknown system"
+		freshman[`longname] = "Unknown";
+
+		string pdev = partition["device"]:"error";
 
 		integer p_fsid = partition["fsid"]:0;
 		symbol p_type  = partition["type"]:`primary;
@@ -516,8 +559,6 @@ Check the log file %1.
 		if ( (p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
 		     contains(possible_root_fs, partition["used_fs"]:`unknown) )
 		{
-		    string pdev = partition["device"]:"";
-
 		    // test if partition is root
 		    if ( !Mode::test )
 		    {
@@ -535,7 +576,10 @@ Check the log file %1.
 				    suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
 				}
 				list release_lines = splitstring (suse_release, "\n");
-				validRootPartitions[pdev] = release_lines[0]:"?";
+
+				freshman[`valid] = true;
+				freshman[`longname] = release_lines[0]:"?";
+				numberOfValidRootPartitions = numberOfValidRootPartitions + 1;
 			    }
 
 			    // unmount partition
@@ -544,14 +588,21 @@ Check the log file %1.
 		    }
 		    else
 		    {
-			validRootPartitions[pdev] = "SuSE Linux 4.2";
+			freshman[`valid] = true;
+			freshman[`longname] = "SuSE Linux 4.2 (i286)";
+			numberOfValidRootPartitions = numberOfValidRootPartitions + 1;
 		    }
 		}
+
+		freshman[`shortname] = MakeShortName (freshman[`longname]:"error");
+
+		rootPartitions = add (rootPartitions, pdev, freshman);
+
 	    });
 	});
 
 	didSearchForRootPartitions = true;
 
-	y2milestone ("validRootPartitions: %1", validRootPartitions);
+	y2milestone ("rootPartitions: %1", rootPartitions);
     }
 }

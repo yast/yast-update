@@ -61,7 +61,7 @@
 	    RootPart::selectedRootPartition = "";
 	}
 
-	if (size (RootPart::validRootPartitions) == 0)
+	if (RootPart::numberOfValidRootPartitions == 0)
 	{
 	    RootPart::targetOk = false;
 
@@ -75,12 +75,9 @@
 	{
 	    if (RootPart::selectedRootPartition == "")
 	    {
-		if (size (RootPart::validRootPartitions) == 1 && !Mode::manual)
+		if (RootPart::numberOfValidRootPartitions == 1 && !Mode::manual)
 		{
-		    foreach (`p, `r, RootPart::validRootPartitions, ``{
-			if (RootPart::selectedRootPartition == "")
-			    RootPart::selectedRootPartition = p;
-		    });
+		    RootPart::SetSelectedToValid ();
 		}
 		else
 		{
@@ -90,10 +87,10 @@
 		RootPart::targetOk = mount_target ();
 	    }
 
-	    if (size (RootPart::validRootPartitions) == 1)
+	    if (RootPart::numberOfValidRootPartitions == 1)
 	    {
 		ret = $[ "raw_proposal" :
-			 [ RootPart::validRootPartitions[RootPart::selectedRootPartition]:"error" ]
+			 [ RootPart::GetInfoOfSelected (`shortname) ]
 		];
 	    }
 	    else
@@ -101,7 +98,7 @@
 		ret = $[ "raw_proposal" :
 			 // Proposal for system to update
 			 [ sformat (_("%1 on root partition %2"),
-				    RootPart::validRootPartitions[RootPart::selectedRootPartition]:"error",
+				    RootPart::GetInfoOfSelected (`shortname),
 				    RootPart::selectedRootPartition) ]
 		];
 	    }
