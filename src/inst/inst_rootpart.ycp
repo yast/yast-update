@@ -19,12 +19,14 @@
 
     // This dialog comes in three different flavors: `update_dialog,
     // `update_popup and `boot_popup
-    symbol flavor = WFM::Args (2);
+    symbol flavor = (symbol) WFM::Args (2);
 
+
+    list partition_list = [];
 
     define void make_partition_list (boolean withall) ``{
 	partition_list = [];
-	foreach (`p, `i, RootPart::rootPartitions, ``{
+	foreach (string p, map i, RootPart::rootPartitions, ``{
 	    if (i[`valid]:false || withall)
 	    {
 		string s = i[`name]:"error";
@@ -39,7 +41,6 @@
     }
 
 
-    list partition_list = [];
     make_partition_list (RootPart::showAllPartitions);
 
 
@@ -108,7 +109,7 @@ general overview of your system's partitions.
     if (flavor == `update_dialog)
     {
 	Wizard::OpenAcceptDialog ();
-	Wizard::SetContents (title, contents, help_text, Args(0), Args(1));
+	Wizard::SetContents (title, contents, help_text, (boolean) WFM::Args(0), (boolean) WFM::Args(1));
     }
     else
     {
@@ -163,8 +164,8 @@ general overview of your system's partitions.
 
 	if (ret == `showall)
 	{
-	    string tmp = UI::QueryWidget (`id(`partition), `CurrentItem);
-	    make_partition_list (UI::QueryWidget (`id(`showall), `Value));
+	    string tmp = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
+	    make_partition_list ((boolean) UI::QueryWidget (`id(`showall), `Value));
 	    UI::ChangeWidget (`id(`partition), `Items, partition_list);
 	    if (tmp != nil)
 		UI::ChangeWidget (`id(`partition), `CurrentItem, tmp);
@@ -177,8 +178,8 @@ general overview of your system's partitions.
 
     if (ret == `next)
     {
-	RootPart::selectedRootPartition = UI::QueryWidget (`id(`partition), `CurrentItem);
-	RootPart::showAllPartitions = UI::QueryWidget (`id(`showall), `Value);
+	RootPart::selectedRootPartition = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
+	RootPart::showAllPartitions = (boolean) UI::QueryWidget (`id(`showall), `Value);
     }
 
     if (flavor == `update_dialog)

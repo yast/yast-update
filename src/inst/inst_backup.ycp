@@ -39,7 +39,7 @@
 	    return false;
 	}
 
-	foreach( `part, part_info, ``{
+	foreach( map part, part_info, ``{
 
 	    string part_name = part["name"]:"";
 
@@ -145,7 +145,7 @@ remove them.</p>
 				     Update::backup_path);
 
 
-    Wizard::SetContents (title, contents, help_text, Args(0), Args(1));
+    Wizard::SetContents (title, contents, help_text, (boolean) WFM::Args(0), (boolean) WFM::Args(1));
 
     UI::ChangeWidget (`id(`modified), `Value, Update::backup_modified);
     UI::ChangeWidget (`id(`sysconfig), `Value, Update::backup_sysconfig);
@@ -164,17 +164,17 @@ remove them.</p>
 	    break;
 
 	// any backup wanted?
-	boolean tmp = UI::QueryWidget (`id(`modified), `Value) ||
-	    UI::QueryWidget (`id(`sysconfig), `Value);
+	boolean tmp = (boolean) UI::QueryWidget (`id(`modified), `Value) ||
+	    (boolean) UI::QueryWidget (`id(`sysconfig), `Value);
 
 	if (ret == `next)
 	{
 	    if (tmp && !check_backup_path (partition))
 		continue;
 
-	    Update::backup_modified = UI::QueryWidget (`id(`modified), `Value);
-	    Update::backup_sysconfig = UI::QueryWidget (`id(`sysconfig), `Value);
-	    Update::remove_old_backups = UI::QueryWidget (`id(`remove), `Value);
+	    Update::backup_modified = (boolean) UI::QueryWidget (`id(`modified), `Value);
+	    Update::backup_sysconfig = (boolean) UI::QueryWidget (`id(`sysconfig), `Value);
+	    Update::remove_old_backups = (boolean) UI::QueryWidget (`id(`remove), `Value);
 
 	    break;
 	}

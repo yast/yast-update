@@ -13,8 +13,8 @@
     import "Update";
     import "RootPart";
 
-    string func  = WFM::Args(0);
-    map    param = WFM::Args(1);
+    string func  = (string) WFM::Args(0);
+    map    param = (map) WFM::Args(1);
     map    ret   = $[];
 
 
@@ -81,7 +81,7 @@
 		}
 		else
 		{
-		    symbol result = WFM::CallFunction (`inst_rootpart (true, true, `update_popup));
+		    symbol result = (symbol) WFM::CallFunction ("inst_rootpart", [true, true, `update_popup]);
 		}
 
 		RootPart::targetOk = mount_target ();
@@ -122,7 +122,7 @@
 
 	string tmp = RootPart::selectedRootPartition;
 
-	symbol result = WFM::CallFunction (`inst_rootpart (true, has_next, `update_dialog));
+	symbol result = (symbol) WFM::CallFunction ("inst_rootpart", [true, has_next, `update_dialog]);
 
 	if (RootPart::selectedRootPartition != tmp)
 	{
