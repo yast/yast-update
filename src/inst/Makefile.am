@@ -1,6 +1,7 @@
 #
 # Makefile.am for update
 #
+SUBDIRS = scripts
 
 module_DATA = \
 	Update.ycp
