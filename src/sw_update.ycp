@@ -27,30 +27,34 @@
 
   string default_language = "en";
   string default_architecture = "i386";
-    string default_board	= "wintel";
+  string default_board	= "wintel";
+  user_settings = add (user_settings,
+		       "targetroot", "/" );  // It is from an installed system
 
-    string architecture = SCR(`Read(.probe.architecture));
-    boolean arch_i386	= (architecture == "i386");
-    boolean arch_sparc32= (architecture == "sparc");
-    boolean arch_sparc64= (architecture == "sparc64");
-    boolean arch_sparc	= (arch_sparc32 || arch_sparc64);
-    boolean arch_ppc	= (architecture == "ppc");
-    boolean arch_alpha	= (architecture == "axp");
-    boolean arch_s390	= (architecture == "s390");
-    boolean arch_ia64	= (architecture == "ia64");
+  string targetroot	= "/";
 
-    string board_type   = default_board;
-    list systemProbe = SCR(`Read(.probe.system));
-    foreach (`systemEntry, systemProbe, ``{
+  string architecture = SCR(`Read(.probe.architecture));
+  boolean arch_i386	= (architecture == "i386");
+  boolean arch_sparc32= (architecture == "sparc");
+  boolean arch_sparc64= (architecture == "sparc64");
+  boolean arch_sparc	= (arch_sparc32 || arch_sparc64);
+  boolean arch_ppc	= (architecture == "ppc");
+  boolean arch_alpha	= (architecture == "axp");
+  boolean arch_s390	= (architecture == "s390");
+  boolean arch_ia64	= (architecture == "ia64");
+
+  string board_type   = default_board;
+  list systemProbe = SCR(`Read(.probe.system));
+  foreach (`systemEntry, systemProbe, ``{
       string checksys = lookup (systemEntry, "system", "");
       if (checksys != "")
         board_type = checksys;
-    });
-    boolean board_wintel= (board_type == "");	// for now
-    boolean board_mac	= (board_type == "MacRISC");
-    boolean board_chrp	= (board_type == "CHRP");
-    boolean board_chrp64= (board_type == "CHRP64");
-    boolean board_prep	= (board_type == "PReP");
+  });
+  boolean board_wintel= (board_type == "");	// for now
+  boolean board_mac	= (board_type == "MacRISC");
+  boolean board_chrp	= (board_type == "CHRP");
+  boolean board_chrp64= (board_type == "CHRP64");
+  boolean board_prep	= (board_type == "PReP");
 
   map user_settings = $[];
 

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jan 11 11:50:14 MET 2001 - schubi@suse.de
+
+- Global variables added
+
+-------------------------------------------------------------------
 Wed Jan 10 21:05:22 MET 2001 - schubi@suse.de
 
 - Bugfix in changing installtion-medium
