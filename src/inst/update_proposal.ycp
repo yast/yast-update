@@ -33,15 +33,13 @@
 	    y2error ("not exactly one package provides tag kernel");
 
 	string selected_kernel = kernels[0,0]:"none";
-//	list<string> recom_kernel = Kernel::ComputePackages ();
-	list<string> recom_kernel = Kernel::kernel_packages;
+	list<string> recom_kernel = Kernel::ComputePackages ();
 	y2milestone ("Selected kernel: %1, recommended kernel: %2",
 	    selected_kernel, recom_kernel);
 	if (! contains (recom_kernel, selected_kernel))
 	{
 	    list<string> to_delete
-//		= Kernel::ComputePackagesForBase (selected_kernel, false);
-		= [ "kernel-smp", "kernel-smp-nongpl"];
+		= Kernel::ComputePackagesForBase (selected_kernel, false);
 	    foreach (string p, to_delete, {
 		Pkg::PkgDelete (p);
 	    });
