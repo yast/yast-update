@@ -79,15 +79,12 @@
     // Flag, if user has seen all the glory update details
     global boolean seen_details = false;
 
-    // original targetMap for Storage::, used after [Back]
-    // (needed if root partition was changed to discard previous settings)
-    global map targetMap_bak = $[];
 
-
+    //
     global boolean did_try_mount_partitions = false;
 
-    // map of mountpoints for each found root (seems unused)
-    // (key=root partition name, value=map: [device:mountpoint])
+    // map of mountpoints (key = device, value = mountpoint)
+    // TODO: combine partitions_mount and activated?
     global map partitions_mount = $[];
 
     /**
@@ -116,7 +113,7 @@
 
 	did_try_mount_partitions = false;
 
-	foreach(list info, activated, ``{
+	foreach (list info, activated, ``{
 
 	    string file = info[0]:"";
 	    string type = info[1]:"";
@@ -152,7 +149,20 @@
 
 	// clear activated list
 	activated = [];
+
+
+	// now remove the mount points of the mounted partitions
+	// in the target map of the storage module
+
+	map target_map = Storage::GetTargetMap ();
+
+	foreach (string mntpt, string part, partitions_mount, ``{
+	    target_map = Storage::SetPartitionData (target_map, part, "mount", "");
+	});
+
+	Storage::SetTargetMap (target_map);
     }
+
 
     /**
      * Add information about mounted partition to internal list.
@@ -492,7 +502,21 @@ Check the log file %1.
 
 	y2milestone ("mountPartition(%1) = %2", partition, success);
 
-	Update::partitions_mount[partition] = parts;
+
+	// now enter the mount points of the newly mounted partitions
+	// in the target map of the storage module
+
+	partitions_mount = parts;
+
+	map target_map = Storage::GetTargetMap ();
+
+	foreach (string mntpt, string part, partitions_mount, ``{
+	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt);
+	});
+
+	Storage::SetTargetMap (target_map);
+
+
 	return success;
     }
 
