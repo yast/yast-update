@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 07 11:12:20 CET 2003 - arvin@suse.de
+
+- only search for root partition on partitions with file system
+  we know about (bug #24740)
+
+-------------------------------------------------------------------
 Wed Mar  5 15:07:33 CET 2003 - kkaempf@suse.de
 
 - check "selection changed by user" status better (#23616).

@@ -404,6 +404,8 @@ Check the log file %1.
 	SCR::Execute (.target.modprobe, "multipath", "");
 	SCR::Execute (.target.modprobe, "lvm-mod", "");
 
+	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
+
 	foreach (`device, `description, targetMap,
 	``{
 	    foreach (`partition, description["partitions"]:[],
@@ -411,9 +413,8 @@ Check the log file %1.
 		integer p_fsid = partition["fsid"]:0;
 		symbol p_type  = partition["type"]:`primary;
 
-		if ( (p_fsid == 131)		// native partition
-		   || (p_type == `lvm)
-		   || (p_type == `sw_raid))
+		if ( (p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
+		     contains(possible_root_fs, partition["used_fs"]:`unknown) )
 		{
 		    string pdev = partition["device"]:"";
 		    boolean ret_bool = true;
