@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb 10 17:53:34 CET 2004 - arvin@suse.de
+
+- fixed missing argument in proposal_packages.ycp
+
+-------------------------------------------------------------------
 Mon Jan 19 13:07:10 CET 2004 - arvin@suse.de
 
 - united inst_rpmcopy.ycp and inst_rpmupdate.ycp

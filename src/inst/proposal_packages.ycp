@@ -44,7 +44,7 @@
 	}
 	else
 	{
-	    Pkg::RestoreState();
+	    Pkg::RestoreState(true);
 	}
 
 	UI::CloseDialog();
