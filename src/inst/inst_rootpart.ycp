@@ -94,11 +94,15 @@ general overview of your system's partitions.
 					  `HSpacing( 40 ),	// force minimum width
 					  `Left (`Label (label)),
 					  `Table (`id (`partition),
+								// table header
 						  `header (_("System"),
+								// table header
 							   _("Partition"),
+								// table header
 							   _("Architecture")),
 						  partition_list),
 					  `Left(`CheckBox(`id(`showall), `opt(`notify),
+							// check box
 							  _("Show All Partitions"), false))
 					  )
 				   )
