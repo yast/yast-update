@@ -27,7 +27,7 @@
     string title = _("Update Options");
 
     // get available base selection sorted by reverse order (highest ordered base selection first)
-    list available_base_selections = Update::GetBaseSelections ();
+    list<string> available_base_selections = Update::GetBaseSelections ();
     y2milestone ("available_base_selections %1, current_selection %2", available_base_selections, Update::selected_selection);
 
     // create box with base selections, check if current selection really is available
@@ -141,7 +141,7 @@ packages during the update.</p>
 
     // grey out radio buttons if only already installed packages should be updated
 
-    foreach (`sel, available_base_selections, ``{
+    foreach (string sel, available_base_selections, ``{
 	UI::ChangeWidget(`id(sel), `Enabled, !Update::onlyUpdateSelected);
     });
 
@@ -159,7 +159,7 @@ packages during the update.</p>
 	if (ret == `upgrade || ret == `notupgrade)
 	{
 	    boolean tmp = (boolean) UI::QueryWidget (`id(`upgrade), `Value);
-	    foreach (`sel, available_base_selections, ``{
+	    foreach (string sel, available_base_selections, ``{
 		UI::ChangeWidget(`id(sel), `Enabled, tmp);
 	    });
 

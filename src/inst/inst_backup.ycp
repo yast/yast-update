@@ -23,7 +23,7 @@
     // Check, if the backup fits to disk
     //
 
-    define boolean check_backup_path (list part_info) ``{
+    define boolean check_backup_path (list<map> part_info) ``{
 
 	string backup_path = Update::backup_path;
 	integer min_space = 50;
@@ -83,7 +83,7 @@
 
 
     // Get information about available partitions
-    list partition = SpaceCalculation::GetPartitionInfo();
+    list<map> partition = (list<map>)SpaceCalculation::GetPartitionInfo();
     y2milestone("evaluate partitions: %1", partition);
 
     // screen title for software selection

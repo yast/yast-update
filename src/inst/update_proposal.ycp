@@ -72,8 +72,8 @@
 		//  and set all selections which are installed (old) and available (new)
 		//  as 'to be installed' -> UI will show "to be updated" for these selections
 
-		list available_addons = Pkg::GetSelections (`available, "");
-		list installed_addons = Pkg::GetSelections (`installed, "");
+		list<string> available_addons = Pkg::GetSelections (`available, "");
+		list<string> installed_addons = Pkg::GetSelections (`installed, "");
 
 		foreach (string installed, installed_addons,
 		``{
@@ -140,7 +140,7 @@
 	    }
 	}
 
-	list tmp = [];
+	list<string> tmp = [];
 
 	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion));
 

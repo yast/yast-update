@@ -29,7 +29,7 @@
 
     // Map of all root partitions (key) and information map (value).
     // The information map contains the keys `valid, `name and `arch.
-    global map rootPartitions = $[];
+    global map<string,map> rootPartitions = $[];
 
     // Number of valid root partitions.
     global integer numberOfValidRootPartitions = 0;
@@ -48,7 +48,7 @@
 
 
     // map of mountpoints (key = device, value = mountpoint)
-    map partitions_mount = $[];
+    map<string,string> partitions_mount = $[];
 
     /**
      * List of mounted partitions, activated swap partitions and loop devices.
@@ -60,7 +60,7 @@
      *
      * TODO: combine partitions_mount and activated?
      */
-    list activated = [];
+    list<list> activated = [];
 
 
     /**
@@ -213,7 +213,7 @@ Check the log file %1.
 	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
 			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
 
-	map parts = $[];
+	map<string,string> parts = $[];
 
 	SCR::Write(.md.activate, "");
 	SCR::Write(.lvm.activate, "");
@@ -612,7 +612,7 @@ Check the log file %1.
 	    Storage::SetTargetMap ((map) SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
 
-	map target_map = Storage::GetOndiskTarget ();
+	map<map,map> target_map = (map<map,map>)Storage::GetOndiskTarget ();
 	y2milestone ("target_map: %1", target_map);
 
 	rootPartitions = $[];
