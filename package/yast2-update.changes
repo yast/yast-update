@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul 04 13:28:03 CEST 2003 - arvin@suse.de
+
+- allow selection of all root partition (bug #16643)
+
+-------------------------------------------------------------------
 Fri Jul 04 13:22:03 CEST 2003 - arvin@suse.de
 
 - convert update workflow into a proposal

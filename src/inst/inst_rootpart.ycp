@@ -14,6 +14,7 @@
     import "Wizard";
     import "Label";
     import "RootPart";
+    import "Storage";
 
 
     // This dialog comes in three different flavors: `update_dialog,
@@ -21,10 +22,33 @@
     symbol flavor = WFM::Args (2);
 
 
+    define void make_partition_list (boolean withall) ``{
+
+	partition_list = [];
+
+	if (withall)
+	{
+	    map target_map = Storage::GetTargetMap ();
+	    foreach (`device, `description, target_map, ``{
+		foreach (`partition, description["partitions"]:[], ``{
+		    string r = partition["device"]:"error";
+		    // Label for an "unknown system"
+		    string s = RootPart::validRootPartitions[r]:_("Unknown");
+		    partition_list = add (partition_list, `item (`id (r), s, r));
+		});
+	    });
+	}
+	else
+	{
+	    foreach (`p, `r, RootPart::validRootPartitions, ``{
+		partition_list = add (partition_list, `item (`id (p), r, p));
+	    });
+	}
+    }
+
+
     list partition_list = [];
-    foreach (`p, `r, RootPart::validRootPartitions, ``{
-	partition_list = add (partition_list, `item (`id (p), r, p));
-    });
+    make_partition_list (RootPart::showAllPartitions);
 
 
     string heading = "";
@@ -34,27 +58,28 @@
 	heading = _("Select System to Update");
 
 
-    term contents = `VBox (
-			   // heading for 'select root partiton' dialogue
-			   `Heading ( heading ),
-			   `VSpacing (0.5),
-			   `HCenter (
-				     `HSquash (
-					       `VBox (
-						      `HSpacing( 40 ),	// force minimum width
-						      // label for selection list of root partitions
-						      `Left (`Label (_("Select System:"))),
-						      `Table (
-							      `id (`partition),
-							      `header (_("System"),
-								       _("Root Partition")),
-							      partition_list
-							      )
-						      )
-					       )
-				     ),
-			   `VSpacing (2)
-			   );
+    term contents =
+	`VBox (
+	       // heading for 'select root partiton' dialogue
+	       `Heading ( heading ),
+	       `VSpacing (0.5),
+	       `HCenter (
+			 `HSquash (
+				   `VBox (
+					  `HSpacing( 40 ),	// force minimum width
+					  // label for selection list of root partitions
+					  `Left (`Label (_("Select System:"))),
+					  `Table (`id (`partition),
+						  `header (_("System"),
+							   _("Root Partition")),
+						  partition_list),
+					  `Left(`CheckBox(`id(`showall), `opt(`notify),
+							  _("Show all Partition"), false))
+					  )
+				   )
+			 ),
+	       `VSpacing (2)
+	       );
 
     // helptext for root partition
     string help_text = _("<p>
@@ -99,8 +124,12 @@ Select the <b>root partition</b> to use.
 	UI::OpenDialog (full);
     }
 
+
     if (size (RootPart::selectedRootPartition) > 0)
 	UI::ChangeWidget (`id(`partition), `CurrentItem, RootPart::selectedRootPartition);
+
+    UI::ChangeWidget(`id(`showall), `Value, RootPart::showAllPartitions);
+
 
     any ret = nil;
 
@@ -114,6 +143,15 @@ Select the <b>root partition</b> to use.
 	if (ret == `abort && CallFunction (`inst_confirm_abort (`painless)))
 	    break;
 
+	if (ret == `showall)
+	{
+	    string tmp = UI::QueryWidget (`id(`partition), `CurrentItem);
+	    make_partition_list (UI::QueryWidget (`id(`showall), `Value));
+	    UI::ChangeWidget (`id(`partition), `Items, partition_list);
+	    UI::ChangeWidget (`id(`partition), `CurrentItem, tmp);
+	    continue;
+	}
+
 	if (ret == `cancel || ret == `back || ret == `next)
 	    break;
     }
@@ -121,6 +159,7 @@ Select the <b>root partition</b> to use.
     if (ret == `next)
     {
 	RootPart::selectedRootPartition = UI::QueryWidget (`id(`partition), `CurrentItem);
+	RootPart::showAllPartitions = UI::QueryWidget (`id(`showall), `Value);
     }
 
     if (flavor == `update_dialog)

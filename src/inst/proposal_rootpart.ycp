@@ -9,6 +9,7 @@
     textdomain "update";
 
     import "HTML";
+    import "Mode";
     import "Update";
     import "RootPart";
 
@@ -74,7 +75,7 @@
 	{
 	    if (RootPart::selectedRootPartition == "")
 	    {
-		if (size (RootPart::validRootPartitions) == 1)
+		if (size (RootPart::validRootPartitions) == 1 && !Mode::manual)
 		{
 		    foreach (`p, `r, RootPart::validRootPartitions, ``{
 			if (RootPart::selectedRootPartition == "")

@@ -18,8 +18,11 @@
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
 
-    // Available rootpartitions (key) and SuSE versions (value)
+    // Available root partitions (key) and SuSE versions (value)
     global map validRootPartitions = $[];
+
+    // Show all partitions (not only root partitions) in the dialog.
+    global boolean showAllPartitions = false;
 
     // Did we search for root partitions
     global boolean didSearchForRootPartitions = false;
@@ -27,11 +30,10 @@
     // We successfully mounted the target partitions
     global boolean targetOk = false;
 
-    //
+    // Did we try to mount the target partitions?
     global boolean did_try_mount_partitions = false;
 
     // map of mountpoints (key = device, value = mountpoint)
-    // TODO: combine partitions_mount and activated?
     map partitions_mount = $[];
 
     /**
@@ -41,6 +43,8 @@
      * list [string value, string type], where type is "mount", "swap", "loop",
      * value is path to mounted directory, swap partition name or loop device
      * name according to type value.
+     *
+     * TODO: combine partitions_mount and activated?
      */
     list activated = [];
 
@@ -492,17 +496,17 @@ Check the log file %1.
 
 	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
 
-	map targetMap = Storage::GetTargetMap ();
 	if ( Mode::test )
 	{
-	    targetMap = SCR::Read(.target.yast2, "test_target_map.ycp");
+	    Storage::SetTargetMap (SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
 
-	y2milestone ("targetMap: %1", targetMap);
+	map target_map = Storage::GetTargetMap ();
+	y2milestone ("target_map: %1", target_map);
 
 	validRootPartitions = $[];
 
-	foreach (`device, `description, targetMap, ``{
+	foreach (`device, `description, target_map, ``{
 
 	    foreach (`partition, description["partitions"]:[], ``{
 
