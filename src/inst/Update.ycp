@@ -80,11 +80,12 @@
 
 	// get old product name
 
-	list all_products = Pkg::TargetProducts ();
-	map last_product = all_products[0]:$[];
+	list old_products = Pkg::TargetProducts ();
+	map old_product = old_products[0]:$[];
+	y2milestone ("First installed product %1", old_product);
 
-	installedVersion = last_product["productname"]:"?" + " " +
-	    last_product["productversion"]:"";
+	installedVersion = old_product["productname"]:"?" + " " +
+	    old_product["productversion"]:"";
 
 	// get new product name
 
@@ -96,8 +97,8 @@
 	    return false;
 	}
 
-	map product = Pkg::SourceProductData (Packages::theSources[num-1]:0);
-	y2milestone ("First source product %1", product);
+	map new_product = Pkg::SourceProductData (Packages::theSources[num-1]:0);
+	y2milestone ("First source product %1", new_product);
 	if (product == nil)
 	{
 	    y2error ("Screwed source");
@@ -105,8 +106,8 @@
 	    return false;
 	}
 
-	updateVersion = product["productname"]:"?" + " " +
-	    product["productversion"]:"";
+	updateVersion = new_product["productname"]:"?" + " " +
+	    new_product["productversion"]:"";
 
 	y2milestone ("update from %1 to %2", installedVersion, updateVersion);
 
