@@ -27,13 +27,6 @@
 
     if ( !Update::updateEvaluated )
     {
-	Update::newKernel = Kernel::kernel_packages[0]:"";
-
-	if (Mode::initial)				// running in inst-sys
-	{
-	    Pkg::PkgInstall (Update::newKernel);	// mark kernel as to be installed
-	}
-
 	Update::updateEvaluated = true;
 
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating update packages. One moment please...")));
@@ -48,9 +41,17 @@
 	y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_count, Update::unknown_count);
 
 	map update_inf = Pkg::TargetUpdateInf (Installation::destdir + "/var/lib/YaST/update.inf");
-
-	Update::installedName = update_inf["distname"]:"?";
-	Update::installedVersion = update_inf["distversion"]:"";
+	if (update_inf == nil)
+	{
+	    list products = Pkg::TargetProducts();
+	    Update::installedName = products[0,"distname"]:"?";
+	    Update::installedVersion = products[0,"distversion"]:"";
+	}
+	else
+	{
+	    Update::installedName = update_inf["distname"]:"?";
+	    Update::installedVersion = update_inf["distversion"]:"";
+	}
 
 	integer number_of_sources = size (Packages::theSources);
 	if (number_of_sources <= 0)
