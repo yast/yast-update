@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sat Mar 15 23:14:00 CET 2003 - kkaempf@suse.de
+
+- move the "seen_details" flag to the global Update module (#24927)
+- 2.7.10
+
+-------------------------------------------------------------------
 Fri Mar 14 17:30:48 CET 2003 - kkaempf@suse.de
 
 - if user was in single package selection, he has seen the

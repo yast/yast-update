@@ -55,6 +55,9 @@
     global boolean userChangedState = false;
     // Flag, if user changed the packager state
 
+    global boolean seen_details = false;
+    // Flag, if user has seen all the glory update details
+
     // original targetMap for Storage::, used after [Back]
     // (needed if root partition was changed to discard previous settings)
     global map targetMap_bak = $[];

@@ -212,7 +212,6 @@ if the package should be updated.
     Wizard::SetContents(title, contents, helptext, Args(0),Args(1));
   
     any ret = nil;
-    boolean seen_details = false;
 
     while (true)
     {
@@ -228,7 +227,7 @@ if the package should be updated.
 	    import "SpaceCalculation";
 	    SpaceCalculation::GetPartitionInfo();
 
-	    seen_details = true;
+	    Update::seen_details = true;
 	    if ( Update::unknown_count > 0 )
 	    {
 		UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector), `opt(`updateMode ))); 
@@ -264,7 +263,7 @@ if the package should be updated.
 		ret = `again;
 		break;
 	    }
-	    if (!seen_details
+	    if (!Update::seen_details
 		&& Update::unknown_count > 0 )
 	    {
 		string message =
@@ -301,7 +300,7 @@ Would you like to browse though these packages?
 			    Update::userChangedState = true;
 			}
 			Pkg::ClearSaveState();
-			seen_details = true;
+			Update::seen_details = true;
 		    }
 
 		    break;
