@@ -24,9 +24,15 @@
     define void make_partition_list (boolean withall) ``{
 	partition_list = [];
 	foreach (`p, `i, RootPart::rootPartitions, ``{
-	    if (i[`valid]:false || withall) {
-		string s = i[`longname]:"error";
-		partition_list = add (partition_list, `item (`id (p), s, p));
+	    if (i[`valid]:false || withall)
+	    {
+		string s = i[`name]:"error";
+		if (s == "unknown") s = _("Unknown");
+
+		string a = i[`arch]:"error";
+		if (a == "unknown") a = _("Unknown");
+
+		partition_list = add (partition_list, `item (`id (p), s, p, a));
 	    }
 	});
     }
@@ -56,7 +62,8 @@
 					  `Left (`Label (_("Select System:"))),
 					  `Table (`id (`partition),
 						  `header (_("System"),
-							   _("Root Partition")),
+							   _("Partition"),
+							   _("Architecture")),
 						  partition_list),
 					  `Left(`CheckBox(`id(`showall), `opt(`notify),
 							  _("Show all partitions"), false))

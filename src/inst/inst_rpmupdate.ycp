@@ -43,27 +43,25 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
     //
 
     // progress callback
-    define void setProgress (integer progress)
-    ``{
+    define void setProgress (integer progress) ``{
 	UI::ChangeWidget(`id(`progress), `Value, progress );
     }
 
-    define void rpmrebuild( )
-    ``{
+    define void rpmrebuild () ``{
 	UI::OpenDialog(`opt(`decorated),
-			`VBox( `Heading( _("RPM DB rebuild")) ,
-			     `VBox( `Label(rebuild_message),
-				    `HSpacing(60),
-				    `HBox(
-					  `HSpacing(2),
-					  `ProgressBar(`id(`progress),
-							 _("Status"), 100),
-					  `HSpacing(2)
-					  ),
-				    `VSpacing(1)
-				    )
-			     )
-			); // UI::OpenDialog()
+		       `VBox( `Heading( _("RPM DB rebuild")) ,
+			      `VBox( `Label(rebuild_message),
+				     `HSpacing(60),
+				     `HBox(
+					   `HSpacing(2),
+					   `ProgressBar(`id(`progress),
+							_("Status"), 100),
+					   `HSpacing(2)
+					   ),
+				     `VSpacing(1)
+				     )
+			      )
+		       ); // UI::OpenDialog()
 
 	setProgress (0);
 	Pkg::CallbackProgressRebuildDB ("setProgress");
@@ -71,8 +69,6 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 	Pkg::TargetRebuildDB();
 
 	UI::CloseDialog();
-
-	return;
     };
 
 
@@ -172,36 +168,36 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
     //*********************************************************
 
-	integer count = commit_result[0]:0;
-	y2milestone ("%1 packages installed", count);
+    integer count = commit_result[0]:0;
+    y2milestone ("%1 packages installed", count);
 
-	if (count < 0)
-	{
-	    UI::CloseDialog();
-	    return `abort;
-	}
+    if (count < 0)
+    {
+	UI::CloseDialog();
+	return `abort;
+    }
 
-	list failed = commit_result[1]:[];
-	if (size (failed) > 0)
-	{
-	    y2milestone ("failed: %1", failed);
-	    list previous_failed = SCR::Read (.target.ycp, [Installation::destdir + "/var/lib/YaST2/failed_packages", []]);
-	    if (size (previous_failed) > 0)
-		failed = union (previous_failed, failed);
-	    SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/failed_packages", failed);
-	}
-	list remaining = commit_result[2]:[];
-	if (size (remaining) > 0)
-	{
-	    y2milestone ("remaining: %1", remaining);
-	    SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/remaining", remaining);
-	}
-	list srcremaining = commit_result[3]:[];
-	if (size (srcremaining) > 0)
-	{
-	    y2milestone ("source remaining: %1", srcremaining);
-	    SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/srcremaining", srcremaining);
-	}
+    list failed = commit_result[1]:[];
+    if (size (failed) > 0)
+    {
+	y2milestone ("failed: %1", failed);
+	list previous_failed = SCR::Read (.target.ycp, [Installation::destdir + "/var/lib/YaST2/failed_packages", []]);
+	if (size (previous_failed) > 0)
+	    failed = union (previous_failed, failed);
+	SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/failed_packages", failed);
+    }
+    list remaining = commit_result[2]:[];
+    if (size (remaining) > 0)
+    {
+	y2milestone ("remaining: %1", remaining);
+	SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/remaining", remaining);
+    }
+    list srcremaining = commit_result[3]:[];
+    if (size (srcremaining) > 0)
+    {
+	y2milestone ("source remaining: %1", srcremaining);
+	SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/srcremaining", srcremaining);
+    }
 
 
     //*********************************************************

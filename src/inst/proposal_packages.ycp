@@ -99,8 +99,6 @@
 
 	// Fill return map
 
-	// FIXME: add space check
-
 	ret = $[ "workflow_sequence" : result ];
     }
     else if ( func == "Description" )

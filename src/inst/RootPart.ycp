@@ -11,6 +11,7 @@
 {
     module "RootPart";
 
+    import "Directory";
     import "Storage";
     import "Popup";
 
@@ -19,8 +20,7 @@
     global string selectedRootPartition = "";
 
     // Map of all root partitions (key) and information map (value).
-    // The information map contains the keys `valid, `longname and
-    // `shortname.
+    // The information map contains the keys `valid, `name and `arch.
     global map rootPartitions = $[];
 
     // Number of valid root partitions.
@@ -497,14 +497,75 @@ Check the log file %1.
 
 
     /**
-     * Make the short name for a system out of the long name.
+     * Make a nice name for a system out of the long name.
      */
-    define string MakeShortName (string longname) ``{
+    define string MakeNiceName (string longname) ``{
 	integer p1 = find (longname, "(");
 	if (p1 == -1) return longname;
 	while (p1 > 1 && substring (longname, p1 - 1, 1) == " ")
 	    p1 = p1 - 1;
 	return substring (longname, 0, p1);
+    }
+
+
+    /**
+     * Get architecture of an elf file.
+     */
+    define string GetArchOfELF (string filename) ``{
+	map bash_out = SCR::Execute (.target.bash_output, Directory::ybindir + "/elf-arch " + filename);
+	if (bash_out["exit"]:1 == 0)
+	    return bash_out["stdout"]:"unknown";
+	return "unknown";
+    }
+
+
+    /**
+     * Check a root partition and return map with infomations (see
+     * variable rootPartitions).
+     */
+    define map CheckPartition (map partition) ``{
+
+	map freshman = $[`valid : false, `name : "unknown", `arch : "unknown" ];
+
+	string p_dev = partition["device"]:"error";
+	integer p_fsid = partition["fsid"]:0;
+	symbol p_type = partition["type"]:`primary;
+	symbol p_used_fs = partition["used_fs"]:`unknown;
+
+	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
+
+	if ((p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
+	    contains (possible_root_fs, p_used_fs))
+	{
+	    // mount partition to Installation::destdir
+	    if (SCR::Execute (.target.mount, [p_dev, Installation::destdir, Installation::mountlog]))
+	    {
+		// Is this a root partition, does /etc/fstab exists?
+		if (SCR::Read (.target.size, Installation::destdir + "/etc/fstab") > 0)
+		{
+		    y2milestone("found fstab on %1", partition);
+		    string suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/SuSE-release", "?"]);
+		    if (suse_release == "?")
+		    {
+			suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
+		    }
+		    list release_lines = splitstring (suse_release, "\n");
+		    freshman[`name] = MakeNiceName (release_lines[0]:"?");
+
+		    // Right architecture?
+		    freshman[`arch] = GetArchOfELF (Installation::destdir + "/bin/bash");
+		    if (freshman[`arch]:"unknown" == GetArchOfELF ("/bin/bash"))
+		    {
+			freshman[`valid] = true;
+		    }
+		}
+
+		// unmount partition
+		SCR::Execute (.target.umount, Installation::destdir);
+	    }
+	}
+
+	return freshman;
     }
 
 
@@ -530,9 +591,7 @@ Check the log file %1.
 	SCR::Execute (.target.modprobe, "multipath", "");
 	SCR::Execute (.target.modprobe, "lvm-mod", "");
 
-	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
-
-	if ( Mode::test )
+	if (Mode::test)
 	{
 	    Storage::SetTargetMap (SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
@@ -546,57 +605,17 @@ Check the log file %1.
 	foreach (`device, `description, target_map, ``{
 	    foreach (`partition, description["partitions"]:[], ``{
 
-		map freshman = $[`valid : false];
+		map freshman = $[];
 
-		// Label for an "unknown system"
-		freshman[`longname] = "Unknown";
+		if (Mode::test)
+		    freshman = $[`valid : true, `name : "SuSE Linux 4.2", `arch : "i286" ];
+		else
+		    freshman = CheckPartition (partition);
 
-		string pdev = partition["device"]:"error";
+		rootPartitions = add (rootPartitions, partition["device"]:"error", freshman);
 
-		integer p_fsid = partition["fsid"]:0;
-		symbol p_type  = partition["type"]:`primary;
-
-		if ( (p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
-		     contains(possible_root_fs, partition["used_fs"]:`unknown) )
-		{
-		    // test if partition is root
-		    if ( !Mode::test )
-		    {
-			// mount partition to Installation::destdir
-			if (SCR::Execute (.target.mount, [pdev, Installation::destdir, Installation::mountlog]))
-			{
-			    // Is this a root partition, does /etc/fstab exists ?
-
-			    if (SCR::Read (.target.size, Installation::destdir + "/etc/fstab") > 0)
-			    {
-				y2milestone("found fstab on %1", partition);
-				string suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/SuSE-release", "?"]);
-				if (suse_release == "?")
-				{
-				    suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
-				}
-				list release_lines = splitstring (suse_release, "\n");
-
-				freshman[`valid] = true;
-				freshman[`longname] = release_lines[0]:"?";
-				numberOfValidRootPartitions = numberOfValidRootPartitions + 1;
-			    }
-
-			    // unmount partition
-			    SCR::Execute (.target.umount, Installation::destdir);
-			}
-		    }
-		    else
-		    {
-			freshman[`valid] = true;
-			freshman[`longname] = "SuSE Linux 4.2 (i286)";
-			numberOfValidRootPartitions = numberOfValidRootPartitions + 1;
-		    }
-		}
-
-		freshman[`shortname] = MakeShortName (freshman[`longname]:"error");
-
-		rootPartitions = add (rootPartitions, pdev, freshman);
+		if (freshman[`valid]:false)
+		    numberOfValidRootPartitions = numberOfValidRootPartitions + 1;
 
 	    });
 	});

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jul 10 17:07:03 CEST 2003 - arvin@suse.de
+
+- only offer systems with same architecture as installation
+  medium for update (bug #25377)
+
+-------------------------------------------------------------------
 Fri Jul 04 13:28:03 CEST 2003 - arvin@suse.de
 
 - allow selection of all root partition (bug #16643)
