@@ -3,6 +3,9 @@ Thu Feb 10 15:33:14 CET 2005 - jsrain@suse.cz
 
 - drop message to log if partition cannot be used for upgrade due
   to different architecture (#50656)
+- warn user if he selects partition to upgrade, where no system
+  was founf or the found system has idifferent architecture
+ (#50657)
 
 -------------------------------------------------------------------
 Wed Feb  9 10:25:22 CET 2005 - jsrain@suse.cz

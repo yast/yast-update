@@ -172,6 +172,32 @@ general overview of your system's partitions.
 		UI::ChangeWidget (`id(`partition), `CurrentItem, tmp);
 	    continue;
 	}
+	if ((flavor == `update_dialog || flavor == `update_popup)
+	    && ret == `next)
+	{
+	    string selected = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
+	    map freshman = RootPart::rootPartitions[selected]:$[];
+	    boolean cont = true;
+	    y2milestone ("Selected root partition: %1 %2",
+		selected, freshman);
+	    if (freshman[`name]:"unknown" == "unknown")
+	    {
+		cont = Popup::ContinueCancel (
+// continue-cancel popup
+_("No installed system that can be upgraded with this product was found
+on the selected partition."));
+	    }
+	    else if (freshman[`arch]:"" != RootPart::GetDistroArch ())
+	    {
+		cont = Popup::ContinueCancel (
+// continue-cancel popup
+_("The architecture of the system installed in the selected partition
+is different than the one of this product."));
+
+	    }
+	    if (! cont)
+		ret = nil;
+	}
 
 	if (ret == `cancel || ret == `back || ret == `next)
 	    break;
