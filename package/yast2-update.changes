@@ -3,6 +3,7 @@ Tue Mar 18 14:00:05 CET 2003 - kkaempf@suse.de
 
 - remove old (defective) list of still-to-be-installed source
   rpms (#25578)
+- rename "Boot" to "Bootloader" (#25558)
 - 2.7.14
 
 -------------------------------------------------------------------
