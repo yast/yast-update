@@ -2,7 +2,7 @@
  * File:	clients/update.ycp
  * Module:	System update
  * Summary:	Main update client
- * Authors:	Michal Svec <msvec@suse.cz>
+ * Authors:	Klaus Kaempf <kkaempf@suse.de>
  *
  * $Id$
  */
