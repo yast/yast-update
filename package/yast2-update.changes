@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Sep 16 11:01:10 CEST 2003 - arvin@suse.de
+
+- fixed backup of /etc/rc.config.d
+
+-------------------------------------------------------------------
 Mon Sep 15 16:18:48 CEST 2003 - msvec@suse.cz
 
 - another missing translation mark
