@@ -30,18 +30,23 @@
 // preparing update
 //
 
-  define prepareUpdate() ``{
-      any ret = nil;
-      if ( Pkg::PkgAnyToDelete()
-	  && Pkg::PkgAnyToInstall()
-	  && size ( newKernel ) <= 0 )
+    define symbol prepareUpdate() ``{
+	symbol ret = `none;
+
+	y2milestone ("Pkg::PkgAnyToDelete %1", Pkg::PkgAnyToDelete());
+	y2milestone ("Pkg::PkgAnyToInstall %1", Pkg::PkgAnyToInstall());
+	y2milestone ("newKernel %1", newKernel);
+	if ( false				/// ******** FIXME
+	    && Pkg::PkgAnyToDelete()
+	    && Pkg::PkgAnyToInstall()
+	    && size ( newKernel ) <= 0 )
       {
 	  UI::MessagePopup(_("There is nothing to update."));
 	  ret = `again;
       }
       else
       {
-	  if (!UI(``{
+	  if (!UI::{
 	      OpenDialog(`opt(`decorated, `warncolor),
 	  // configuration was confirmed, pop-up text if we *really* should go on.
   	  // `Yes' will start the update.
@@ -77,7 +82,7 @@ to the previous dialog.
 	      boolean ok = (UserInput() == `yes);
 	      CloseDialog();
 	      return ok;
-	  }))
+	  })		// if UI:: ....
 	  {
 	      ret = `again;
 	  }
