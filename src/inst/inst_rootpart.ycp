@@ -64,9 +64,10 @@
 
     define mountPartition( string partition ) ``{
 	boolean success = true;
-	string message =  _("Partitions could not be mounted.
-Check the log file /var/log/y2log.
-");
+	// popup message, %1 will be replace with the name of the logfile
+	string message =  sformat (_("Partitions could not be mounted.
+Check the log file %1.
+"), "/var/log/YaST2/y2log");
 	y2milestone("selected partition: %1", partition );
 
 	integer ret_from_shell = 0;

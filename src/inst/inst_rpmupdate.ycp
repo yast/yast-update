@@ -33,9 +33,10 @@
 
 
     string rebuild_message = _("Checking package database. This process can take some time.");
-    string rebuild_message_error = _("Checking package database has returned an error.
-Check the log file /var/log/y2log
-");
+    // popup message, %1 will be replace with the name of the logfile
+    string rebuild_message_error = sformat (_("Checking package database has returned an error.
+Check the log file %1.
+"), "/var/log/YaST2/y2log");
 
     integer maxnumbercds = 8;
 
@@ -152,7 +153,7 @@ Check the log file /var/log/y2log
 
     integer media_number = 0;
 
-    Pkg::TargetLogfile (Installation::destdir+"/var/log/YaST2/y2logRPM");
+    Pkg::TargetLogfile (Installation::destdir + "/var/log/YaST2/y2logRPM");
 
     if ( Mode::initial )
     {

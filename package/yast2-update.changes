@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 24 13:20:51 CET 2003 - kkaempf@suse.de
+
+- fix logfile name in error popup (#24188)
+
+-------------------------------------------------------------------
 Wed Feb 12 16:15:53 CET 2003 - kkaempf@suse.de
 
 - remove "/usr/share/info/dir" on target if not owned by

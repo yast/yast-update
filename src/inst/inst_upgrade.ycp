@@ -29,7 +29,7 @@
 
     Pkg::SetLocale (Language::language);
 
-    SCR::Execute(.target.mkdir, Installation::destdir+"/var/log/YaST2");	// just in case
+    SCR::Execute(.target.mkdir, Installation::destdir + "/var/log/YaST2");	// just in case
     Pkg::TargetLogfile (Installation::destdir+"/var/log/YaST2/y2logRPM");
 
     UI::OpenDialog(`opt(`decorated ),
