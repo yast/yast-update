@@ -148,6 +148,11 @@
 
 	symbol result = WFM::CallFunction (`inst_update (true, has_next));
 
+	if (result == `next)
+	{
+	    Update::did_init1 = false;
+	}
+
 	// Fill return map
 
 	ret = $[ "workflow_sequence" : result ];
