@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jan  4 18:15:35 CET 2001 - kkaempf@suse.de
+
+- fix Requires field
+
+-------------------------------------------------------------------
 Thu Jan  4 17:41:13 CET 2001 - kkaempf@suse.de
 
 - declare needed global vars correctly
