@@ -28,8 +28,6 @@ Summary:	YaST2 update
 %files
 %defattr(-,root,root)
 @ybindir@/*
-@configdir@/*.y2cc
-@desktopdir@/*.desktop
 @moduledir@/*.ycp
 @clientdir@/*.ycp
 
