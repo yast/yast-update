@@ -36,8 +36,6 @@
     map lang2yast1 = SCR(`Read(.target.yast2, "lang2yast1.ycp"));
     string long_language = lookup(lang2yast1, language, "english");
 
-    PKGINFO( `setDebugLevel(3) );
-
     InstMedia::initializeInstMedia ($[]);
     
     integer medium_number = InstMedia::MountMedium ( 1 );	// don't show additional popup
@@ -80,8 +78,8 @@ Continue with choosing new installation source?"));
 	CallFunction( `inst_suseconfig (false, false) );
     }
 
-    // Kill pkginfo, in order to release file-handles
-    PKGINFO();
+    // Kill package agent, in order to release file-handles
+    SCR::UnmountAgent(.package);
     
     InstMedia::UnmountMedium ();
     UI::CloseDialog();
