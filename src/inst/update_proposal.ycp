@@ -152,7 +152,7 @@
 	if (Update::onlyUpdateInstalled)
 	{
 	    // Proposal for backup during update
-	    tmp = add (tmp, _("Only Update installed Packages"));
+	    tmp = add (tmp, _("Only Update Installed Packages"));
 	}
 	else
 	{
