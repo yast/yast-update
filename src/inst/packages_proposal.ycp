@@ -70,17 +70,17 @@
 
 	list<string> tmp = [];
 
-	// proposal for packages during update
-	tmp = add (tmp, sformat (_("Packages to update: %1"),
+	// proposal for packages during update, %1 is count of packages
+	tmp = add (tmp, sformat (_("Packages to Update: %1"),
 	    Update::packages_to_update));
-	// proposal for packages during update
-	tmp = add (tmp, sformat (_("Packages to install anew: %1"),
+	// proposal for packages during update, %1 is count of packages
+	tmp = add (tmp, sformat (_("New Packages to Install: %1"),
 	    Update::packages_to_install));
-	// proposal for packages during update
-	tmp = add (tmp, sformat (_("Packages to remove: %1"),
+	// proposal for packages during update, %1 is count of packages
+	tmp = add (tmp, sformat (_("Packages to Remove: %1"),
 	    Update::packages_to_remove));
 	// part of summary, %1 is size of packages (in MB or GB)
-	tmp = add (tmp, sformat (_("Total size of packages to update: %1"),
+	tmp = add (tmp, sformat (_("Total Size of Packages to Update: %1"),
 	    Packages::CountSizeToBeInstalled ()));
 
 	if (Update::solve_errors > 0)
