@@ -2,6 +2,7 @@
 Tue Mar 29 10:57:13 CEST 2005 - jsrain@suse.cz
 
 - updated the layout of the source files in the repository
+- report error from the mount command in case of fail (#72485)
 
 -------------------------------------------------------------------
 Fri Mar 11 11:18:49 CET 2005 - jsrain@suse.cz
