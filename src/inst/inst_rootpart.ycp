@@ -431,6 +431,10 @@ Check the log file %1.
 			    {
 				y2milestone("found fstab on :%1", partition);
 				string suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/SuSE-release", "?"]);
+				if (suse_release == "?")
+				{
+				    suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
+				}
 				list release_lines = splitstring (suse_release, "\n");
 				partitionMap[pdev] = release_lines[0]:"?";
 			    }
