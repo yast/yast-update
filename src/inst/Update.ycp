@@ -38,6 +38,9 @@
     global boolean updateEvaluated = false;
     // Flag if the updatelist has already evaluated
 
+    global string installedName = "";
+    // Name of the targetsystem
+
     global string installedVersion = "";
     // Version of the targetsystem
 
