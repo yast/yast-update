@@ -82,6 +82,8 @@
 
 	    if (SCR::Read (.target.size, Installation::destdir + "/etc/sysconfig") > 0)
 	    {
+		y2milestone ("backup of /etc/sysconfig");
+
 		string filename = "";
 		integer num = 0;
 
@@ -105,8 +107,10 @@
 		}
 	    }
 	    else if (SCR::Read (.target.size, Installation::destdir + "/etc/rc.config") > 0 &&
-		     SCR::Read (.target.size, Installation::destdir + "/etc/rc.config.d"))
+		     SCR::Read (.target.size, Installation::destdir + "/etc/rc.config.d") > 0)
 	    {
+		y2milestone ("backup of /etc/rc.config.d");
+
 		string filename = "";
 		integer num = 0;
 
