@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Dec 13 19:11:27 MET 2000 - schubi@suse.de
+
+- new menue-entry 
+
+-------------------------------------------------------------------
 Wed Dec 13 16:04:03 MET 2000 - schubi@suse.de
 
 - YaST2 version read and stored into global variable	 
