@@ -2,11 +2,8 @@
 # Makefile.am for y2c_update/src
 #
 
-modulesdir = $(YAST2DIR)/clients
-menudir = $(YAST2DIR)/menuentries
+module_SCRIPTS = sw_update.ycp
 
-modules_SCRIPTS = sw_update.ycp
+config_DATA = sw_update.y2cc
 
-menu_SCRIPTS = menuentry_sw_update.y2cc
-
-EXTRA_DIST = $(modules_SCRIPTS) $(menu_SCRIPTS)
+EXTRA_DIST = $(module_SCRIPTS) $(config_DATA)
