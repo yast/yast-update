@@ -90,14 +90,6 @@ Check the log file /var/log/y2log
     SlideShow::SetLanguage( language );
     SlideShow::OpenSlideShowDialog();
 
-    if ( Mode::cont )
-    {
-	y2milestone("Starting second part of package update");
-
-	// Initalize package agent
-	Update::Restore();
-    }
-
     if ( Mode::initial )
     {
 	// /etc/inittab will be overridden by package aaa_base. So we will
@@ -128,12 +120,9 @@ Check the log file /var/log/y2log
 
     SlideShow::InitPkgData();
 
-    if ( !Mode::cont )
-    {
-	y2milestone ("rpmrebuild");
-	// rebuilding RPM-Database only while first run of installation
-	rpmrebuild();
-    }
+    y2milestone ("rpmrebuild");
+    // rebuilding RPM-Database only while first run of installation
+    rpmrebuild();
 
     any ret = `ok;
 
@@ -149,6 +138,8 @@ Check the log file /var/log/y2log
 
     SlideShow::UpdateAllCdProgress (false);
     SlideShow::StartTimer();
+
+    Pkg::TargetLogfile (Installation::destdir+"/var/log/YaST2/y2logRPM");
 
     if ( Mode::initial )
     {
@@ -198,9 +189,9 @@ Check the log file /var/log/y2log
 
     y2milestone("%1 packages have been installed", Update::packagesInstalled);
 
-    if (Mode::cont)
+    if (Mode::initial)
     {
-	SCR::Execute(.target.remove, "/var/lib/YaST2/runme_at_boot");
+	SCR::Write(.target.string, Installation::destdir + "/var/lib/YaST2/update_mode", "YES");
     }
 
     // close "Slide" dialog (inst_rpmupdate doesn't use the "Wizard" dialog)
