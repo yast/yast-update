@@ -69,13 +69,25 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
 	if (Update::remove_old_backups)
 	{
-	    // FIXME
+	    SCR::Execute (.target.bash, "/bin/rm -f " + Installation::destdir +
+			  Update::backup_path + "/*-*-*.tar.{gz,bz2}");
 	}
 
 	if (Update::backup_sysconfig)
 	{
-	    string filename = timestring ("%Y%m%d", time(), false);
-	    filename = Update::backup_path + "/" + "etc-sysconfig-" + timestring + ".tar.bz2";
+	    string date = timestring ("%Y%m%d", time(), false);
+
+	    string filename = "";
+	    integer num = 0;
+
+	    while (num < 10)
+	    {
+		filename = Update::backup_path + "/etc.sysconfig-" + date + "-" +
+		    sformat ("%1", num) + ".tar.bz2";
+		if (SCR::Read (.target.size, filename) == -1)
+		    break;
+		num = num + 1;
+	    }
 
 	    if (SCR::Execute (.target.bash, "/bin/tar cjf " + Installation::destdir + filename +
 			      " " + Installation::destdir + "/etc/sysconfig") != 0)
