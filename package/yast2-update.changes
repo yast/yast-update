@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul 04 13:22:03 CEST 2003 - arvin@suse.de
+
+- convert update workflow into a proposal
+
+-------------------------------------------------------------------
 Tue Mar 18 15:04:31 CET 2003 - kkaempf@suse.de
 
 - Set Mode::update so Bootloader clean old boot configuration
@@ -23,7 +28,7 @@ Tue Mar 18 11:43:46 CET 2003 - kkaempf@suse.de
 Tue Mar 18 11:32:41 CET 2003 - sh@suse.de
 
 - Fixed complaints about undeclared variable Upgrade::userChangedState
-  (it's Update::userChangedState) 
+  (it's Update::userChangedState)
 
 -------------------------------------------------------------------
 Mon Mar 17 11:52:45 CET 2003 - kkaempf@suse.de
