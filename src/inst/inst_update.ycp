@@ -93,35 +93,34 @@ based on the selection:"), false)),
 	      `Left(`CheckBox(`id(`delete),
 			      // check box label
 			      // translator: add a & shortcut
-			      _("&Clean up the system - delete unmaintained packages."), true)),
+			      _("&Delete unmaintained packages."), true)),
 	      `VSpacing(1),
 	      `Label( `id(`wrn_label), wrn_msg )
 	      )
 	);
 
 
-    // explain chooseable system configurations
-    // but beware: some of the text in <b>'s, e.g. Default comes from the index file,
-    // translations must be consistent with po/index/index.??.po
-    // help part 1 of 3
+    // help text for dialog "update options" 1/4
+    string helptext = _("<p>The update options differs between two modes. In
+either case it is recommended to make a backup of your personal data.</p>");
 
-    string helptext = _("<p>
-It is recommended to update
-your system to one of the
-predefined software selections
-to make use of the new
-features and benefits of
-the new <b>SuSE Linux</b> version.
-</p>
-");
-    // help part 2 of 3
-    helptext = helptext + _("<p>
-You may, however, decide to update
-only the packages already installed
-on your system. In this case,
-some important packages might
-be missing, such as new YaST2 modules.
-</p>\n");
+    // help text for dialog "update options" 2/4
+    helptext = helptext + _("<p><b>With new software:</b> This default setting
+will update the existing software and install all new features and benefits of
+the new SuSE Linux version. The selection is based on the former pre-defined
+software selection.</p>");
+
+    // help text for dialog "update options" 3/4
+    helptext = helptext + _("<p><b>Only installed packages:</b> This selection
+will only update the packages already installed on your system. <i>Note:</i>
+New software in the pre-defined software selection, e.g. new YaST modules, is
+not available after the update. You might miss advertised features.</p>");
+
+    // help text for dialog "update options" 4/4
+    helptext = helptext + _("<p>After the update some software might not
+function anymore. Active <b>Delete unmaintained packages</b> to delete those
+packages during the update.</p>");
+
 
     Wizard::OpenAcceptDialog ();
 
