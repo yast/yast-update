@@ -9,6 +9,8 @@
     textdomain "update";
 
     import "HTML";
+    import "Update";
+    import "Mode";
 
     string func  = WFM::Args(0);
     map    param = WFM::Args(1);
@@ -24,6 +26,18 @@
 	// DummyMod::MakeProposal( force_reset );
 
 	// Fill return map
+
+	if (Update::selectedRootPartition != "" && !Update::did_try_mount_partitions)
+	{
+	    UI::OpenDialog (`opt(`decorated ),
+			    `Label(_("Mounting partitions. One moment please...")));
+
+	    boolean tmp = Update::MountPartitions (Update::selectedRootPartition);
+
+	    sleep (1000);
+
+	    UI::CloseDialog ();
+	}
 
 	ret = $[ "preformatted_proposal" :
 		 // Proposal for backup during update

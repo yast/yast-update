@@ -25,6 +25,8 @@
 
 	// Fill return map
 
+	// FIXME: add space check
+
 	ret = $[ "preformatted_proposal" :
 		 // Proposal for backup during update
 		 HTML::List (["Update 12 packages",
@@ -40,9 +42,11 @@
 	//
 	// sequence = DummyMod::AskUser( has_next );
 
-	symbol result = WFM::CallFunction (`inst_backup (true, has_next));
+	symbol result = WFM::CallFunction (`inst_packages (true, true));
 
 	// Fill return map
+
+	// FIXME: add space check
 
 	ret = $[ "workflow_sequence" : result ];
     }

@@ -105,6 +105,7 @@
 				    `Left(`CheckBox(`id(`sysconfig),`opt(`notify),
 						    // checkbox label if user wants to backup /etc/sysconfig
 						    _("Create complete backup of /etc/sysconfig"))),
+				    `VSpacing (1),
 				    `Left(`CheckBox(`id(`remove),`opt(`notify),
 						    // checkbox label if user wants remove old backup stuff
 						    _("Remove old backups from backup directory"))),
@@ -117,7 +118,7 @@
     string helptext = _("<p>
 It is possible to make a <b>backup</b> of your existing system.
 Please be aware that it will not be a complete backup. Only your
-configuration files will be saved.
+configuration files will be saved. FIXME
 </p>
 ");
 

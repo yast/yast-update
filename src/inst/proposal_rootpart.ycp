@@ -26,15 +26,20 @@
 
 	// Fill return map
 
-	if (!Update::didSearchForRootPartitions || force_reset)
+	if (!Update::didSearchForRootPartitions)
 	{
 	    UI::OpenDialog (`opt(`decorated ),
 			    `Label(_("Evaluating root partition. One moment please...")));
 
-	    Update::FindRootPartitions (force_reset);
+	    Update::FindRootPartitions ();
 
 	    UI::CloseDialog ();
 
+	    Update::selectedRootPartition = "";
+	}
+
+	if (force_reset)
+	{
 	    Update::selectedRootPartition = "";
 	}
 
@@ -89,11 +94,14 @@
 	//
 	// sequence = DummyMod::AskUser( has_next );
 
+	string tmp = Update::selectedRootPartition;
+
 	symbol result = WFM::CallFunction (`inst_rootpart (true, has_next, `update_dialog));
 
 	// Fill return map
 
-	ret = $[ "workflow_sequence" : result ];
+	ret = $[ "workflow_sequence" : result,
+		 "rootpart_changed" : Update::selectedRootPartition != tmp ];
     }
     else if ( func == "Description" )
     {
