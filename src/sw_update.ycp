@@ -6,6 +6,11 @@
 
 {
   include "package_utils.ycp";
+  Include (`yast_version());
+  string version = yast_version ();
+
+  y2milestone ( "YaST2-version: %1", version );
+  
   // Menuentry for the YaST2 menu
   if (Args() == [ "get_menuentry" ]) 
       return [ 
