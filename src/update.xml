@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!DOCTYPE productDefines SYSTEM "/usr/share/YaST2/control/control.dtd">
+<productDefines  xmlns="http://www.suse.com/1.0/yast2ns"
+    xmlns:config="http://www.suse.com/1.0/configns">
+
+<!--
+Work around for the text domain
+textdomain="update"
+-->
+
+    <textdomain>update</textdomain>
+
+    <proposals config:type="list">
+        <proposal>
+            <label>Update Settings</label>
+            <mode>update</mode>
+            <name>update</name>
+            <stage>normal</stage>
+            <proposal_modules config:type="list">
+                <proposal_module>update</proposal_module>
+                <proposal_module>packages</proposal_module>
+                <proposal_module>backup</proposal_module>
+                <proposal_module>language</proposal_module>
+            </proposal_modules>
+        </proposal>
+    </proposals>
+
+    <workflows config:type="list">
+        <workflow>
+	    <label>Update</label>
+            <defaults>
+                <archs>all</archs>
+            </defaults>
+            <stage>normal</stage>
+            <mode>update</mode>
+            <modules  config:type="list">
+                <module>
+	            <label>Update Settings</label>
+                    <name>inst_proposal</name>
+                    <proposal>update</proposal>
+                </module>
+                <module>
+                    <name>inst_kickoff</name>
+	            <label>Perform Update</label>
+                </module>
+                <module>
+                    <name>inst_rpmcopy</name>
+	            <label>Perform Update</label>
+                    <postscript>
+                        <interpreter>shell</interpreter>
+                        <source>
+<![CDATA[#!/bin/sh
+/usr/lib/YaST2/bin/gnome-postinstall
+]]>
+                        </source>
+                    </postscript>
+                </module>
+                <module>
+	            <label>Clean Up</label>
+                    <name>inst_suseconfig</name>
+                </module>
+            </modules>
+        </workflow>
+    </workflows>
+</productDefines>

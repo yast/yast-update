@@ -61,7 +61,7 @@ You will lose that selection if you change the basic selection.");
     // Build and show dialog
 
     string from_version = RootPart::GetInfoOfSelected (`name);
-    string to_version = Update::updateVersion["nameandversion"]:"?";
+    string to_version = Update::updateVersion["nameandversion"]:_("Unknown");
 
     term contents = `HVSquash(
 	`VBox(

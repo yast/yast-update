@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb  8 05:01:26 CET 2005 - nashif@suse.de
+
+- #49987: Update running system now has its own control file with
+  a mini workflow.
+
+-------------------------------------------------------------------
 Mon Feb  7 14:25:20 CET 2005 - jsrain@suse.cz
 
 - merged texts from proofread
