@@ -26,12 +26,12 @@
 
 	// Fill return map
 
-	if (size (Update::validRootPartitions) == 0 || force_reset)
+	if (!Update::didSearchForRootPartitions || force_reset)
 	{
 	    UI::OpenDialog (`opt(`decorated ),
 			    `Label(_("Evaluating root partition. One moment please...")));
 
-	    Update::FindRootPartitions ();
+	    Update::FindRootPartitions (force_reset);
 
 	    UI::CloseDialog ();
 
@@ -59,7 +59,7 @@
 		}
 		else
 		{
-		    symbol result = WFM::CallFunction (`inst_rootpart (true, true, true));
+		    symbol result = WFM::CallFunction (`inst_rootpart (true, true, `update_popup));
 		}
 	    }
 
@@ -89,7 +89,7 @@
 	//
 	// sequence = DummyMod::AskUser( has_next );
 
-	symbol result = WFM::CallFunction (`inst_rootpart (true, has_next, false));
+	symbol result = WFM::CallFunction (`inst_rootpart (true, has_next, `update_dialog));
 
 	// Fill return map
 

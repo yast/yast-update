@@ -11,15 +11,9 @@
 {
     textdomain "update";
 
-    // import "Mode";
-    // import "Installation";
-    // import "Storage";
-    // import "FileSystems";
     import "Wizard";
     import "Update";
-    // import "Language";
-    // import "Mouse";
-    // import "Timezone";
+
 
     if ( !Mode::initial )
     {
@@ -28,31 +22,34 @@
     }
 
 
-    boolean as_popup = false;
-    if (size (WFM::Args ()) >= 3 && is (WFM::Args (0), boolean))
-    {
-	as_popup = WFM::Args (2);
-    }
+    // This dialog comes in three different flavors: `update_dialog,
+    // `update_popup and `boot_popup
+    symbol flavor = WFM::Args (2);
 
-    // include "partitioning/partition_defines.ycp";
-    // include "partitioning/custom_part_helptexts.ycp";
-    // include "partitioning/custom_part_dialogs.ycp";
 
     list partition_list = [];
     foreach (`p, `r, Update::validRootPartitions, ``{
 	partition_list = add (partition_list, `item (`id (p), r, p));
     });
 
+
+    string heading = "";
+    if (flavor == `boot_popup)
+	heading = _("Select System to Boot");
+    else
+	heading = _("Select System to Update");
+
+
     term contents = `VBox (
 			   // heading for 'select root partiton' dialogue
-			   `Heading ( _("Select System") ),
+			   `Heading ( heading ),
 			   `VSpacing (0.5),
 			   `HCenter (
 				     `HSquash (
 					       `VBox (
 						      `HSpacing( 40 ),	// force minimum width
 						      // label for selection list of root partitions
-						      `Left (`Label (_("Select your root partition:"))),
+						      `Left (`Label (_("Select System:"))),
 						      `Table (
 							      `id (`partition),
 							      `header (_("System"), _("Partition")),
@@ -64,14 +61,30 @@
 			   `VSpacing (2)
 			   );
 
-    // helptext for root-partition
+    // helptext for root partition
     string help_text = _("<p>
 Select the <b>root partition</b> to use.
 </p>
 ");
 
-    if (as_popup)
+    if (flavor == `update_dialog)
     {
+	Wizard::OpenAcceptDialog ();
+	Wizard::SetContents ("", contents, help_text, Args(0), Args(1));
+    }
+    else
+    {
+	term buttons = `PushButton (`id(`next), `opt(`default), UI::OKButtonLabel());
+
+	if (flavor == `boot_popup)
+	{
+	    buttons = `HBox (
+			     `HWeight( 1, `PushButton(`id(`next), `opt(`default), UI::OKButtonLabel() ) ),
+			     `HSpacing( 1 ),
+			     `HWeight( 1, `PushButton(`id(`cancel), UI::CancelButtonLabel() ) )
+			     );
+	}
+
 	term full = `HBox (
 			   `VSpacing( 16 ),		// force dialog height
 			   `VBox(
@@ -82,49 +95,53 @@ Select the <b>root partition</b> to use.
 			   `VBox(
 				 `VSpacing( 1 ),
 				 contents,
-				 `PushButton (`id(`next), `opt(`default), UI::OKButtonLabel())
+				 buttons
 				 ),
 			   `HSpacing( 3 )
 			   );
 
 	UI::OpenDialog (full);
     }
+
+    if (flavor == `update_dialog || flavor == `update_popup)
+    {
+	if (size (Update::selectedRootPartition) > 0)
+	    UI::ChangeWidget (`id(`partition), `CurrentItem, Update::selectedRootPartition);
+    }
     else
     {
-	Wizard::OpenAcceptDialog ();
-	Wizard::SetContents ("", contents, help_text, Args(0), Args(1));
-    }
-
-    if (size (Update::selectedRootPartition) > 0)
-    {
-	UI::ChangeWidget (`id(`partition), `CurrentItem, Update::selectedRootPartition);
+	if (size (Update::selectedRootPartitionForBooting) > 0)
+	    UI::ChangeWidget (`id(`partition), `CurrentItem, Update::selectedRootPartitionForBooting);
     }
 
     any ret = nil;
 
     while (true)
     {
-	if (as_popup)
-	    ret = UI::UserInput ();
-	else
+	if (flavor == `update_dialog)
 	    ret = Wizard::UserInput ();
+	else
+	    ret = UI::UserInput ();
 
 	if (ret == `abort && CallFunction (`inst_confirm_abort (`painless)))
 	    break;
 
-	if (ret == `back || ret == `next)
+	if (ret == `cancel || ret == `back || ret == `next)
 	    break;
     }
 
     if (ret == `next)
     {
-	Update::selectedRootPartition = UI::QueryWidget (`id(`partition), `CurrentItem);
+	if (flavor == `update_dialog || flavor == `update_popup)
+	    Update::selectedRootPartition = UI::QueryWidget (`id(`partition), `CurrentItem);
+	else
+	    Update::selectedRootPartitionForBooting = UI::QueryWidget (`id(`partition), `CurrentItem);
     }
 
-    if (as_popup)
-	UI::CloseDialog ();
-    else
+    if (flavor == `update_dialog)
 	Wizard::CloseDialog ();
+    else
+	UI::CloseDialog ();
 
     return ret;
 }

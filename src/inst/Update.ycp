@@ -27,11 +27,17 @@
 
     global integer last_runlevel = -1;
 
-    global string selectedRootPartition = "";
     // selected rootpartition for the update
+    global string selectedRootPartition = "";
 
-    global map validRootPartitions = $[];
+    // selected rootpartition for booting
+    global string selectedRootPartitionForBooting = "";
+
     // available rootpartitions (key) and SuSE versions (value)
+    global map validRootPartitions = $[];
+
+    // did we search for root partitions
+    global boolean didSearchForRootPartitions = false;
 
     global boolean onlyUpdateSelected = false;
     // Only an update, NOT an upgrade
@@ -470,9 +476,10 @@ Check the log file %1.
      * modules.
      * @return void
      */
-    global define void FindRootPartitions () ``{
+    global define void FindRootPartitions (boolean force) ``{
 
-	validRootPartitions = $[];
+	if (didSearchForRootPartitions && !force)
+	    return;
 
 	SCR::Execute (.target.modprobe, "reiserfs", "");
 	SCR::Execute (.target.modprobe, "jfs", "");
@@ -494,6 +501,8 @@ Check the log file %1.
 	}
 
 	y2milestone ("targetMap: %1", targetMap);
+
+	validRootPartitions = $[];
 
 	foreach (`device, `description, targetMap,
 	``{
@@ -542,6 +551,8 @@ Check the log file %1.
 		}
 	    });
 	});
+
+	didSearchForRootPartitions = true;
 
 	y2milestone ("validRootPartitions: %1", validRootPartitions);
     }
