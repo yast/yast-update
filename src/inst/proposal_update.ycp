@@ -52,16 +52,37 @@
 
 	    Pkg::PkgReset ();
 
-	    if (!Update::did_init2) {
+	    if (!Update::did_init2)
+	    {
 		Update::did_init2 = true;
 		Update::ProposeSelection ();
 	    }
 
-	    if (Update::onlyUpdateSelected)
-		Pkg::SetSelection ("");
-	    else
-		Pkg::SetSelection (Update::selected_selection);
-	    Pkg::ActivateSelections ();
+	    if (Update::onlyUpdateSelected)			// just consider already installed packages
+	    {
+		Pkg::SetSelection ("");				// -> don't select any additional selections
+	    }
+	    else						// update selections too
+	    {
+		Pkg::SetSelection (Update::selected_selection);	// -> set the base selection (minimal, default, ....)
+
+		// now compare installed (old) selections against available (new) selections
+		//  and set all selections which are installed (old) and available (new)
+		//  as 'to be installed' -> UI will show "to be updated" for these selections
+
+		list available_addons = Pkg::GetSelections (`available, "");
+		list installed_addons = Pkg::GetSelections (`installed, "");
+
+		foreach (`installed, installed_addons,
+		``{
+		    if (contains (available_addons, installed))		// we have a newer selection for an installed one
+		    {
+			Pkg::SetSelection (installed);			// update this selection too (selection solving included)
+		    }
+		});
+	    }
+
+	    Pkg::ActivateSelections ();					// no go through all selected selections and select their packages
 
 	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 	    Update::affected_packages = tmp1[0]:0;

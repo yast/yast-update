@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 18 13:46:33 CEST 2003 - kkaempf@suse.de
+
+- if there are replacements for installed selections, use them
+  (#31211)
+
+-------------------------------------------------------------------
 Wed Sep 17 15:39:17 CEST 2003 - arvin@suse.de
 
 - activate lvm while searching for root partitions (bug #30723)
