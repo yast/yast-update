@@ -25,12 +25,13 @@
     string title = _("Update Options");
 
 
-    // create box with base selections
-
-    term baseconfsbox = `VBox ();
-    list available_base_selections = Pkg::GetSelections (`available, "base");
+    // current selection and list of base selections
     string current_selection = Update::GetSelection ();
+    list available_base_selections = Pkg::GetSelections (`available, "base");
 
+
+    // create box with base selections
+    term baseconfsbox = `VBox ();
     foreach (`selection, available_base_selections, ``{
 	map selection_data = Pkg::SelectionData (selection);
 	string selection_summary = selection_data["summary"]:"";
@@ -75,7 +76,7 @@ You will lose that selection if you change the basic selection.");
 						     `VSpacing(0.5),
 						     `HBox(
 							   `HSpacing(4),
-							   `RadioButtonGroup(`id(`baseconf),`opt(`notify), baseconfsbox)
+							   `RadioButtonGroup(`id(`baseconf), baseconfsbox)
 							   ),
 						     `VSpacing(1.5),
 						     `Left(`RadioButton(`id(`notupgrade),`opt(`notify),
@@ -88,10 +89,10 @@ You will lose that selection if you change the basic selection.");
 			    )
 		      ),
 
-	      `Left(`CheckBox(`id(`delete),`opt(`notify),
+	      `Left(`CheckBox(`id(`delete),
 			      // check box label
 			      // translator: add a & shortcut
-			      _("&Clean up the system - delete unmaintained packages."), Update::deleteOldPackages) ),
+			      _("&Clean up the system - delete unmaintained packages."), true)),
 	      `VSpacing(1.5),
 	      `Label( `id(`wrn_label), wrn_msg )
 	      )
@@ -123,114 +124,78 @@ be missing, such as new YaST2 modules.
 
     Wizard::OpenAcceptDialog ();
 
-    Wizard::SetContents(title, contents, helptext, Args(0),Args(1));
+    Wizard::SetContents (title, contents, helptext, Args(0), Args(1));
 
-    if ( Update::onlyUpdateSelected )
-    {
-	foreach (`sel, available_base_selections, ``{
-	    UI::ChangeWidget(`id(sel), `Enabled, false);
-	});
+    UI::ChangeWidget(`id(`upgrade), `Value, !Update::onlyUpdateSelected);
+    UI::ChangeWidget(`id(`notupgrade), `Value, Update::onlyUpdateSelected);
 
-	UI::ChangeWidget(`id(`notupgrade), `Value, true);
-    }
-    else
-    {
-	foreach (`sel, available_base_selections, ``{
-	    UI::ChangeWidget(`id(sel), `Enabled, true);
-	});
+    foreach (`sel, available_base_selections, ``{
+	UI::ChangeWidget(`id(sel), `Enabled, !Update::onlyUpdateSelected);
+    });
 
-	UI::ChangeWidget(`id(`upgrade), `Value, true);
-    }
+    UI::ChangeWidget(`id(`delete), `Value, Update::deleteOldPackages);
 
     any ret = nil;
 
-    list current_sel = [];
+    Update::userChangedState = true;
 
     while (true)
     {
-	list save_sel = [];
-	boolean save_notupgrade = UI::QueryWidget(`id(`notupgrade), `Value);
-
-	if ( !Update::onlyUpdateSelected )
-	{
-	    save_sel = add( save_sel, UI::QueryWidget(`id(`baseconf), `CurrentButton));
-	}
-
 	ret = Wizard::UserInput ();
 
 	if (ret == `abort && CallFunction (`inst_confirm_abort (`painless)))
 	    break;
 
-	// Add the selection of the basic group
-
-	current_sel = [];
-	if (  !UI::QueryWidget(`id(`notupgrade), `Value) )
+	if (ret == `upgrade || ret == `notupgrade)
 	{
-	    current_sel = add(current_sel, UI::QueryWidget(`id(`baseconf),`CurrentButton));
+	    boolean tmp = UI::QueryWidget (`id(`upgrade), `Value);
+	    foreach (`sel, available_base_selections, ``{
+		UI::ChangeWidget(`id(sel), `Enabled, tmp);
+	    });
+
+	    continue;
 	}
 
-	if (save_sel != current_sel
-	    || save_notupgrade != UI::QueryWidget(`id(`notupgrade), `Value)
-	    || Update::deleteOldPackages !=  UI::QueryWidget( `id(`delete), `Value ))
+	if (ret == `next && Update::userChangedState)
 	{
-	    Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
-	    if (!Update::userChangedState
-		// yes/no question
-		|| UI::YesNoPopup(_("Do you really want\nto reset your detailed selection?") ) )
+	    boolean something_changed = false;
+
+	    if (UI::QueryWidget (`id(`notupgrade), `Value) != Update::onlyUpdateSelected)
+		something_changed = true;
+
+	    if (UI::QueryWidget (`id(`upgrade), `Value) &&
+		current_selection != UI::QueryWidget(`id(`baseconf), `CurrentButton))
+		something_changed = true;
+
+	    if (UI::QueryWidget (`id(`delete), `Value ) != Update::deleteOldPackages)
+		something_changed = true;
+
+	    if (something_changed)
 	    {
-		if ( save_sel != current_sel
-		     && !UI::QueryWidget(`id(`notupgrade), `Value))
-		{
-		    // software-group-selection has been changed
-		    Pkg::SetSelection (current_sel[0]:"");
-		    Update::onlyUpdateSelected = false;
- 		}
-		else
-		{
-		    if ( UI::QueryWidget(`id(`notupgrade), `Value) )
-		    {
-			Update::onlyUpdateSelected = true;
-
-			foreach(`sel, available_base_selections, ``{
-			    UI::ChangeWidget(`id(sel), `Enabled, false);
-			});
-		    }
-		    else
-		    {
-			Update::onlyUpdateSelected = false;
-			Pkg::SetSelection ("default");
-		    }
-		}
-
-		// resetting package-selection
-		Pkg::ActivateSelections ();
-
-		// Evaluate update packages new
-		Update::updateEvaluated = false;
-		Update::userChangedState = false;
+		// yes/no question
+		if (!UI::YesNoPopup (_("Do you really want\nto reset your detailed selection?")))
+		    continue;
 	    }
-
-	    // rebuild
-	    ret = `again;
 	}
 
 	if (ret == `back || ret == `next)
 	    break;
     }
 
-    // set the flag 'deleteOldPackages' to inform inst_sw_update.ycp
     if (ret == `next)
     {
 	Update::onlyUpdateSelected = UI::QueryWidget (`id(`notupgrade), `Value);
 	Update::deleteOldPackages = UI::QueryWidget (`id(`delete), `Value);
 
-	if (!Update::onlyUpdateSelected)
-	{
-	    // software-group-selection must change
-	    Pkg::SetSelection (current_sel[0]:"");
-	    Pkg::ActivateSelections ();
-	    Update::onlyUpdateSelected = false;
-	}
+	Update::updateEvaluated = false;
+	Update::userChangedState = false;
+
+	if (Update::onlyUpdateSelected)
+	    Pkg::SetSelection ("default");
+	else
+	    Pkg::SetSelection (UI::QueryWidget(`id(`baseconf), `CurrentButton));
+
+	Pkg::ActivateSelections ();
     }
 
     Wizard::CloseDialog ();
