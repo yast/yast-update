@@ -67,13 +67,13 @@
 	list tmp = [];
 
 	// proposal for packages during update
-	tmp = add (tmp, sformat (_("Affected packages: %1"),
+	tmp = add (tmp, sformat (_("Affected Packages: %1"),
 				 Update::affected_count));
 
 	if (Update::unknown_count > 0)
 	{
 	    // proposal for packages during update
-	    tmp = add (tmp, sformat (_("Packages to check manually: %1"),
+	    tmp = add (tmp, sformat (_("Packages to Check Manually: %1"),
 				     Update::unknown_count));
 
 	    ret = $[ "preformatted_proposal" : HTML::List (tmp),
@@ -110,9 +110,9 @@
 	ret =
 	    $[
 	      // this is a heading
-	      "rich_text_title"	:	_( "Packages"  ),
+	      "rich_text_title"	:	_("Packages"),
 	      // this is a menu entry
-	      "menu_title"	:	_( "&Packages" ),
+	      "menu_title"	:	_("&Packages"),
 	      "id"		:	"packages_stuff"
 	    ];
     }

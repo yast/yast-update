@@ -80,7 +80,7 @@
 	if (Update::onlyUpdateSelected)
 	{
 	    // Proposal for backup during update
-	    tmp = add (tmp, _("Only update"));
+	    tmp = add (tmp, _("Only Update"));
 	}
 	else
 	{
@@ -89,14 +89,14 @@
 	    string selection_summary = selection_data["summary"]:"error";
 
 	    // Proposal for backup during update
-	    tmp = add (tmp, sformat (_("Update based on selection \"%1\""),
+	    tmp = add (tmp, sformat (_("Update Based on Selection \"%1\""),
 				     selection_summary));
 	}
 
 	if (Update::deleteOldPackages)
 	{
 	    // Proposal for backup during update
-	    tmp = add (tmp, _("Delete old packages"));
+	    tmp = add (tmp, _("Delete Old Packages"));
 	}
 
 	ret = $[ "preformatted_proposal" :
@@ -127,9 +127,9 @@
 	ret =
 	    $[
 	      // this is a heading
-	      "rich_text_title"	:	_( "Update options"  ),
+	      "rich_text_title"	:	_("Update Options"),
 	      // this is a menu entry
-	      "menu_title"	:	_( "&Update options" ),
+	      "menu_title"	:	_("&Update Options"),
 	      "id"		:	"update_stuff"
 	    ];
     }

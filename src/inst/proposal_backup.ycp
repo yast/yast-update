@@ -39,22 +39,22 @@
 	{
 	    if (Update::backup_configs) {
 		// Proposal for backup during update
-		tmp = add (tmp, _("Create backup of changed configuration files"));
+		tmp = add (tmp, _("Create Backup of Changed Configuration Files"));
 	    }
 
 	    if (Update::backup_sysconfig) {
 		// Proposal for backup during update
-		tmp = add (tmp, _("Create backup of directory /etc/sysconfig"));
+		tmp = add (tmp, _("Create Backup of /etc/sysconfig Directory"));
 	    }
 	}
 	else
 	{    // Proposal for backup during update
-	    tmp = add (tmp, _("Do not create backups"));
+	    tmp = add (tmp, _("Do Not Create Backups"));
 	}
 
 	if (Update::remove_old_backups) {
 	    // Proposal for backup during update
-	    tmp = add (tmp, _("Remove backups from previous updates"));
+	    tmp = add (tmp, _("Remove Backups from Previous Updates"));
 	}
 
 	ret = $[ "preformatted_proposal" :
@@ -85,9 +85,9 @@
 	ret =
 	    $[
 	      // this is a heading
-	      "rich_text_title"	:	_( "Backup"  ),
+	      "rich_text_title"	:	_("Backup"),
 	      // this is a menu entry
-	      "menu_title"	:	_( "&Backup" ),
+	      "menu_title"	:	_("&Backup"),
 	      "id"		:	"backup_stuff"
 	    ];
     }

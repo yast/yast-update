@@ -49,35 +49,38 @@
     if (flavor == `boot_popup)
     {
 	// label for selection of root partition (for boot)
-	label = _("Select partition/system to boot:");
+	label = _("Partition or System to Boot:");
 
 	// help text for root partition dialog (for boot)
 	help_text = _("<p>
-Select the partition/system you want to boot.
-</p>");
+Select the partition or system to boot.
+</p>
+");
     }
     else
     {
 	// label for selection of root partition (for update)
-	label = _("Select partition/system to update:");
+	label = _("Partition or System to Update:");
 
 	// help text for root partition dialog (for update)
 	help_text = _("<p>
-Select the partition/system you want to update.
-</p>");
+Select the partition or system to update.
+</p>
+");
 
 	if (flavor == `update_dialog)
 	{
 	    // headline for dialog "Select for update"
-	    title = _("Select for update");
+	    title = _("Select for Update");
 	}
     }
 
     // help text for root partition dialog (general part)
     help_text = help_text + _("<p>
-<b>Show all partitions</b> will expand the list to an
-general partitions overview of your system.
-</p>");
+<b>Show All Partitions</b> expands the list to a
+general overview of your system's partitions.
+</p>
+");
 
     term contents =
 	`VBox (
@@ -93,7 +96,7 @@ general partitions overview of your system.
 							   _("Architecture")),
 						  partition_list),
 					  `Left(`CheckBox(`id(`showall), `opt(`notify),
-							  _("Show all partitions"), false))
+							  _("Show All Partitions"), false))
 					  )
 				   )
 			 ),

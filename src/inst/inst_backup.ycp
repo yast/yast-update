@@ -97,52 +97,59 @@
 			      `VBox(
 				    `Left(`CheckBox(`id(`configs),`opt(`notify),
 						    // checkbox label if user wants to backup config files
-						    _("Create backup of modified configuration files"))),
+						    _("Create Backup of Modified Configuration Files"))),
 				    `Left(`CheckBox(`id(`sysconfig),`opt(`notify),
 						    // checkbox label if user wants to backup /etc/sysconfig
-						    _("Create a complete backup of /etc/sysconfig"))),
+						    _("Create a Complete Backup of /etc/sysconfig"))),
 				    `VSpacing (1),
 				    `Left(`CheckBox(`id(`remove),`opt(`notify),
 						    // checkbox label if user wants remove old backup stuff
-						    _("Remove old backups from the backup directory")))
+						    _("Remove Old Backups from the Backup Directory")))
 				    )
 			      );
 
     // help text for backup dialog during update 1/8
-    string help_text = _("<p>During update some packages may install new
+    string help_text = _("<p>During update, some packages may install new
 versions of dedicated configuration files. This could be necessary if the new
-version of a package has configuration options different from those in the
-previous version.</p>");
+version of a package has configuration options that differ from those in the
+previous version.</p>
+");
 
     // help text for backup dialog during update 2/8
-    help_text = help_text + _("<p>To avoid any loss of information that is
-stored in your current configuration files it is possible to create a
-<b>backup</b> prior to updating.</p>");
+    help_text = help_text + _("<p>To avoid any loss of information 
+in your current configuration files, it is possible to create a
+<b>backup</b> prior to updating.</p>
+");
 
     // help text for backup dialog during update 3/8
-    help_text = help_text + _("<p><b>Warning:</b> Please be aware that this
+    help_text = help_text + _("<p><b>Warning:</b> This
 will not be a complete backup. Only your configuration files will be
-saved.</p>");
+saved.</p>
+");
 
     // help text for backup dialog during update 4/8
-    help_text = help_text + _("<p>Please select the options that you want to
-be activated.</p>");
+    help_text = help_text + _("<p>Select the desired options.
+</p>
+");
 
     // help text for backup dialog during update 5/8
-    help_text = help_text + _("<p><b>Create a backup of modified configuration
-files:</b> Stores only those configuration files that are replaced during
-update.</p>");
+    help_text = help_text + _("<p><b>Create a Backup of Modified Configuration
+Files:</b> Stores only those configuration files that are replaced during
+update.</p>
+");
 
     // help text for backup dialog during update 6/8
-    help_text = help_text + _("<p><b>Create a complete backup of
+    help_text = help_text + _("<p><b>Create a Complete Backup of
 /etc/sysconfig:</b> This covers all configuration files that are part of the
-sysconfig mechanism, even those that are not replaced.</p>");
+sysconfig mechanism, even those that are not replaced.</p>
+");
 
     // help text for backup dialog during update 7/8
-    help_text = help_text + _("<p><b>Remove old backups from the backup
-directory:</b> If your current system already is the result of an earlier
+    help_text = help_text + _("<p><b>Remove Old Backups from the Backup
+Directory:</b> If your current system already is the result of an earlier
 update, there may be old configuration file backups. Select this option to
-remove them.</p>");
+remove them.</p>
+");
 
     // help text for backup dialog during update 8/8
     help_text = help_text + sformat (_("<p>All backups are placed in %1.</p>"),

@@ -149,9 +149,9 @@
 	{
 	    ret = $[
 		    // this is a heading
-		    "rich_text_title"	:	_( "Selected for update"  ),
+		    "rich_text_title"	:	_("Selected for Update"),
 		    // this is a menu entry
-		    "menu_title"	:	_( "&Selected for update" ),
+		    "menu_title"	:	_("&Selected for Update"),
 		    "id"		:	"rootpart_stuff"
 	    ];
 	}

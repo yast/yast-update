@@ -73,8 +73,9 @@ You will lose that selection if you change the basic selection.");
 					       `VBox(
 						     `Left(`RadioButton(`id(`upgrade),`opt(`notify),
 									// radio button label for update including new packages
-									_("&Update with installation of new software and features
-based on the selection:"), false)),
+									_("&Update with Installation of New Software and Features
+Based on the Selection:
+"), false)),
 						     `VSpacing(0.5),
 						     `HBox(
 							   `HSpacing(4),
@@ -83,7 +84,7 @@ based on the selection:"), false)),
 						     `VSpacing(1.5),
 						     `Left(`RadioButton(`id(`notupgrade),`opt(`notify),
 									// radio button label for update of already installed packages only
-									_("Only u&pdate installed packages."), true)),
+									_("Only U&pdate Installed Packages"), true)),
 						     `VSpacing(1.0)
 						     )
 					       )
@@ -93,7 +94,7 @@ based on the selection:"), false)),
 	      `Left(`CheckBox(`id(`delete),
 			      // check box label
 			      // translator: add a & shortcut
-			      _("&Delete unmaintained packages."), true)),
+			      _("&Delete Unmaintained Packages"), true)),
 	      `VSpacing(1),
 	      `Label( `id(`wrn_label), wrn_msg )
 	      )
@@ -101,25 +102,29 @@ based on the selection:"), false)),
 
 
     // help text for dialog "update options" 1/4
-    string helptext = _("<p>The update options differs between two modes. In
-either case it is recommended to make a backup of your personal data.</p>");
+    string helptext = _("<p>The update option differs between two modes. In
+either case, it is recommended to make a backup of your personal data.</p>
+");
 
     // help text for dialog "update options" 2/4
-    helptext = helptext + _("<p><b>With new software:</b> This default setting
-will update the existing software and install all new features and benefits of
-the new &product; version. The selection is based on the former pre-defined
-software selection.</p>");
+    helptext = helptext + _("<p><b>With New Software:</b> This default setting
+updates the existing software and installs all new features and benefits of
+the new &product; version. The selection is based on the former predefined
+software selection.</p>
+");
 
     // help text for dialog "update options" 3/4
-    helptext = helptext + _("<p><b>Only installed packages:</b> This selection
-will only update the packages already installed on your system. <i>Note:</i>
-New software in the pre-defined software selection, e.g. new YaST modules, is
-not available after the update. You might miss advertised features.</p>");
+    helptext = helptext + _("<p><b>Only Installed Packages:</b> This selection
+only updates the packages already installed on your system. <i>Note:</i>
+New software in the predefined software selection, such as new YaST modules, is
+not available after the update. You might miss advertised features.</p>
+");
 
     // help text for dialog "update options" 4/4
-    helptext = helptext + _("<p>After the update some software might not
-function anymore. Active <b>Delete unmaintained packages</b> to delete those
-packages during the update.</p>");
+    helptext = helptext + _("<p>After the update, some software might not
+function anymore. Active <b>Delete Unmaintained Packages</b> to delete those
+packages during the update.</p>
+");
 
 
     Wizard::OpenAcceptDialog ();
