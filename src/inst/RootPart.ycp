@@ -325,6 +325,13 @@
 
 	map root = tmp[0]:$[];
 
+	if (!Storage::DeviceRealDisk (root["spec"]:""))
+	{
+	    // There's nothing I can check.  Anyway, it's not mounted per device
+	    // name so it can't be wrong, in theory.
+	    return true;
+	}
+
 	if (root["spec"]:"" != partition)
 	{
 	    y2error ("root partition in fstab has wrong device");
