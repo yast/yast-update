@@ -1,4 +1,4 @@
-/**
+S/**
  * Module:		Update.ycp
  *
  * Authors:		Anas Nashif (nashif@suse.de)
@@ -17,14 +17,13 @@
     global integer unknown_count = 0;
     // number of packages unknown by update (non-suse packages)
 
+    global boolean kernel_affected = false;
+    // if the kernel was affected in _normal_ update mode
+
     global boolean deleteOldPackages = false;
     // Flag is set true if the user decides to delete unmaintained packages
 
     global integer last_runlevel = -1;
-
-    global  list notDeletedPackages = [];
-
-    global list notInsertedPackages = [];
 
     global string selectedRootPartition = "";
     // selected rootpartition for the update
