@@ -39,7 +39,9 @@
 	// store all those packages to provide the list for inst_sw_single.ycp
 	Update::affected_count = brokenPackages[0]:0;
 	Update::unknown_count = brokenPackages[1]:0;
-y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_count, Update::unknown_count);
+
+	y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_count, Update::unknown_count);
+
 	map update_inf = Pkg::TargetUpdateInf (Installation::destdir + "/var/lib/YaST/update.inf");
 
 	Update::installedVersion = update_inf["distname"]:"?" + " " + update_inf["distversion"]:"";
@@ -112,7 +114,7 @@ y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_cou
     }
 
     string labelAutomaticUpdate = sformat ("%1", automatikUpdate);	// integer -> string
-    string labelManuellUpdate =   sformat ("%1", manuellUpdate);	// integer -> string
+    string labelUnknownUpdate =   sformat ("%1", unknownUpdate);	// integer -> string
 
     // Build and show dialog
 
@@ -148,11 +150,11 @@ y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_cou
 						    ),
 					  // update dialogue, number of packages to be installed but which
 					  // are not the original ones (not from a SuSE system)
-					  `Left(`Label( `id(`ManuellUpdate),_("Packages to check manually:") )),
+					  `Left(`Label( `id(`UnknownUpdate),_("Packages to check manually:") )),
 					  `HWeight( 80,
-						    `Left(`Label( `id(`labelManuellUpdate),
+						    `Left(`Label( `id(`labelUnknownUpdate),
 								  `opt(`outputField,`hstretch ),
-								  labelManuellUpdate ))
+								  labelUnknownUpdate ))
 						    )
 					  ),
 				    `VSpacing(),
