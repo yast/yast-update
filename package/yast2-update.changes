@@ -2,6 +2,7 @@
 Fri Mar  4 08:27:00 CET 2005 - jsrain@suse.cz
 
 - fixed order of Pkg::PkgUpdateAll and Pkg::PkgSolve calls (#67275)
+- 2.11.15
 
 -------------------------------------------------------------------
 Wed Mar  2 11:00:36 CET 2005 - jsrain@suse.cz
