@@ -58,8 +58,8 @@
 	if (kernel_selected)
 	{
 	    // message report
-	    Report::Message (_("New kernel has been installed. Reboot your
-computer to load new kernel."));
+	    Report::Message (_("A new kernel has been installed. Reboot your
+computer to load the new kernel."));
 	}
     }
 

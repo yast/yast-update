@@ -649,7 +649,7 @@ Check the log file %2.
 
 If you are sure that the partition is not necessary for the
 update (it is not any system partition), click Continue.
-To check or fix the mount options, click Specify Monut Options.
+To check or fix the mount options, click Specify Mount Options.
 To abort update, click Cancel."),
 				    spec, Directory::logdir + "/y2log")
 				),
@@ -676,7 +676,7 @@ To abort update, click Cancel."),
 			    {
 				UI::OpenDialog (`VBox (
 				    // popup heading
-				    `Heading (_("Mount parameters")),
+				    `Heading (_("Mount Parameters")),
 				    `VSpacing (0.6),
 				    // text entry label
 				    `TextEntry (`id (`mp), _("&Mount Point"), fspath),
@@ -832,8 +832,7 @@ Check the log file %2.
 
 	// popup message, %1 will be replace with the name of the logfile
 	string message =  sformat (_("Partitions could not be mounted.\n
-Check the log file %1.
-"), Directory::logdir + "/y2log");
+Check the log file %1."), Directory::logdir + "/y2log");
 	y2milestone ("selected partition: %1", root_device_current);
 
 	boolean ret_bool = true;
