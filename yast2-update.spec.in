@@ -29,4 +29,17 @@ Summary:	YaST2 update
 @configdir@/update.y2cc
 @clientdir@/update.ycp
 @clientdir@/sw_update.ycp
+
+# inst part
+@moduledir@/Update.ycp
+@clientdir@/inst_sw_backup.ycp
+@clientdir@/inst_sw_update.ycp
+@clientdir@/inst_rpmupdate.ycp
+@clientdir@/inst_updateControl.ycp
+@clientdir@/inst_upgrade.ycp
+@clientdir@/inst_kernel.ycp
+@clientdir@/inst_prepost_update.ycp
+@clientdir@/inst_rootpart.ycp
+@ydatadir@/forceUpdate.ycp
+
 %doc @docdir@
