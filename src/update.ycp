@@ -39,7 +39,11 @@
     Wizard::SetDesktopIcon("update");
 
     // calling inst_proposal
-    symbol ret = (symbol) WFM::CallFunction ("inst_proposal", [true, true, `initial]);
+    map args = $[];
+    args["enable_next"] = true;
+    args["enable_back"] = true;
+    args["proposal"] = "initial";
+    symbol ret = (symbol) WFM::CallFunction ("inst_proposal", [args]);
 
     if (ret == `next)
     {
