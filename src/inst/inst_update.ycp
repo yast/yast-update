@@ -196,9 +196,17 @@ packages during the update.</p>
     {
 	Update::did_init1 = false;
 
+	boolean b1 = Update::onlyUpdateSelected;
+	string s1 = Update::selected_selection;
+
 	Update::onlyUpdateSelected = (boolean) UI::QueryWidget (`id(`notupgrade), `Value);
 	Update::deleteOldPackages = (boolean) UI::QueryWidget (`id(`delete), `Value);
 	Update::selected_selection = (string) UI::QueryWidget(`id(`baseconf), `CurrentButton);
+
+	if (b1 != Update::onlyUpdateSelected || s1 != Update::selected_selection)
+	{
+	    Update::manual_interaction = true;
+	}
     }
 
     Wizard::CloseDialog ();
