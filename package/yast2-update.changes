@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 23 18:45:33 CET 2004 - arvin@suse.de
+
+- load dm-mod instead of lvm-mod when searching for root
+  partition (bug #36784)
+
+-------------------------------------------------------------------
 Tue Mar 16 21:10:23 CET 2004 - kkaempf@suse.de
 
 - add clean up scripts for GNOME (#36196)

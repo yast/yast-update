@@ -17,7 +17,7 @@
     import "Mode";
     import "Storage";
     import "Popup";
-
+    import "ModuleLoading";
     import "FileSystems";
 
     include "partitioning/partition_defines.ycp";
@@ -616,16 +616,16 @@ Check the log file %1.
 	if (didSearchForRootPartitions)
 	    return;
 
-	SCR::Execute (.target.modprobe, "reiserfs", "");
-	SCR::Execute (.target.modprobe, "jfs", "");
-	SCR::Execute (.target.modprobe, "xfs", "");
-	SCR::Execute (.target.modprobe, "ext3", "");
-	SCR::Execute (.target.modprobe, "xor", "");
-	SCR::Execute (.target.modprobe, "raid0", "");
-	SCR::Execute (.target.modprobe, "raid1", "");
-	SCR::Execute (.target.modprobe, "raid5", "");
-	SCR::Execute (.target.modprobe, "multipath", "");
-	SCR::Execute (.target.modprobe, "lvm-mod", "");
+	ModuleLoading::Load ("reiserfs", "", "Linux", "Reiser FS", Mode::manual, true);
+	ModuleLoading::Load ("jfs", "", "Linux", "JFS", Mode::manual, true);
+	ModuleLoading::Load ("xfs", "", "Linux", "XFS", Mode::manual, true);
+	ModuleLoading::Load ("ext3", "", "Linux", "Ext3", Mode::manual, true);
+	ModuleLoading::Load ("raid0", "", "Linux", "Raid 0", Mode::manual, true);
+	ModuleLoading::Load ("raid1", "", "Linux", "Raid 1", Mode::manual, true);
+	ModuleLoading::Load ("raid5", "", "Linux", "Raid 5", Mode::manual, true);
+	ModuleLoading::Load ("multipath", "", "Linux", "Multipath", Mode::manual, true);
+	ModuleLoading::Load ("dm-mod", "", "Linux", "DM", Mode::manual, true);
+	SCR::Execute (.target.bash, "/sbin/devmap_mknod.sh");
 
 	if (Mode::test)
 	{
