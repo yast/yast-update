@@ -18,7 +18,7 @@ Group = Software
 Icon = system_update.png
 
 ; *one* *short* descriptive line for y2cc
-Helptext = _("Update your complete system. Insert CD 1 before proceeding.")
+Helptext = _("Update your entire system. Insert CD 1 before proceeding.")
 
 ; arguments, seperated by space
 Arguments = 
