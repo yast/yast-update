@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Feb 11 13:41:05 CET 2005 - jsrain@suse.cz
+
+- warn in proposal if out-of-disk-space durign update (#50376)
+
+-------------------------------------------------------------------
 Thu Feb 10 15:33:14 CET 2005 - jsrain@suse.cz
 
 - drop message to log if partition cannot be used for upgrade due

@@ -65,7 +65,8 @@
 
 	// Fill return map
 
-	SpaceCalculation::ShowPartitionWarning ();
+//	SpaceCalculation::ShowPartitionWarning ();
+	list<string> warning = SpaceCalculation::GetPartitionWarning ();
 
 	list<string> tmp = [];
 
@@ -83,6 +84,13 @@
 			/* warning text */
 		     "warning" : _("Requires manual intervention"),
 		     "warning_level" : `blocker ];
+	}
+	else if (size (warning) > 0)
+	{
+	     // the proposal for the packages requires manual intervention
+	    ret = $[ "preformatted_proposal" : HTML::List (tmp),
+		     "warning" : mergestring (warning, "<br>"),
+		     "warning_level" : `warning ];
 	}
 	else
 	{
