@@ -23,9 +23,6 @@
     // number of errors (packages?) returned by solver
     global integer solve_errors = 0;
 
-    // if the kernel was affected in _normal_ update mode
-    global boolean kernel_affected = false;
-
     // Flag is set true if the user decides to delete unmaintained packages
     global boolean deleteOldPackages = ProductFeatures::delete_old_packages;
 
