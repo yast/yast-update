@@ -13,25 +13,25 @@
 
 {
     textdomain "update";
-    
+
     import "Arch";
     import "Report";
     import "Mode";
     import "Installation";
     import "Language";
-    
+
     import "Update";
 
     import "PackageInstallation";
     import "SpaceCalculation";
     import "Packages";
 
-    import "SlideShow";  
+    import "SlideShow";
 
     include "showlog_defines.ycp";
     include "ui/common_popups.ycp";
 
-    
+
     string rebuild_message = _("Checking package database. This process can take some time.");
     string rebuild_message_error = _("Checking package database has returned an error.
 Check the log file /var/log/y2log
@@ -64,7 +64,7 @@ Check the log file /var/log/y2log
 
 
 	UI::ChangeWidget(`id(`progress), `Value, 0 );
-	
+
 	// rebuilding DB
 	if ( !SCR::Execute (.targetpkg.rebuildDb, "") )
 	{
@@ -73,7 +73,7 @@ Check the log file /var/log/y2log
 	}
 	else
 	{
-	    y2milestone("SCR::Execute (.targetpkg.rebuildDb) OK ");	    
+	    y2milestone("SCR::Execute (.targetpkg.rebuildDb) OK ");
 
 	    integer progress = 0;
 	    integer nullCounter = 0;
@@ -147,11 +147,11 @@ Check the log file /var/log/y2log
     SlideShow::SetLanguage( language );
     SlideShow::OpenSlideShowDialog();
 
-    
+
     if ( Mode::cont )
     {
 	y2milestone("Starting second part of package update");
-	
+
 	// Initalize package agent
 	Update::Restore();
     }
@@ -185,7 +185,7 @@ Check the log file /var/log/y2log
     }
 
     SlideShow::InitPkgData();
-     
+
     y2milestone("install_list: %1", install_list);
 
     if ( !Mode::cont )
@@ -196,7 +196,7 @@ Check the log file /var/log/y2log
 
     any ret = `ok;
 
-    bool kernel_affected = false;
+    boolean kernel_affected = false;
 
     if (Mode::normal)
     {
@@ -230,6 +230,6 @@ Check the log file /var/log/y2log
 
     // close "Slide" dialog (inst_rpmupdate doesn't use the "Wizard" dialog)
     UI::CloseDialog();
-    
+
     return `next;
 }
