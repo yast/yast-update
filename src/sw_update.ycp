@@ -107,7 +107,7 @@ Continue with choosing new installation source?")) );
   // Calling inst_updateControl
   any ret_single = CallFunction( `inst_updateControl( ) );
 
-  _debug( "SW: Return inst_updateControl ", ret_single );
+  y2debug( "SW: Return inst_updateControl %1", ret_single );
 
   any ret_rpm = nil;
 
