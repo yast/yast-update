@@ -95,7 +95,7 @@ to the previous dialog.
       // selecting manuall selected kernel for update
       if ( size ( newKernel ) > 0 )
       {
-	  Pkg::DoProvide ( newKernel );
+	  Pkg::PkgInstall ( newKernel );
       }
 
       return ret;
