@@ -144,7 +144,7 @@
 
 	list<string> tmp = [];
 
-	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion));
+	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion["nameandversion"]:"?"));
 
 	if (Update::onlyUpdateSelected)
 	{
