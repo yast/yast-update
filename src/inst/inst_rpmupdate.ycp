@@ -1,7 +1,8 @@
 /**
- * Module: 		inst_rpmupdate.ycp
+ * Module: 	inst_rpmupdate.ycp
  *
- * Authors:		Stefan Schubert (schubi@suse.de)
+ * Authors:	Stefan Schubert (schubi@suse.de)
+ *		Arvin Schnell <arvin@suse.de>
  *
  * Purpose:
  * Install, Update and remove all the RPM packages the user has selected.
@@ -22,13 +23,13 @@
     import "Popup";
     import "Directory";
     import "Update";
-
     import "PackageInstallation";
     import "SpaceCalculation";
     import "Packages";
-
     import "SlideShow";
 
+    if (!Mode::Update)
+	return `auto;
 
     string rebuild_message = _("Checking package database. This process can take some time.");
     // popup message, %1 will be replace with the name of the logfile

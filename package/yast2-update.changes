@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 22 11:26:37 CEST 2003 - arvin@suse.de
+
+- only run inst_rpmupdate during update
+
+-------------------------------------------------------------------
 Tue Aug 19 13:07:01 CEST 2003 - arvin@suse.de
 
 - removed obsolete include
