@@ -92,8 +92,8 @@
 		num = num + 1;
 	    }
 
-	    if (SCR::Execute (.target.bash, "/bin/tar czf " + Installation::destdir + filename +
-			      " " + Installation::destdir + "/etc/sysconfig") != 0)
+	    if (SCR::Execute (.target.bash, "cd " + Installation::destdir + " ; /bin/tar czf " +
+			      Installation::destdir + filename + " " + "etc/sysconfig") != 0)
 	    {
 		y2error ("backup of /etc/sysconfig to %1 failed", filename);
 		// an error popup
