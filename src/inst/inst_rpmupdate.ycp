@@ -36,7 +36,36 @@
     string rebuild_message_error = sformat (_("Package database check has returned an error.
 Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
-    integer maxnumbercds = 8;
+
+    /**
+     *  Handle the backup.
+     */
+    define void backup_stuff () ``{
+
+	if (Update::backup_configs)
+	{
+	    Pkg::CreateBackups (true);
+	    Pkg::SetBackupPath (Update::backup_path);
+	    SCR::Write (.target.string, Installation::destdir + "/var/lib/YaST2/backup_path",
+			Update::backup_path);
+	}
+	else
+	{
+	    Pkg::CreateBackups (false);
+	    SCR::Write (.target.remove, Installation::destdir + "/var/lib/YaST2/backup_path");
+	}
+
+	if (Update::remove_old_backups)
+	{
+
+	}
+
+	if (Update::backup_sysconfig)
+	{
+
+	}
+    }
+
 
     //
     // Popup to start rpm --rebuild
@@ -87,6 +116,8 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
     if ( Mode::initial )
     {
+	backup_stuff ();
+
 	// check passwd and group of target
 
 	SCR::Execute (.target.bash, "/usr/lib/YaST2/bin/update_users_groups " + Installation::destdir);

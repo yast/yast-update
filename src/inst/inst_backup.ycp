@@ -19,7 +19,7 @@
     import "Popup";
 
 
-    string backup_path = "";
+    string backup_path = Update::backup_path;
 
     integer min_space = 50;
 
@@ -51,7 +51,7 @@
 		y2milestone("free:%1", free_space );
 	    }
 
-	    if ( size ( backup_path ) >=2 && part_name != "/")
+	    if ( size ( backup_path ) >= 2 && part_name != "/")
 	    {
 		string compare_string = substring ( backup_path, 0 , size ( part_name ) );
 		if (compare_string == part_name && !found)
@@ -82,11 +82,6 @@
 	}
     };
 
-    // ------------------------------------------------------------------------
-
-    // get current backup path
-    backup_path = Pkg::GetBackupPath();
-    y2milestone("Current backup path is %1.", backup_path );
 
     // Get information about available partitions
     list partition = SpaceCalculation::GetPartitionInfo();
@@ -115,7 +110,7 @@
 				    // label for text entry or backup path
 				    `TextEntry(`id(`path), _("Backup path:"))
 				    )
-			     );
+			      );
 
     string helptext = _("<p>
 It is possible to make a <b>backup</b> of your existing system.
@@ -172,13 +167,7 @@ configuration files will be saved. FIXME
 	    Update::backup_configs = UI::QueryWidget (`id(`configs), `Value);
 	    Update::backup_sysconfig = UI::QueryWidget (`id(`sysconfig), `Value);
 	    Update::remove_old_backups = UI::QueryWidget (`id(`remove), `Value);
-
-	    // tell package manager about our plans
-	    Pkg::CreateBackups (Update::backup_configs);
-	    Pkg::SetBackupPath (backup_path);
-
-	    // remember path for continue mode
-	    SCR::Write (.target.string, Installation::destdir + "/var/lib/YaST2/backup_path", backup_path);
+	    Update::backup_path = backup_path;
 
 	    break;
 	}
