@@ -54,7 +54,7 @@
 
     list allowed_fs = [ "ext", "ext2", "ext3",
 		    "minix", "reiserfs", "jfs", "xfs",
-		    "xiafs", "hpfs", "vfat", "auto" ];
+		    "xiafs", "hpfs", "vfat", "auto", "proc" ];
 
     //------------------------------------------------------------------------
     //
