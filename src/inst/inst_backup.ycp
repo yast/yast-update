@@ -115,7 +115,7 @@
     string helptext = _("<p>
 It is possible to make a <b>backup</b> of your existing system.
 Please be aware that it will not be a complete backup. Only your
-configuration files will be saved. FIXME
+configuration files will be saved.
 </p>
 ");
 

@@ -19,6 +19,7 @@
     import "Mode";
     import "Installation";
     import "Language";
+    import "Popup";
 
     import "Update";
 
@@ -57,12 +58,21 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 
 	if (Update::remove_old_backups)
 	{
-
+	    // FIXME
 	}
 
 	if (Update::backup_sysconfig)
 	{
-
+	    // FIXME
+	    string filename = Update::backup_path + "/" + "haha" + ".tar.bz2";
+	    if (SCR::Execute (.target.bash, "/bin/tar cjf " + Installation::destdir + filename +
+			      " " + Installation::destdir + "/etc/sysconfig") != 0)
+	    {
+		y2error ("backup of /etc/sysconfig to %1 failed", filename);
+		// an error popup
+		Popup::Error (sformat (_("Backup of /etc/sysconfig failed. See %1 for details."),
+				       "/var/log/YaST2/y2log"));
+	    }
 	}
     }
 
