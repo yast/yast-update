@@ -89,10 +89,16 @@
 
 	symbol result = call_packageselector ();
 
+	/*
 	if (Pkg::PkgSolve (!Update::onlyUpdateSelected))
 	    Update::solve_errors = 0;
 	else
 	    Update::solve_errors = Pkg::PkgSolveErrors ();
+	*/
+
+	// FIXME: FUCK IT
+	Pkg::PkgSolve (!Update::onlyUpdateSelected);
+	Update::solve_errors = 0;
 
 	// Fill return map
 

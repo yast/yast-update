@@ -46,8 +46,10 @@
 	}
 
 	// connect target with package manager
-	if (true)
+	if (!Update::did_init1)
 	{
+	    Update::did_init1 = true;
+
 	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 	    Update::affected_packages = tmp1[0]:0;
 
@@ -68,6 +70,12 @@
 	// call some function that makes a proposal here:
 	//
 	// DummyMod::MakeProposal( force_reset );
+
+	if (force_reset)
+	{
+	    Update::did_init1 = false;
+	}
+
 
 	// Fill return map
 

@@ -26,6 +26,9 @@
     global boolean deleteOldPackages = true;
 
 
+    global boolean did_init1 = false;
+
+
     global integer last_runlevel = -1;
 
 
@@ -135,6 +138,7 @@
     global define void Detach () ``{
 
 	Pkg::TargetFinish ();
+	did_init1 = false;
 
     }
 
