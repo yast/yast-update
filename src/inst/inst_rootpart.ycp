@@ -288,7 +288,9 @@ Check the log file /var/log/y2log.
 				    }
 				}
 
-				string mount_type = FileSystems::GetMountString( FileSystems::DetectFs( spec ), "");
+				string mount_type = "";
+				if (spec != "proc")
+				    mount_type = FileSystems::GetMountString( FileSystems::DetectFs( spec ), "");
 
 				if (mount_type != "")
 				{
@@ -300,7 +302,7 @@ Check the log file /var/log/y2log.
 							 mount_type );
 				if ( !ret_bool )
 				{
-				    y2error("mounting %1 on %2 failed", mounts["spec"]:"", "/mnt" + mounts["file"]:"");
+				    y2error("mounting %1 (type %2) on %3 failed", mounts["spec"]:"", mount_type, "/mnt" + mounts["file"]:"");
 				    success = false;
 				}
 				else
