@@ -90,13 +90,13 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 	    while (num < 10)
 	    {
 		filename = Update::backup_path + "/etc.sysconfig-" + date + "-" +
-		    sformat ("%1", num) + ".tar.bz2";
+		    sformat ("%1", num) + ".tar.gz";
 		if (SCR::Read (.target.size, filename) == -1)
 		    break;
 		num = num + 1;
 	    }
 
-	    if (SCR::Execute (.target.bash, "/bin/tar cjf " + Installation::destdir + filename +
+	    if (SCR::Execute (.target.bash, "/bin/tar czf " + Installation::destdir + filename +
 			      " " + Installation::destdir + "/etc/sysconfig") != 0)
 	    {
 		y2error ("backup of /etc/sysconfig to %1 failed", filename);
