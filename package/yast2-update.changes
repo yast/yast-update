@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Sep 20 15:32:58 CEST 2004 - arvin@suse.de
+
+- use Storage::GetOndiskTarget where appropriate
+
+-------------------------------------------------------------------
 Mon Sep 20 11:51:01 CEST 2004 - arvin@suse.de
 
 - fixed unmounting when switching from update to installation
