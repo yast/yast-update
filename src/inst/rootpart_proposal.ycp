@@ -10,6 +10,7 @@
 
     import "HTML";
     import "Mode";
+    import "Linuxrc";
     import "Update";
     import "RootPart";
 
@@ -76,7 +77,7 @@
 	{
 	    if (RootPart::selectedRootPartition == "")
 	    {
-		if (RootPart::numberOfValidRootPartitions == 1 && !Mode::manual)
+		if (RootPart::numberOfValidRootPartitions == 1 && !Linuxrc::manual ())
 		{
 		    RootPart::SetSelectedToValid ();
 		}
@@ -143,7 +144,7 @@
     {
 	// Fill return map.
 
-	if (Mode::normal)
+	if (Mode::normal ())
 	{
 	    ret = $[];
 	}
