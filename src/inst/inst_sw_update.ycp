@@ -38,8 +38,8 @@
 
 	// store all those packages to provide the list for inst_sw_single.ycp
 	Update::affected_count = brokenPackages[0]:0;
-	Update::unkown_count = brokenPackages[1]:0;
-y2milestone ("Update::affected_count %1, unkown_count %2", Update::affected_count, Update::unkown_count);
+	Update::unknown_count = brokenPackages[1]:0;
+y2milestone ("Update::affected_count %1, unknown_count %2", Update::affected_count, Update::unknown_count);
 	map update_inf = Pkg::TargetUpdateInf (Installation::destdir + "/var/lib/YaST/update.inf");
 
 	Update::installedVersion = update_inf["distname"]:"?" + " " + update_inf["distversion"]:"";
