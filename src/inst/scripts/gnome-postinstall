@@ -6,6 +6,8 @@
 # NOTE: This script requires find, mktemp, mail and coreutils installed.
 #
 TRASH=/var/adm/backup/GNOME
+exec >/var/log/YaST2/gnome-postinstall.log
+exec 2>&1
 
 TEMP=$(mktemp -d /tmp/tmp.gnome-postinstall.XXXXXX) || { echo "could not create temp dir" >&2; exit 1; }
 echo -n "" >$TEMP/list

@@ -5,6 +5,8 @@
 #
 # NOTE: This script requires find and coreutils installed.
 #
+exec >/var/log/YaST2/gnome-preinstall.log
+exec 2>&1
 shopt -s nullglob
 
 # Remove complete gconf database. Make a back-up link of old entries.
