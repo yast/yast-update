@@ -29,6 +29,11 @@
     {
 	Update::newKernel = Kernel::kernel_packages[0]:"";
 
+	if (Mode::initial)				// running in inst-sys
+	{
+	    Pkg::PkgInstall (Update::newKernel);	// mark kernel as to be installed
+	}
+
 	Update::updateEvaluated = true;
 
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating update packages. One moment please...")));

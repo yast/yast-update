@@ -36,7 +36,7 @@
                 ``(CallFunction (`inst_sw_backup(true,true) )),
                 ``(CallFunction (`inst_upgrade(true,true) )),
 		``(CallFunction (`inst_sw_update(true,true) )),
-		``(CallFunction (`inst_kernel(true,true) )),
+		``(CallFunction (`inst_ask_update(true,true) )),
 		``(CallFunction (`inst_rpmupdate(false,false) )),
 		``(CallFunction (`inst_finish(false,false) ))
     ];

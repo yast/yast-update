@@ -37,7 +37,7 @@ Summary:	YaST2 update
 @clientdir@/inst_rpmupdate.ycp
 @clientdir@/inst_updateControl.ycp
 @clientdir@/inst_upgrade.ycp
-@clientdir@/inst_kernel.ycp
+@clientdir@/inst_ask_update.ycp
 @clientdir@/inst_prepost_update.ycp
 @clientdir@/inst_rootpart.ycp
 

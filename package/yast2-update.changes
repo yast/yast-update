@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sat Sep  7 18:41:10 CEST 2002 - kkaempf@suse.de
+
+- drop user choosing of kernel, thats possible in package UI
+  force installation of new kernel if running from inst-sys
+
+-------------------------------------------------------------------
 Fri Sep  6 21:14:59 CEST 2002 - kkaempf@suse.de
 
 - forceUpdate not needed any more.
