@@ -22,12 +22,6 @@
 
     // set normal mode and update
     Mode::SetMode ("update");
-    /*
-    Mode::normal = true;
-    Mode::installation = false;
-    Mode::update = true;
-    Mode::mode = "update";
-    */
 
     Update::disallow_upgrade = true;
     Update::onlyUpdateInstalled = true;
@@ -35,44 +29,15 @@
 
     ProductControl::custom_control_file =  "/usr/share/YaST2/control/update.xml";
 
+    Wizard::OpenNextBackDialog();
     if (!ProductControl::Init())
     {
         y2error("control file %1 not found", ProductControl::custom_control_file );
     }
-    //Wizard::OpenNextBackStepsDialog();
-    Wizard::OpenNextBackDialog();
     list<map> stage_mode = [$["stage": "normal",  "mode": Mode::mode() ]];
     ProductControl::AddWizardSteps(stage_mode);
 
     symbol ret = ProductControl::Run();
-    // Wizard::SetDesktopIcon("update");
-
-    // calling inst_proposal
-    /*
-    symbol ret = (symbol) WFM::CallFunction ("inst_proposal", 
-            [GetInstArgs::ButtonsProposal(true,true,"initial")]);
-
-    if (ret == `next)
-    {
-	string kernel = Kernel::ComputePackage ();
-	boolean kernel_selected = Pkg::IsSelected (kernel);
-	WFM::CallFunction ("inst_kickoff", [false, false]);
-	WFM::CallFunction ("inst_rpmcopy", [false, false]);
-
-	// crap-fix for bug #42074
-	SCR::Execute (.target.bash, Directory::ybindir + "/gnome-postinstall");
-
-	Wizard::OpenNextBackDialog();
-	WFM::CallFunction ("inst_suseconfig", [false, false]);
-	Wizard::CloseDialog();
-	if (kernel_selected)
-	{
-	    // message report
-	    Report::Message (_("A new kernel has been installed. Reboot your
-computer to load the new kernel."));
-	}
-    }
-    */
 
     Wizard::CloseDialog ();
 
