@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jul 16 13:26:45 CEST 2003 - arvin@suse.de
+
+- remove old yast stuff (e.g. you files) before running update
+
+-------------------------------------------------------------------
 Tue Jul 15 09:44:55 CEST 2003 - arvin@suse.de
 
 - make backup (archive) of /etc/sysconfig (bug #25283)
