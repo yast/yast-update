@@ -13,6 +13,8 @@
     import "Mode";
     import "Language";
     import "Packages";
+    import "PackageCallbacks";
+
 
     string func  = WFM::Args(0);
     map    param = WFM::Args(1);
@@ -37,6 +39,8 @@
 	// initialize target
 	if (true)
 	{
+	    PackageCallbacks::SetConvertDBCallbacks ();
+
 	    Pkg::TargetInit (Installation::destdir, false);
 
 	    // The packagemaneger uses the language for both user interface
