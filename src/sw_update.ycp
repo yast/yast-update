@@ -76,6 +76,9 @@ Continue with choosing new installation source?"));
 	CallFunction( `inst_suseconfig (false, false) );
     }
 
+    // Kill pkginfo, in order to release file-handles
+    PKGINFO();
+    
     InstMedia::UnmountMedium ();
     UI::CloseDialog();
 
