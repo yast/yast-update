@@ -81,9 +81,10 @@
 	  
   if ( !go_on )
   {
-      textdomain "sw_single";            
       any ret = UI(`ContinueCancelPopup(_("No access to source media used on previous installation.
 Continue with choosing new installation source?")) );
+      
+      textdomain "sw_single";            
 
       if ( ret )		// choose new installation source
       {
