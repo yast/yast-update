@@ -19,7 +19,7 @@
 
     define symbol call_packageselector () ``{
 
-	if (true)		// FIXME
+	if (Update::unknown_packages > 0) // FIXME
 	{
 	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector),
 								  `opt(`updateMode)));
@@ -36,8 +36,9 @@
 	{
 	    Pkg::ClearSaveState();
 
-	    // FIXME: FUCK IT
+	    // FIXME: IT'S A MESS
 	    Update::solve_errors = 0;
+	    Update::unknown_packages = 0;
 	}
 	else
 	{
@@ -92,7 +93,7 @@
 
 	symbol result = call_packageselector ();
 
-	// FIXME: FUCK IT
+	// FIXME: IT'S A MESS
 	/*
 	if (Pkg::PkgSolve (!Update::onlyUpdateSelected))
 	    Update::solve_errors = 0;
