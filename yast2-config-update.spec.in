@@ -6,7 +6,7 @@
 # please send bugfixes or comments to @MAINTAINER@
 #
 
-# neededforbuild  autoconf automake ydoc
+# neededforbuild yast2-devtools  autoconf automake ydoc
 
 Vendor:       SuSE GmbH, Nuernberg, Germany
 Distribution: SuSE Linux 7.0 (i386)

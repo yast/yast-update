@@ -1,4 +1,20 @@
 -------------------------------------------------------------------
+Mon Mar 25 12:52:09 CET 2002 - schubi@suse.de
+
+- Calling mk_initrd and lilo after updating kernel #15443
+
+-------------------------------------------------------------------
+Fri Mar  8 16:10:53 CET 2002 - gs@suse.de
+
+- Read the package information always from source medium, don't
+  use locally saved description (bug #14612)
+
+-------------------------------------------------------------------
+Mon Feb 18 11:03:00 CET 2002 - gs@suse.de
+
+-  Create the initial dialog for Change source (bug #13464)
+
+-------------------------------------------------------------------
 Tue Feb 12 15:50:51 CET 2002 - schubi@suse.de
 
 - Showing SuSEConfig correctly. 
