@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 17 15:39:17 CEST 2003 - arvin@suse.de
+
+- activate lvm while searching for root partitions (bug #30723)
+- use real partition table during search for root partitions
+
+-------------------------------------------------------------------
 Tue Sep 16 17:11:11 CEST 2003 - kkaempf@suse.de
 
 - when upgrading to new base selection, first activate the
