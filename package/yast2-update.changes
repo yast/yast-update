@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Thu Sep  5 21:36:16 CEST 2002 - kkaempf@suse.de
+
+- use Pkg:: functions for rpm backup
+- implement rebuilddb callback
+- call PkgSolve
+- properly init slide show
+- write remaining list so inst_rpmcopy can take over
+- 2.6.4
+
+-------------------------------------------------------------------
 Wed Sep  4 16:14:51 CEST 2002 - kkaempf@suse.de
 
 - re-add inst_* modules from update in order to keep
