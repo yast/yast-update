@@ -165,7 +165,8 @@ general overview of your system's partitions.
 	    string tmp = UI::QueryWidget (`id(`partition), `CurrentItem);
 	    make_partition_list (UI::QueryWidget (`id(`showall), `Value));
 	    UI::ChangeWidget (`id(`partition), `Items, partition_list);
-	    UI::ChangeWidget (`id(`partition), `CurrentItem, tmp);
+	    if (tmp != nil)
+		UI::ChangeWidget (`id(`partition), `CurrentItem, tmp);
 	    continue;
 	}
 
