@@ -28,6 +28,7 @@
 
     // create initial dialog
     Wizard::CreateDialog ();
+    Wizard::SetDesktopIcon("update");
 
     // calling inst_proposal
     symbol ret = (symbol) WFM::CallFunction ("inst_proposal", [true, true, `ini]);
