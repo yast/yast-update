@@ -22,6 +22,7 @@
     import "FileSystems";
     import "Update";
     import "Packages";
+    import "SuSERelease";
 
     include "partitioning/partition_defines.ycp";
     include "partitioning/custom_part_helptexts.ycp";
@@ -110,51 +111,6 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 	map i = rootPartitions[selectedRootPartition]:$[];
         // Unkown for unknown system
 	return i[what]:_("Unknown");
-    }
-
-
-    /**
-     * Make a nice name for a system out of the long name.
-     */
-    define string MakeNiceName (string longname)
-    {
-	integer p1 = find (longname, "(");
-	if (p1 == -1) return longname;
-	while (p1 > 1 && substring (longname, p1 - 1, 1) == " ")
-	    p1 = p1 - 1;
-	return substring (longname, 0, p1);
-    }
-
-
-    /**
-     * Read release information.
-     */
-    define string GetRelease ()
-    {
-	string release = "?";
-
-	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/SuSE-release", "?"]);
-	if (release != "?")
-	{
-	    list lines = splitstring (release, "\n");
-	    return MakeNiceName (lines[0]:"?");
-	}
-
-	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/UnitedLinux-release", "?"]);
-	if (release != "?")
-	{
-	    list lines = splitstring (release, "\n");
-	    return MakeNiceName (lines[0]:"?");
-	}
-
-	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/redhat-release", "?"]);
-	if (release != "?")
-	{
-	    list lines = splitstring (release, "\n");
-	    return lines[0]:"?";
-	}
-
-	return "?";
     }
 
 
@@ -429,7 +385,8 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 
 	// get old product name
 
-	string old_name = GetRelease ();
+	string old_name = SuSERelease::ReleaseInformation
+	    (Installation::destdir);
 
 	integer p = findlastof (old_name, " ");
 	if (p == nil)
@@ -1045,7 +1002,8 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    y2milestone ("found fstab on %1", partition);
 
 		    // Get installed release name
-		    string release = GetRelease ();
+		    string release = SuSERelease::ReleaseInformation
+			(Installation::destdir);
                     y2debug("release: %1", release );
 		    if (release == "?") {
 			// label for an unknown installed system
