@@ -10,7 +10,6 @@
     import "Arch";
     import "Installation";
 
-    include "package_utils.ycp";
     include "ui/wizard_dialog.ycp";
     include "ui/common_popups.ycp";
     include "misc_defines.ycp";
