@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb 12 13:53:25 CET 2002 - schubi@suse.de
+
+- user_settings and PKGINFO calls removed 
+
+-------------------------------------------------------------------
 Tue Sep 18 20:57:47 CEST 2001 - schubi@suse.de
 
 - InstMedia initialized 
