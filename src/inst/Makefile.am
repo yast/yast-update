@@ -9,13 +9,10 @@ module_DATA =				\
 
 client_DATA =				\
 	inst_backup.ycp			\
+	inst_rootpart.ycp		\
 	inst_sw_update.ycp		\
 	inst_rpmupdate.ycp		\
-	inst_updateControl.ycp		\
 	inst_upgrade.ycp		\
-	inst_ask_update.ycp		\
-	inst_prepost_update.ycp		\
-	inst_rootpart.ycp		\
 	proposal_backup.ycp		\
 	proposal_rootpart.ycp
 

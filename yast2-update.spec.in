@@ -33,13 +33,6 @@ Summary:	YaST2 update
 # inst part
 @ybindir@/update_users_groups
 @moduledir@/Update.ycp
-@clientdir@/inst_sw_backup.ycp
-@clientdir@/inst_sw_update.ycp
-@clientdir@/inst_rpmupdate.ycp
-@clientdir@/inst_updateControl.ycp
-@clientdir@/inst_upgrade.ycp
-@clientdir@/inst_ask_update.ycp
-@clientdir@/inst_prepost_update.ycp
-@clientdir@/inst_rootpart.ycp
+@clientdir@/*.ycp
 
 %doc @docdir@
