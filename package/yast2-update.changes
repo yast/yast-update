@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jul 20 11:26:00 CEST 2004 - arvin@suse.de
+
+- renamed Update::onlyUpdateSelected to onlyUpdateInstalled
+  (bug #38486)
+
+-------------------------------------------------------------------
 Thu May 27 15:26:02 CEST 2004 - arvin@suse.de
 
 - used original target map during update (bug #41250)

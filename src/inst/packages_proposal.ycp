@@ -98,7 +98,7 @@
 
 	// FIXME: IT'S A MESS
 	/*
-	if (Pkg::PkgSolve (!Update::onlyUpdateSelected))
+	if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
 	    Update::solve_errors = 0;
 	else
 	    Update::solve_errors = Pkg::PkgSolveErrors ();

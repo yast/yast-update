@@ -136,13 +136,13 @@ packages during the update.</p>
 
     // preset update/upgrade radio buttons properly
 
-    UI::ChangeWidget(`id(`upgrade), `Value, !Update::onlyUpdateSelected);
-    UI::ChangeWidget(`id(`notupgrade), `Value, Update::onlyUpdateSelected);
+    UI::ChangeWidget(`id(`upgrade), `Value, !Update::onlyUpdateInstalled);
+    UI::ChangeWidget(`id(`notupgrade), `Value, Update::onlyUpdateInstalled);
 
     // grey out radio buttons if only already installed packages should be updated
 
     foreach (string sel, available_base_selections, ``{
-	UI::ChangeWidget(`id(sel), `Enabled, !Update::onlyUpdateSelected);
+	UI::ChangeWidget(`id(sel), `Enabled, !Update::onlyUpdateInstalled);
     });
 
     UI::ChangeWidget(`id(`delete), `Value, Update::deleteOldPackages);
@@ -170,7 +170,7 @@ packages during the update.</p>
 	{
 	    boolean something_changed = false;
 
-	    if (UI::QueryWidget (`id(`notupgrade), `Value) != Update::onlyUpdateSelected)
+	    if (UI::QueryWidget (`id(`notupgrade), `Value) != Update::onlyUpdateInstalled)
 		something_changed = true;
 
 	    if ((boolean) UI::QueryWidget (`id(`upgrade), `Value) &&
@@ -196,14 +196,14 @@ packages during the update.</p>
     {
 	Update::did_init1 = false;
 
-	boolean b1 = Update::onlyUpdateSelected;
+	boolean b1 = Update::onlyUpdateInstalled;
 	string s1 = Update::selected_selection;
 
-	Update::onlyUpdateSelected = (boolean) UI::QueryWidget (`id(`notupgrade), `Value);
+	Update::onlyUpdateInstalled = (boolean) UI::QueryWidget (`id(`notupgrade), `Value);
 	Update::deleteOldPackages = (boolean) UI::QueryWidget (`id(`delete), `Value);
 	Update::selected_selection = (string) UI::QueryWidget(`id(`baseconf), `CurrentButton);
 
-	if (b1 != Update::onlyUpdateSelected || s1 != Update::selected_selection)
+	if (b1 != Update::onlyUpdateInstalled || s1 != Update::selected_selection)
 	{
 	    Update::manual_interaction = true;
 	}
