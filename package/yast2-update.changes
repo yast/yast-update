@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 14 15:40:40 CEST 2004 - arvin@suse.de
+
+- try to mount partitions even when the device names have changed
+  (bug #44286)
+
+-------------------------------------------------------------------
 Thu Sep 09 16:51:29 CEST 2004 - arvin@suse.de
 
 - fixed proposal for update from running system
