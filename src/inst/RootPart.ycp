@@ -68,7 +68,8 @@
     /**
      * Get the key what of the selected root partition.
      */
-    global define string GetInfoOfSelected (symbol what) ``{
+    global define string GetInfoOfSelected (symbol what)
+    {
 	map i = rootPartitions[selectedRootPartition]:$[];
 	return i[what]:"error";
     }
@@ -78,7 +79,8 @@
      * Set the selected root partition to some valid one. Only
      * make sense if the number of valid root partition is one.
      */
-    global define void SetSelectedToValid () ``{
+    global define void SetSelectedToValid ()
+    {
 	selectedRootPartition = "";
 	foreach (string p, map i, rootPartitions, ``{
 	    if (i[`valid]:false && selectedRootPartition == "")
@@ -92,8 +94,8 @@
      * devices. Uses list activated to make actions in reverse order.
      * @return void
      */
-    global define void UnmountPartitions () ``{
-
+    global define void UnmountPartitions ()
+    {
 	y2milestone ("unmount partitions: %1", activated);
 
 	did_try_mount_partitions = false;
@@ -155,7 +157,8 @@
      * see description of list "activated"
      * @return void
      */
-    define void AddMountedPartition (list partinfo) ``{
+    define void AddMountedPartition (list partinfo)
+    {
 	y2debug("Added partition info: %1", partinfo);
 	activated = prepend(activated, partinfo);
 	y2debug("Total partition info: %1", activated);
@@ -165,8 +168,8 @@
     /**
      * Check the filesystem of a partition.
      */
-    define void FSCKPartition (string partition) ``{
-
+    define void FSCKPartition (string partition)
+    {
 	if (!Mode::test)
 	{
 	    symbol detected_fs = FileSystems::DetectFs (partition);
@@ -236,10 +239,192 @@
 
 
     /**
+     *
+     */
+    define boolean PrepareCryptoTab (list <map> crtab, list <map>& fstab)
+    {
+	integer crypt_nb = 0;
+
+	foreach (map mounts, crtab, {
+
+	    string vfstype = mounts["vfstype"]:"";
+	    string mntops  = mounts["opt2"]:"";
+	    string loop    = mounts["loop"]:"";
+	    string fspath  = mounts["mount"]:"";
+	    string device  = mounts["file"]:"";
+
+	    y2milestone( "vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5",
+			 vfstype, mntops, loop, fspath, device );
+
+	    boolean crypt_ok = true;
+
+	    if (!issubstring (mntops, "noauto"))
+	    {
+		if (crypt_nb == 0)
+		{
+		    SCR::Execute(.target.modprobe, "loop_fish2", "");
+		    crypt_nb = crypt_nb + 1;
+		}
+
+		string crypt_passwd = DlgUpdateCryptFs( device, fspath );
+
+		if (crypt_passwd == nil)
+		{
+		    crypt_ok = false;
+		}
+
+		y2milestone("crypt pwd ok:%1", crypt_ok );
+
+		if (crypt_ok)
+		{
+		    map setloop = $[ "encryption"    : "twofish",
+				     "passwd"        : crypt_passwd,
+				     "loop_dev"      : loop,
+				     "partitionName" : device ];
+
+		    crypt_ok = Storage::PerformLosetup( setloop, false );
+
+		    y2milestone("crypt ok: %1", crypt_ok );
+		}
+
+		if (crypt_ok)
+		{
+		    map add_fs = $[ "file" : fspath,
+				    "mntops" : mntops,
+				    "spec" : loop,
+				    "freq" : 0,
+				    "passno" : 0,
+				    "vfstype": vfstype ];
+		    fstab = prepend( fstab, add_fs );
+		    AddMountedPartition([loop, "loop"]);
+		}
+	    }
+
+	});
+
+	return true;
+    }
+
+    /**
+     *
+     */
+    define boolean MountFSTab (list <map> fstab, map <string, string>& parts)
+    {
+	boolean success = true;
+
+	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
+			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
+
+	boolean raidMounted = false;
+
+	foreach (map mounts, fstab, ``{
+
+	    string vfstype = mounts["vfstype"]:"";
+	    string mntops  = mounts["mntops"]:"";
+	    string spec    = mounts["spec"]:"";
+	    string fspath  = mounts["file"]:"";
+
+	    if (contains (allowed_fs, vfstype)
+		&& fspath != "/"
+		&& !issubstring (mntops,"noauto"))
+	    {
+		y2milestone("mounting %1 to %2", spec, fspath);
+
+		FSCKPartition (spec);
+
+		if ( !Mode::test )
+		{
+		    //Checking for raid systems
+		    if ( issubstring( spec,"/dev/md")
+			 && !raidMounted )
+		    {
+			y2milestone( "Raidarray for partition %1 on device %2 found",
+				     fspath,
+				     spec );
+			string command = "/sbin/raidstart --all --configfile "
+			    + Installation::destdir
+			    + "/etc/raidtab";
+
+			integer ret_from_shell = (integer) SCR::Execute (.target.bash, command);
+			if ( ret_from_shell != 0 )
+			{
+			    y2milestone("raidstart failed ( does no matter ): %1", command );
+			}
+			else
+			{
+			    y2milestone("raidstart OK: %1", command );
+			    raidMounted = true;
+			}
+		    }
+
+		    string mount_type = "";
+		    if (vfstype == "proc")
+		    {
+			mount_type = vfstype;
+		    }
+		    else
+		    {
+			mount_type = FileSystems::GetMountString( FileSystems::DetectFs( spec ), "");
+		    }
+
+		    if (mount_type != "")
+		    {
+			mount_type = "-t " + mount_type;
+		    }
+
+		    boolean ret_bool = (boolean) SCR::Execute (.target.mount,
+						       [ spec, Installation::destdir + mounts["file"]:"",
+							 Installation::mountlog],
+						       mount_type );
+		    if ( !ret_bool )
+		    {
+			y2error("mounting %1 (type %2) on %3 failed", mounts["spec"]:"",
+				mount_type, "/mnt" + mounts["file"]:"");
+			success = false;
+		    }
+		    else
+		    {
+			AddMountedPartition([Installation::destdir + mounts["file"]:"", "mount"]);
+			parts[mounts["file"]:""] = mounts["spec"]:"";
+		    }
+		}
+	    }  // allowed_fs
+	    else if (vfstype == "swap" && fspath == "swap" )
+	    {
+		y2milestone("mounting %1 to %2", spec, fspath);
+
+		if ( !Mode::test )
+		{
+		    string command = "/sbin/swapon ";
+		    if ( spec != "" )
+		    {
+			// swap-partition
+			command = command + spec;
+
+			// run /sbin/swapon
+			integer ret_from_shell = (integer) SCR::Execute (.target.bash, command);
+			if ( ret_from_shell != 0 )
+			{
+			    y2error("swapon failed: %1", command );
+			}
+			else
+			{
+			    AddMountedPartition([spec, "swap"]);
+			}
+		    }
+		}
+	    }
+	});
+
+	return success;
+    }
+
+
+    /**
      * Mounting root-partition; reading fstab and mounting read partitions
      */
-    global define boolean MountPartitions (string partition) ``{
-
+    global define boolean MountPartitions (string partition)
+    {
 	y2milestone ("mount partitions: %1", partition);
 
 	if (did_try_mount_partitions)
@@ -255,23 +440,19 @@ Check the log file %1.
 "), "/var/log/YaST2/y2log");
 	y2milestone("selected partition: %1", partition );
 
-	integer ret_from_shell = 0;
 	boolean ret_bool = true;
 
-	list<map> fstab = [];
-	list<map> crtab = [];
+	list <map> fstab = [];
+	list <map> crtab = [];
 
-	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
-			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
-
-	map<string,string> parts = $[];
+	map <string, string> parts = $[];
 
 	SCR::Write(.md.activate, "");
 	SCR::Write(.lvm.activate, "");
 
 	FSCKPartition (partition);
 
-	// Mount selected partition to Installation::destdir
+	// Mount selected root partition to Installation::destdir
 
 	if ( !Mode::test )
 	{
@@ -339,171 +520,16 @@ about how to solve this problem."),
 	    }
 	    else
 	    {
-		integer crypt_nb = 0;
-		boolean crypt_ok = true;
+		y2milestone ("cryptotab %1", crtab);
 
-		foreach (map mounts, crtab, ``{
+		PrepareCryptoTab (crtab, fstab);
 
-		    string vfstype = mounts["vfstype"]:"";
-		    string mntops  = mounts["opt2"]:"";
-		    string loop    = mounts["loop"]:"";
-		    string fspath  = mounts["mount"]:"";
-		    string device  = mounts["file"]:"";
+		y2milestone ("fstab %1", fstab);
 
-		    y2milestone( "vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5",
-				 vfstype, mntops, loop, fspath, device );
-		    crypt_ok = true;
-
-		    if (!issubstring (mntops,"noauto"))
-		    {
-			if (crypt_nb == 0)
-			{
-			    SCR::Execute(.target.modprobe, "loop_fish2", "");
-			    crypt_nb = crypt_nb + 1;
-			}
-
-			string crypt_passwd = DlgUpdateCryptFs( device, fspath );
-
-			if ( crypt_passwd == nil )
-			{
-			    crypt_ok = false;
-			}
-
-			y2milestone("crypt pwd ok:%1", crypt_ok );
-
-			if( crypt_ok )
-			{
-			    map setloop = $[ "encryption"    : "twofish",
-					     "passwd"        : crypt_passwd,
-					     "loop_dev"      : loop,
-					     "partitionName" : device ];
-
-			    crypt_ok = Storage::PerformLosetup( setloop, false );
-
-			    y2milestone("crypt ok: %1", crypt_ok );
-			}
-
-			if ( crypt_ok )
-			{
-			    map add_fs = $[ "file" : fspath,
-			                    "mntops" : mntops,
-					    "spec" : loop,
-					    "freq" : 0,
-					    "passno" : 0,
-					    "vfstype": vfstype ];
-			    fstab = prepend( fstab, add_fs );
-			    AddMountedPartition([loop, "loop"]);
-			}
-
-		    }
-
-		}); // foreach (crypto entry)
-
-		y2milestone("fstab :%1 ", fstab );
-
-		boolean raidMounted = false;
-
-		foreach (map mounts, fstab, ``{
-
-		    string vfstype = mounts["vfstype"]:"";
-		    string mntops  = mounts["mntops"]:"";
-		    string spec    = mounts["spec"]:"";
-		    string fspath  = mounts["file"]:"";
-
-		    if (contains (allowed_fs, vfstype)
-		        && fspath != "/"
-		        && !issubstring (mntops,"noauto"))
-		    {
-			y2milestone("mounting %1 to %2", spec, fspath);
-
-			FSCKPartition (spec);
-
-			if ( !Mode::test )
-			{
-			    //Checking for raid systems
-			    if ( issubstring( spec,"/dev/md")
-				 && !raidMounted )
-			    {
-				y2milestone( "Raidarray for partition %1 on device %2 found",
-					     fspath,
-					     spec );
-				string command = "/sbin/raidstart --all --configfile "
-				    + Installation::destdir
-				    + "/etc/raidtab";
-
-				ret_from_shell = (integer) SCR::Execute (.target.bash, command);
-				if ( ret_from_shell != 0 )
-				{
-				    y2milestone("raidstart failed ( does no matter ): %1", command );
-				}
-				else
-				{
-				    y2milestone("raidstart OK: %1", command );
-				    raidMounted = true;
-				}
-			    }
-
-			    string mount_type = "";
-			    if (vfstype == "proc")
-			    {
-				mount_type = vfstype;
-			    }
-			    else
-			    {
-				mount_type = FileSystems::GetMountString( FileSystems::DetectFs( spec ), "");
-			    }
-
-			    if (mount_type != "")
-			    {
-				mount_type = "-t " + mount_type;
-			    }
-
-			    ret_bool = (boolean) SCR::Execute (.target.mount,
-						     [ spec, Installation::destdir + mounts["file"]:"",
-						       Installation::mountlog],
-						     mount_type );
-			    if ( !ret_bool )
-			    {
-				y2error("mounting %1 (type %2) on %3 failed", mounts["spec"]:"",
-					mount_type, "/mnt" + mounts["file"]:"");
-				success = false;
-			    }
-			    else
-			    {
-				AddMountedPartition([Installation::destdir + mounts["file"]:"", "mount"]);
-				parts[mounts["file"]:""] = mounts["spec"]:"";
-			    }
-			}
-		    }  // allowed_fs
-		    else if (vfstype == "swap" && fspath == "swap" )
-		    {
-			y2milestone("mounting %1 to %2", spec, fspath);
-
-			if ( !Mode::test )
-			{
-			    string command = "/sbin/swapon ";
-			    if ( spec != "" )
-			    {
-				// swap-partition
-				command = command + spec;
-
-				// run /sbin/swapon
-				ret_from_shell = (integer) SCR::Execute (.target.bash, command);
-				if ( ret_from_shell != 0 )
-				{
-				    y2error("swapon failed: %1", command );
-				}
-				else
-				{
-				    AddMountedPartition([spec, "swap"]);
-				}
-			    }
-			}
-		    }
-		}); // foreach (mount entry)
-
-	    } // fstab found
-	}  // mount successful
+		if (!MountFSTab (fstab, parts))
+		    success = false;
+	    }
+	}
 	else
 	{
 	    y2error("Could not mount root '%1' to '%2'", partition, Installation::destdir);
@@ -542,7 +568,8 @@ about how to solve this problem."),
     }
 
 
-    global define boolean SetFormatPartitions (list<map> fstabpart) ``{
+    global define boolean SetFormatPartitions (list<map> fstabpart)
+    {
         map <string, map> target_map = Storage::GetTargetMap ();
 
         foreach (string mntpt, string part, partitions_mount, ``{
@@ -566,7 +593,8 @@ about how to solve this problem."),
     /**
      * Make a nice name for a system out of the long name.
      */
-    define string MakeNiceName (string longname) ``{
+    define string MakeNiceName (string longname)
+    {
 	integer p1 = find (longname, "(");
 	if (p1 == -1) return longname;
 	while (p1 > 1 && substring (longname, p1 - 1, 1) == " ")
@@ -578,8 +606,8 @@ about how to solve this problem."),
     /**
      * Read release information.
      */
-    define string GetRelease () ``{
-
+    define string GetRelease ()
+    {
 	string release = "?";
 
 	release = (string) SCR::Read (.target.string, [Installation::destdir + "/etc/SuSE-release", "?"]);
@@ -610,7 +638,8 @@ about how to solve this problem."),
     /**
      * Get architecture of an elf file.
      */
-    define string GetArchOfELF (string filename) ``{
+    define string GetArchOfELF (string filename)
+    {
 	map bash_out = (map) SCR::Execute (.target.bash_output, Directory::ybindir +
 					   "/elf-arch " + filename);
 	if (bash_out["exit"]:1 != 0)
@@ -623,8 +652,8 @@ about how to solve this problem."),
      * Check a root partition and return map with infomations (see
      * variable rootPartitions).
      */
-    define map CheckPartition (map partition) ``{
-
+    define map CheckPartition (map partition)
+    {
 	map freshman = $[`valid : false, `name : "unknown", `arch : "unknown" ];
 
 	string p_dev = partition["device"]:"error";
@@ -679,8 +708,8 @@ about how to solve this problem."),
      * Loads a bunch of kernel modules.
      * @return void
      */
-    global define void FindRootPartitions () ``{
-
+    global define void FindRootPartitions ()
+    {
 	if (didSearchForRootPartitions)
 	    return;
 
