@@ -301,6 +301,7 @@ Would you like to browse though these packages?
 			    Update::userChangedState = true;
 			}
 			Pkg::ClearSaveState();
+			seen_details = true;
 		    }
 
 		    break;
