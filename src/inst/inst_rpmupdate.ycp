@@ -100,10 +100,9 @@
 				  Installation::destdir + filename + " " + "etc/sysconfig") != 0)
 		{
 		    y2error ("backup of %1 to %2 failed", "/etc/sysconfig", filename);
-		    // FIXME: use same message as below
 		    // an error popup
-		    Popup::Error (sformat (_("Backup of /etc/sysconfig failed. See %1 for details."),
-					   "/var/log/YaST2/y2log"));
+		    Popup::Error (sformat (_("Backup of %1 failed. See %2 for details."),
+					   "/etc/sysconfig", "/var/log/YaST2/y2log"));
 		}
 	    }
 	    else if (SCR::Read (.target.size, Installation::destdir + "/etc/rc.config") > 0 &&
