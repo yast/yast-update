@@ -13,8 +13,8 @@
   include "misc_defines.ycp";
   include "arch_defines.ycp";
   include "ui/common_functions.ycp";
+  include "yast_version.ycp";
   
-  Include (`yast_version());
   string version = yast_version ();
 
   y2milestone ( "YaST2-version: %1", version );
@@ -44,14 +44,11 @@
   
   string language = UI( `GetLanguage(true) );
 
-  map lang2yast1 = ReadY2("lang2yast1.ycp");
+  map lang2yast1 = SCR(`Read(.target.yast2, "lang2yast1.ycp"));
   string  long_language 	= lookup(lang2yast1, language, "english");
 
   // setting targetroot
-  string targetroot            = SCR(`Read(.target.root));
-
-  // !!!??? targetroot is NOT USED ???!!!
-  // user_settings = add( user_settings, "targetroot", targetroot ); 
+  string targetroot            = SCR(`Read(.root));
 
   // informations needed in all following frames
   user_settings = add(user_settings, "updateTarget", targetroot);
@@ -117,7 +114,7 @@ Continue with choosing new installation source?")) );
   }
 
   // umount CD
-  Shell ("/bin/umount /var/adm/mount");
+  SCR(`Execute(.target.bash, "/bin/umount /var/adm/mount") );
 
   UI( `CloseDialog() );
 
