@@ -132,7 +132,7 @@
 
 	symbol result = (symbol) WFM::CallFunction ("inst_rootpart", [true, has_next, `update_dialog]);
 
-	if (RootPart::selectedRootPartition != tmp)
+	if (result == `next)
 	{
 	    Update::Detach ();
 	    RootPart::UnmountPartitions (false);
