@@ -9,6 +9,9 @@
 
     import "Arch";
     import "Installation";
+    import "InstMedia";
+    import "MediaUI";
+    import "PackageIO";    
 
     include "ui/wizard_dialog.ycp";
     include "ui/common_popups.ycp";
@@ -35,6 +38,8 @@
 
     PKGINFO( `setDebugLevel(3) );
 
+    InstMedia::initializeInstMedia ($[]);
+    
     integer medium_number = InstMedia::MountMedium ( 1 );	// don't show additional popup
 	  
     while ( medium_number != 0 )		// correct medium available
