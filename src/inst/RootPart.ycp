@@ -312,7 +312,7 @@ Check the log file %1.
 					     "loop_dev"      : loop,
 					     "partitionName" : device ];
 
-			    crypt_ok = SCR::Write(.losetup, setloop );
+			    crypt_ok = Storage::PerformLosetup( setloop, false );
 
 			    y2milestone("crypt ok: %1", crypt_ok );
 			}
