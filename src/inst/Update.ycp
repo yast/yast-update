@@ -96,7 +96,7 @@
 
     /**
      * Find out which base selection is selected or as fallback installed on
-     * the target system. Returns "default" if selection can't be determined.
+     * the target system. Returns "" if selection can't be determined.
      */
     global define string GetSelection () ``{
 
@@ -106,11 +106,28 @@
 	    selections = Pkg::GetSelections (`installed, "base");
 
 	if (selections == nil || selections == [])
-	    selections = ["default"];
+	    selections = [""];
 
 	return selections[0]:"";
     }
 
+
+    /**
+     * Get all available base selections sorted in reverse order
+     * (highest ordered bases selection comes first)
+     */
+
+    global define list GetBaseSelections ()
+    ``{
+	list available_base_selections = sort (`x, `y, Pkg::GetSelections (`available, "base"),
+	``{
+	    map xmap = Pkg::SelectionData(x);
+	    map ymap = Pkg::SelectionData(y);
+	    return (xmap["order"]:"" >= ymap["order"]:"");
+	});
+	y2milestone ("available_base_selections %1", available_base_selections);
+	return available_base_selections;
+    }
 
     /**
      *

@@ -111,6 +111,11 @@
 	else
 	{
 	    string selection = Update::GetSelection ();
+	    if (selection == "")					// hmm, no matching selection
+	    {
+		list base_selections = Update::GetBaseSelections ();	// get highest ordered base as default
+		selection = base_selections[0]:"";
+	    }
 	    map selection_data = Pkg::SelectionData (selection);
 	    string selection_summary = selection_data["summary"]:"error";
 
