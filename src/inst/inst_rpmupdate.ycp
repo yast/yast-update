@@ -216,9 +216,9 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
 	{
 	    y2milestone ("Bootloader::Write()");
 	    Kernel::switched = true;
+	    Mode::update = true;		// flag for inst_suseconfig to warn about reboot
 	    import "Bootloader";
 	    Bootloader::Write();		// re-write initrd and bootloader
-	    Mode::update = true;		// flag for inst_suseconfig to warn about reboot
 	}
 	else
 	{

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar 18 15:04:31 CET 2003 - kkaempf@suse.de
+
+- Set Mode::update so Bootloader clean old boot configuration
+  (i.e. removing dropped modules from initrd) correctly.
+- 2.7.15
+
+-------------------------------------------------------------------
 Tue Mar 18 14:00:05 CET 2003 - kkaempf@suse.de
 
 - remove old (defective) list of still-to-be-installed source
