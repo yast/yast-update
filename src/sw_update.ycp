@@ -28,10 +28,11 @@
   string default_language = "en";
   string default_architecture = "i386";
   string default_board	= "wintel";
-  user_settings = add (user_settings,
-		       "targetroot", "/" );  // It is from an installed system
 
-  string targetroot	= "/";
+  string targetroot = SCR(`Read(.target.root));
+  user_settings = add (user_settings, "targetroot",
+		       targetroot );  // It is from an installed system
+
 
   string architecture = SCR(`Read(.probe.architecture));
   boolean arch_i386	= (architecture == "i386");
