@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jan 10 21:05:22 MET 2001 - schubi@suse.de
+
+- Bugfix in changing installtion-medium
+
+-------------------------------------------------------------------
 Thu Jan  4 18:15:35 CET 2001 - kkaempf@suse.de
 
 - fix Requires field

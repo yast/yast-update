@@ -70,6 +70,7 @@
   user_settings = add( user_settings, "language", language);
   user_settings = add( user_settings, "continue_mode", false);
   user_settings = add( user_settings, "architecture" , architecture);
+  user_settings = add( user_settings, "post_install", true );
   // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
   // user_settings = add(user_settings, "test_mode", true );
   // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
@@ -78,6 +79,33 @@
 
   include "misc_defines.ycp";
 
+
+  boolean go_on = ChangeCD( 1, true);
+	  
+  if ( !go_on )
+  {
+      textdomain "sw_single";            
+      any ret = UI(`ContinueCancel(_("No access to source media used on previous installation.
+Continue with choosing new installation source?"), _("&Yes"), _("&No")));
+
+      if ( ret )		// choose new installation source
+      {
+	    any result = `next;
+	    result = CallFunction( `inst_source( true, true ) );
+	    if ( result != `next )
+	    {
+		UI(`CloseDialog() );
+		return `cancel;
+	    }
+      }
+      else			// exit the installation dialog
+      {
+	  UI(`CloseDialog() );
+	  return `cancel;
+      }
+      textdomain "sw_update";
+  }
+  
   // Calling inst_updateControl
   any ret_single = CallFunction( `inst_updateControl( ) );
 
