@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Oct 19 11:47:13 CEST 2004 - kkaempf@suse.de
+
+- fix gnome.postinstall (#46870, #47351)
+
+-------------------------------------------------------------------
 Thu Sep 30 12:42:31 CEST 2004 - arvin@suse.de
 
 - always include at least empty raw_proposal (see bug #46411)
