@@ -3,7 +3,7 @@
 #
 
 docdir = @DOCDIR@
-htmldir = $(docdir)/y2c_update
+htmldir = $(docdir)
 
 html_DATA =
 
