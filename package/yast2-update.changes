@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 09 16:51:29 CEST 2004 - arvin@suse.de
+
+- fixed proposal for update from running system
+
+-------------------------------------------------------------------
 Wed Sep 08 11:14:39 CEST 2004 - arvin@suse.de
 
 - fixed mounting of partitions with UUID (bug #44770)
