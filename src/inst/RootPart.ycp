@@ -489,10 +489,11 @@ Check the log file %1.
      * Get architecture of an elf file.
      */
     define string GetArchOfELF (string filename) ``{
-	map bash_out = SCR::Execute (.target.bash_output, Directory::ybindir + "/elf-arch " + filename);
-	if (bash_out["exit"]:1 == 0)
-	    return bash_out["stdout"]:"unknown";
-	return "unknown";
+	map bash_out = SCR::Execute (.target.bash_output, Directory::ybindir +
+				     "/elf-arch " + filename);
+	if (bash_out["exit"]:1 != 0)
+	    return "unknown";
+	return deletechars (bash_out["stdout"]:"unknown", "\n");
     }
 
 
@@ -542,6 +543,8 @@ Check the log file %1.
 	    }
 	}
 
+	y2milestone ("%1 %2", partition, freshman);
+
 	return freshman;
     }
 
@@ -573,11 +576,14 @@ Check the log file %1.
 	    Storage::SetTargetMap (SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
 
-	map target_map = Storage::GetTargetMap ();
+	map target_map = Storage::GetOndiskTarget ();
 	y2milestone ("target_map: %1", target_map);
 
 	rootPartitions = $[];
 	numberOfValidRootPartitions = 0;
+
+	SCR::Write(.md.activate, "");
+	SCR::Write(.lvm.activate, "");
 
 	foreach (map `device, `description, target_map, ``{
 	    foreach (map `partition, description["partitions"]:[], ``{
@@ -600,6 +606,9 @@ Check the log file %1.
 		}
 	    });
 	});
+
+	SCR::Write(.lvm.deactivate, "");
+	SCR::Write(.md.deactivate, "");
 
 	didSearchForRootPartitions = true;
 
