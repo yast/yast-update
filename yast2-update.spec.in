@@ -7,6 +7,8 @@ Requires:	yast2
 
 Provides:       y2c_update yast2-config-update
 Obsoletes:      y2c_update yast2-config-update
+Provides:       yast2-trans-update yast2-trans-inst-update
+Obsoletes:      yast2-trans-update yast2-trans-inst-update
 
 BuildArchitectures: noarch
 
