@@ -28,6 +28,8 @@
     import "Packages";
     import "SlideShow";
 
+    import "Kernel";
+
 
     if (!Mode::update)
 	return `auto;
@@ -182,7 +184,7 @@
 
     list base_packages = [];
 
-    string tmpdir	= SCR::Read(.target.tmpdir);
+    string tmpdir	= (string) SCR::Read(.target.tmpdir);
     string language	= Language::language;
 
     SlideShow::SetLanguage( language );
@@ -202,13 +204,13 @@
 	// The runlevel-values have been changed since version 7.0; So we
 	// have to handle older version in a special case.
 
-	string idfile = SCR::Read(.target.tmpdir) + "/idline";
+	string idfile = (string) SCR::Read(.target.tmpdir) + "/idline";
 
 	if ( SCR::Execute (.target.bash, "/bin/grep ^id: " + Installation::destdir + "/etc/inittab >" + idfile) == 0 )
 	{
 	    // idline = "id:X:initdefault:"
 
-	    string idline = SCR::Read(.target.string, idfile);
+	    string idline = (string) SCR::Read(.target.string, idfile);
 
 	    // idsplit = "id", "X", "initdefault", ""
 	    list idsplit = splitstring (idline, ":");
@@ -292,7 +294,7 @@
     if (size (failed) > 0)
     {
 	y2milestone ("failed: %1", failed);
-	list previous_failed = SCR::Read (.target.ycp, [Installation::destdir + "/var/lib/YaST2/failed_packages", []]);
+	list previous_failed = (list) SCR::Read (.target.ycp, [Installation::destdir + "/var/lib/YaST2/failed_packages", []]);
 	if (size (previous_failed) > 0)
 	    failed = union (previous_failed, failed);
 	SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/failed_packages", failed);
