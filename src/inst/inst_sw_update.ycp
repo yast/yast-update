@@ -83,6 +83,10 @@
 	    Pkg::PkgInstall ("vnc");
 	}
 
+//*************** FIXME #19071
+	Pkg::PkgInstall ("grub");
+//*************** FIXME #19071
+
 	UI::CloseDialog();
 
     } // evaluate updatelist
