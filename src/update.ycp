@@ -1,0 +1,47 @@
+/**
+ * File:	clients/update.ycp
+ * Module:	System update
+ * Summary:	Main update client
+ * Authors:	Klaus Kaempf <kkaempf@suse.de>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    textdomain "update";
+
+    import "Mode";
+    import "Update";
+    import "Wizard";
+
+    // set normal mode and update
+    Mode::normal = true;
+    Mode::installation = false;
+    Mode::update = true;
+    Update::disallow_upgrade = true;
+    Update::onlyUpdateSelected = true;
+    Update::deleteOldPackages = false;
+
+    // wizard stage
+    integer current_stage = -1;
+
+    // create initial dialog
+    Wizard::CreateDialog ();
+
+    // calling inst_proposal
+    any ret = WFM::CallFunction ("inst_proposal", [true, true, `ini]);
+
+    if (ret == `next)
+    {
+	WFM::CallFunction ("inst_rpmupdate", [false, false]);
+
+	Wizard::OpenNextBackDialog();
+	WFM::CallFunction ("inst_suseconfig", [false, false]);
+	Wizard::CloseDialog();
+    }
+
+    Wizard::CloseDialog ();
+
+    return `next;
+}
