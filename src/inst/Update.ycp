@@ -15,6 +15,9 @@
     // number of packages affected by update
     global integer affected_packages = 0;
 
+    // number of packages unknown (problematic) by update
+    global integer unknown_packages = 0;
+
     // number of errors (packages?) returned by solver
     global integer solve_errors = 0;
 

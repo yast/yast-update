@@ -52,6 +52,7 @@
 
 	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 	    Update::affected_packages = tmp1[0]:0;
+	    Update::unknown_packages = tmp1[1]:0;
 
 	    if (Pkg::PkgSolve (!Update::onlyUpdateSelected))
 		Update::solve_errors = 0;
