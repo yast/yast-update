@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Dec 13 16:04:03 MET 2000 - schubi@suse.de
+
+- YaST2 version read and stored into global variable	 
+
+-------------------------------------------------------------------
 Wed Dec 13 10:13:03 MET 2000 - schubi@suse.de
 
 - targetroot reading per SCR
