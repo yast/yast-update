@@ -626,15 +626,82 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 			mount_type = vfstype;
 		    }
 
-		    boolean ret_bool = fsck_and_mount (mounts["file"]:"", spec, mount_type);
-		    if ( !ret_bool )
+		    boolean ret_bool = false;
+		    while ( !ret_bool )
 		    {
-			y2error("mounting %1 (type %2) on %3 failed", mounts["spec"]:"",
-				mount_type, Installation::destdir + mounts["file"]:"");
-			message = sformat (_("The partition %1 could not be mounted.\n
+			ret_bool = fsck_and_mount (fspath, spec, mount_type);
+			if (! ret_bool)
+			{
+			    y2error("mounting %1 (type %2) on %3 failed", spec,
+				mount_type, Installation::destdir + fspath);
+			    UI::OpenDialog (`VBox (
+				`Label (sformat (
+				    // label in a popup, %1 is device (eg. /dev/hda1), %2 is file name
+				    _("The partition %1 could not be mounted.
+Check the log file %2.
+
+If you are sure that the partition is not necessary for the
+update (it is not any system partition), click Continue.
+To check or fix the mount options, click Specify Monut Options.
+To abort update, click Cancel."),
+				    spec, Directory::logdir + "/y2log")
+				),
+				`VSpacing (1),
+				`HBox (
+				    `PushButton (`id (`cont), Label::ContinueButton ()),
+				    // push button
+				    `PushButton (`id (`cmd), _("&Specify Mount Parameters")),
+				    `PushButton (`id (`cancel), Label::CancelButton ())
+				)
+			    ));
+			    symbol act = (symbol)UI::UserInput ();
+			    UI::CloseDialog ();
+			    if (act == `cancel)
+			    {
+				ret_bool = true;
+				success = false;
+			    }
+			    else if (act == `cont)
+			    {
+				ret_bool = true;
+			    }
+			    else if (act == `cmd)
+			    {
+				UI::OpenDialog (`VBox (
+				    // popup heading
+				    `Heading (_("Mount parameters")),
+				    `VSpacing (0.6),
+				    // text entry label
+				    `TextEntry (`id (`mp), _("&Mount Point"), fspath),
+				    `VSpacing (0.4),
+				    // tex entry label
+				    `TextEntry (`id (`device), _("&Device"), spec),
+				    `VSpacing (0.4),
+				    // text entry label
+				    `TextEntry (`id (`fs), _("&File System\n(empty for autodetection)"), mount_type),
+				    `VSpacing (1),
+				    `HBox (
+
+					`PushButton (`id (`ok), Label::OKButton ()),
+					`PushButton (`id (`cancel), Label::CancelButton ())
+				    )
+				));
+				act = (symbol)UI::UserInput ();
+				if (act == `ok)
+				{
+				    fspath = (string)UI::QueryWidget (`id (`mp), `Value);
+				    spec = (string)UI::QueryWidget (`id (`device), `Value);
+				    mount_type = (string)UI::QueryWidget (`id (`fs), `Value);
+				}
+				UI::CloseDialog ();
+			    }
+/*
+			    message = sformat (_("The partition %1 could not be mounted.\n
 Check the log file %2.
 "), spec, Directory::logdir + "/y2log");
-			success = false;
+			    success = false;
+			    ret_bool = true;*/
+			}
 		    }
 		}
 	    }  // allowed_fs
