@@ -547,7 +547,7 @@ about how to solve this problem."),
 
         foreach (string mntpt, string part, partitions_mount, ``{
                 map p = select(filter(map pp, fstabpart, ``(pp["mount"]:"" == mntpt)), 0 , $[]);
-                boolean format_partition = true;
+                boolean format_partition = false;
                 if (haskey(p, "format"))
                 {
                     format_partition = p["format"]:false;
