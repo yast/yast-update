@@ -11,6 +11,7 @@
     import "HTML";
     import "Update";
     import "Mode";
+    import "Language";
     import "Packages";
 
     string func  = WFM::Args(0);
@@ -37,6 +38,12 @@
 	if (true)
 	{
 	    Pkg::TargetInit (Installation::destdir, false);
+
+	    // The packagemaneger uses the language for both user interface
+	    // as well as default system locale. Here I would like to only
+	    // set the language for the user interface and the packagemaneger
+	    // should know himself the already installed system languages.
+	    Pkg::SetLocale (Language::language);
 	}
 
 	// connect target with package manager
