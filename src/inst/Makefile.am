@@ -12,7 +12,6 @@ client_DATA =				\
 	inst_rootpart.ycp		\
 	inst_update.ycp			\
 	inst_backup.ycp			\
-	inst_rpmupdate.ycp		\
 	proposal_rootpart.ycp		\
 	proposal_update.ycp		\
 	proposal_packages.ycp		\

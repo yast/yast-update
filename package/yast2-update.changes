@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan 19 13:07:10 CET 2004 - arvin@suse.de
+
+- united inst_rpmcopy.ycp and inst_rpmupdate.ycp
+
+-------------------------------------------------------------------
 Fri Jan 16 12:13:54 CET 2004 - arvin@suse.de
 
 - restore callbacks after slideshow
