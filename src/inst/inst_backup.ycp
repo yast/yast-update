@@ -23,8 +23,8 @@
     // Check, if the backup fits to disk
     //
 
-    define boolean check_backup_path (list<map> part_info) ``{
-
+    define boolean check_backup_path (list<map> part_info)
+    {
 	string backup_path = Update::backup_path;
 	integer min_space = 50;
 
@@ -39,7 +39,7 @@
 	    return false;
 	}
 
-	foreach( map part, part_info, ``{
+	foreach( map part, part_info, {
 
 	    string part_name = part["name"]:"";
 

@@ -24,9 +24,10 @@
 
     list partition_list = [];
 
-    define void make_partition_list (boolean withall) ``{
+    define void make_partition_list (boolean withall)
+    {
 	partition_list = [];
-	foreach (string p, map i, RootPart::rootPartitions, ``{
+	foreach (string p, map i, RootPart::rootPartitions, {
 	    if (i[`valid]:false || withall)
 	    {
 		string s = i[`name]:"error";

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Sep 06 15:17:07 CEST 2004 - arvin@suse.de
+
+- major cleanup of RootPart.ycp in preparation for bug #44286
+
+-------------------------------------------------------------------
 Thu Sep 02 12:41:05 CEST 2004 - arvin@suse.de
 
 - add kernel's nongpl package during installation (bug #44394)

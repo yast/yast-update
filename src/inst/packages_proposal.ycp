@@ -19,8 +19,8 @@
     map    ret   = $[];
 
 
-    define symbol call_packageselector () ``{
-
+    define symbol call_packageselector ()
+    {
 	if (Update::unknown_packages > 0) // FIXME
 	{
 	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector),

@@ -92,8 +92,8 @@
     /**
      *
      */
-    global define void Reset () ``{
-
+    global define void Reset ()
+    {
 	deleteOldPackages = ProductFeatures::delete_old_packages;
 	disallow_upgrade = false;
 
@@ -103,15 +103,14 @@
 	backup_sysconfig = true;
 	remove_old_backups = false;
 	backup_path = "/var/adm/backup";
-
     }
 
 
     /**
      *
      */
-    define void fill_version_map (map <string, any>& data) ``{
-
+    define void fill_version_map (map <string, any>& data)
+    {
 	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
 
 	list <string> tmp1 = splitstring (data["version"]:"", ".");
@@ -123,15 +122,14 @@
 	integer tmp3 = tointeger (tmp1[1]:"-1");
 	if (tmp3 >= 0)
 	    data["minor"] = tmp3;
-
     }
 
 
     /**
      *
      */
-    global define boolean GetProductName () ``{
-
+    global define boolean GetProductName ()
+    {
 	/*
 	 *  Be careful: The maps returned by from Pkg::TargetProducts and
 	 *  Pkg::SourceProductData have different content.
@@ -185,8 +183,8 @@
      * (highest ordered bases selection comes first).
      */
     global define list<string> GetBaseSelections ()
-    ``{
-	list<string> available_base_selections = sort (string x, string y, Pkg::GetSelections (`available, "base"), ``{
+    {
+	list<string> available_base_selections = sort (string x, string y, Pkg::GetSelections (`available, "base"), {
 	    map xmap = Pkg::SelectionData(x);
 	    map ymap = Pkg::SelectionData(y);
 	    return (xmap["order"]:"" > ymap["order"]:"");
@@ -200,8 +198,8 @@
      * Propose a selection for the update and save it's name in
      * Update::selected_selection.
      */
-    global define void ProposeSelection () ``{
-
+    global define void ProposeSelection ()
+    {
 	selected_selection = "";
 
 	list available_selections = GetBaseSelections ();
@@ -240,12 +238,11 @@
     /**
      *
      */
-    global define void Detach () ``{
-
+    global define void Detach ()
+    {
 	Pkg::TargetFinish ();
 	did_init1 = false;
 	did_init2 = false;
-
     }
 
 }
