@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Aug 20 17:05:21 CEST 2001 - gs@suse.de
+
+- internal: remove deprecated agent calls
+
+-------------------------------------------------------------------
 Fri Jul 20 10:05:50 MEST 2001 - schubi@suse.de
 
 - error popup with right language #8375
