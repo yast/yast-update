@@ -1,7 +1,12 @@
 -------------------------------------------------------------------
+Mon Jan 17 16:43:57 CET 2005 - jsrain@suse.cz
+
+- offer actions to do if mount of a partition fails (#46310)
+
+-------------------------------------------------------------------
 Tue Jan 11 14:11:34 CET 2005 - jsrain@suse.cz
 
-- inform user about new kernl installed if update run from control
+- inform user about new kernel installed if update run from control
   center (#38346)
 
 -------------------------------------------------------------------
