@@ -80,9 +80,9 @@
      *    major (integer), e.g. "9"
      *    minor (integer, e.g. "1"
      *
-     *  These are more or less the same as in Update but we can't ask the
-     *  package database what product is installed before mounting var.  Yes,
-     *  life is hard.
+     *  These are (hopefully) the same as in the Update module but we can't
+     *  ask the package database what product is installed before mounting
+     *  /var.  Yes, life is hard.
      */
 
     // Version of the targetsystem
@@ -162,6 +162,34 @@
 
 
     /**
+     *
+     */
+    define void AddToTargetMap ()
+    {
+	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
+	list <list> tmp = filter (list e, activated, ``(e[1]:"" == "mount"));
+	foreach (list e, tmp, {
+	    target_map = Storage::SetPartitionData (target_map, e[2]:"", "mount", e[0]:"");
+	});
+	Storage::SetTargetMap (target_map);
+    }
+
+
+    /**
+     *
+     */
+    define void RemoveFromTargetMap ()
+    {
+	map <string, map> target_map = Storage::GetTargetMap ();
+	list <list> tmp = filter (list e, activated, ``(e[1]:"" == "mount"));
+	foreach (list e, tmp, {
+	    target_map = Storage::SetPartitionData (target_map, e[2]:"", "mount", "");
+	});
+	Storage::SetTargetMap (target_map);
+    }
+
+
+    /**
      * Unmount all mounted partitions, deactivate swaps, detach loopback
      * devices. Uses list activated to make actions in reverse order.
      * @return void
@@ -209,16 +237,7 @@
 
 	// now remove the mount points of the mounted partitions
 	// in the target map of the storage module
-
-	map <string, map> target_map = Storage::GetTargetMap ();
-
-	list <list> tmp = filter (list e, activated, ``(e[1]:"" == "mount"));
-
-	foreach (list e, tmp, {
-	    target_map = Storage::SetPartitionData (target_map, e[2]:"", "mount", "");
-	});
-
-	Storage::SetTargetMap (target_map);
+	RemoveFromTargetMap ();
 
 
 	// clear activated list
@@ -803,7 +822,9 @@ about how to solve this problem."),
 	    success = false;
 	}
 
-	if ( !success )
+	y2milestone ("MountPartition (%1) = %2", root_device_current, success);
+
+	if (!success)
 	{
 	    Popup::Message(message);
 
@@ -811,25 +832,12 @@ about how to solve this problem."),
 	    UnmountPartitions();
 	    did_try_mount_partitions = true;
 	}
-
-	y2milestone ("mountPartition(%1) = %2", root_device_current, success);
-
-
-	// enter the mount points of the newly mounted partitions
-	// in the target map of the storage module
-	if (success)
+	else
 	{
-	    map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
-
-	    list <list> tmp = filter (list e, activated, ``(e[1]:"" == "mount"));
-
-	    foreach (list e, tmp, {
-		target_map = Storage::SetPartitionData (target_map, e[2]:"", "mount", e[0]:"");
-	    });
-
-	    Storage::SetTargetMap (target_map);
+	    // enter the mount points of the newly mounted partitions
+	    // in the target map of the storage module
+	    AddToTargetMap ();
 	}
-
 
 	return success;
     }
