@@ -27,11 +27,11 @@ do this.</P>"))),
 
 	if ( stage == current_stage && ! force )	// cache
 	{
-	    y2log( .debug, "installation", 666, sformat("Stage %1 cached - doing nothing", stage ) );
+	    y2debug( "Stage %1 cached - doing nothing", stage  );
 	    return;
 	}
 
-	y2log( .debug, "installation", 666, sformat("Setting stage to %1", stage ) );
+	y2debug( "Setting stage to %1", stage );
 
 	// Set the header image according to the stage
 	UI( `SetWizardImage( ReadByteblock( sformat( "/usr/lib/YaST2/images/stage%1.png", stage ) ) ) );
@@ -507,6 +507,10 @@ You will need to reinstall.");
   ];
 
   string  long_language 	= lookup(lang2yast1, language, "english");
+
+  // setting targetroot
+  string targetroot            = SCR(`Read(.target.root));
+  user_settings = add( user_settings, "targetroot", targetroot );  
   
   // informations needed in all following frames
   user_settings = add(user_settings, "updateTarget", "/");		    
