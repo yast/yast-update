@@ -1,6 +1,6 @@
 @HEADER-COMMENT@
 
-# neededforbuild  autoconf automake yast2-devtools ydoc
+# neededforbuild  autoconf automake yast2-devel-packages
 
 @HEADER@
 Requires:	yast2-trans-update yast2
@@ -25,6 +25,6 @@ Summary:      YaST2 Modules for installation
 
 %files
 %defattr(-,root,root)
-@YAST2DIR@/menuentries/menuentry_sw_update.y2cc
-@YAST2DIR@/clients/sw_update.ycp
-%doc @DOCDIR@
+@configdir@/sw_update.y2cc
+@clientdir@/sw_update.ycp
+%doc @docdir@
