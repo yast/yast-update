@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 12 16:15:53 CET 2003 - kkaempf@suse.de
+
+- remove "/usr/share/info/dir" on target if not owned by
+  any package (#23555)
+
+-------------------------------------------------------------------
 Mon Feb 10 16:43:53 CET 2003 - arvin@suse.de
 
 - merged proofread messages

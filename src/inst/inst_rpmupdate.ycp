@@ -159,6 +159,12 @@ Check the log file /var/log/y2log
 	media_number = 1;
     }
 
+    if (!Pkg::TargetFileHasOwner ("/usr/share/info/dir"))
+    {
+	y2milestone ("/usr/share/info/dir not owned by any package, removing");
+	SCR::Execute (.target.remove, Installation::destdir + "/usr/share/info/dir");
+    }
+
     // returns [ int successful, list failed, list remaining, list srcremaining ]
     list commit_result = PackageInstallation::CommitPackages( media_number, 0 );
 
