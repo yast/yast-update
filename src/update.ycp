@@ -24,8 +24,6 @@
     Mode::update = true;
     Mode::test = true;
 
-    include "ui/common_functions.ycp";
-
     // wizard stage
     integer current_stage = -1;
 

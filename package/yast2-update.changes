@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Aug 19 13:07:01 CEST 2003 - arvin@suse.de
+
+- removed obsolete include
+
+-------------------------------------------------------------------
 Wed Aug 13 16:11:37 CEST 2003 - arvin@suse.de
 
 - fixed detection of root partitions (bug #28719)
