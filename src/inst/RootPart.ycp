@@ -19,6 +19,7 @@
     import "Popup";
     import "ModuleLoading";
     import "FileSystems";
+    import "Update";
 
     include "partitioning/partition_defines.ycp";
     include "partitioning/custom_part_helptexts.ycp";
@@ -186,6 +187,55 @@
 
 
     /**
+     *  Check that the root filesystem in fstab has the correct device.
+     */
+    define boolean check_root_device (string partition, list <map> fstab,
+				      string& found_partition)
+    {
+	list <map> tmp = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
+
+	if (size (tmp) != 1)
+	{
+	    y2error ("not exactly one root partition found in fstab");
+	    found_partition = "none";
+	    return false;
+	}
+
+	map root = tmp[0]:$[];
+
+	if (root["spec"]:"" != partition)
+	{
+	    y2error ("root partition in fstab has wrong device");
+	    found_partition = root["spec"]:"";
+	    return false;
+	}
+
+	return true;
+    }
+
+
+    /**
+     *
+     */
+    define list <map> TranslateFSTab (list <map> fstab)
+    {
+	integer i = 0;
+
+	while (i < size (fstab))
+	{
+	    string spec = fstab[i,"spec"]:"";
+	    list <string> tmp = Storage::GetTranslatedDevices (Update::installedVersion,
+							       Update::updateVersion, [spec]);
+	    fstab[i,"spec"] = tmp[0]:spec;
+
+	    i = i + 1;
+	};
+
+	return fstab;
+    }
+
+
+    /**
      * Mounting root-partition; reading fstab and mounting read partitions
      */
     global define boolean MountPartitions (string partition) ``{
@@ -259,22 +309,38 @@ Check the log file %1.
 		SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/raidtab /etc");
 	    }
 
-	    y2milestone("fstab: %1", fstab);
-	    y2milestone("crtab: %1", crtab);
+	    y2milestone ("fstab: %1", fstab);
+	    y2milestone ("crtab: %1", crtab);
 
-	    if ( size ( fstab ) == 0 )
+	    fstab = TranslateFSTab (fstab);
+	    crtab = TranslateFSTab (crtab);
+
+	    y2milestone ("fstab: %1", fstab);
+	    y2milestone ("crtab: %1", crtab);
+
+	    string tmp = "";
+
+	    if (size (fstab) == 0)
 	    {
-		y2error("no fstab found !!" );
-		message =  _("No fstab found.");
+		y2error ("no or empty fstab found!");
+		message = _("No fstab found.");
+		success = false;
+	    }
+	    else if (!check_root_device (partition, fstab, tmp))
+	    {
+		y2error ("fstab has wrong root device!");
+		message = _("The root partition in /etc/fstab has an invalid root device.\n") +
+		    sformat (_("It is currently mounted as %1 but listed as %2.\n"),
+			     partition, tmp) +
+		    sformat (_("See the SBD article at %1 for details
+about how to solve this problem."),
+			     "http://portal.suse.com/sdb/en/2004/01/sata.html");
 		success = false;
 	    }
 	    else
 	    {
 		integer crypt_nb = 0;
 		boolean crypt_ok = true;
-
-		y2milestone("fstab :%1", fstab );
-		y2milestone("crtab :%1", crtab );
 
 		foreach (map mounts, crtab, ``{
 
@@ -462,7 +528,7 @@ Check the log file %1.
 	{
 	    partitions_mount = parts;
 
-	    map <string, map> target_map = Storage::GetTargetMap ();
+	    map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
 
 	    foreach (string mntpt, string part, partitions_mount, ``{
 		target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt);
@@ -474,6 +540,7 @@ Check the log file %1.
 
 	return success;
     }
+
 
     global define boolean SetFormatPartitions (list<map> fstabpart) ``{
         map <string, map> target_map = Storage::GetTargetMap ();
@@ -494,6 +561,7 @@ Check the log file %1.
         Storage::SetTargetMap (target_map);
         return true;
     }
+
 
     /**
      * Make a nice name for a system out of the long name.

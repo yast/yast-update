@@ -68,23 +68,26 @@
 	    {
 		Pkg::SetSelection (Update::selected_selection);	// -> set the base selection (minimal, default, ....)
 
-		// now compare installed (old) selections against available (new) selections
-		//  and set all selections which are installed (old) and available (new)
-		//  as 'to be installed' -> UI will show "to be updated" for these selections
+		if (!Update::manual_interaction)
+		{
+		    // now compare installed (old) selections against available (new) selections
+		    //  and set all selections which are installed (old) and available (new)
+		    //  as 'to be installed' -> UI will show "to be updated" for these selections
 
-		list<string> available_addons = Pkg::GetSelections (`available, "");
-		list<string> installed_addons = Pkg::GetSelections (`installed, "");
+		    list<string> available_addons = Pkg::GetSelections (`available, "");
+		    list<string> installed_addons = Pkg::GetSelections (`installed, "");
 
-		foreach (string installed, installed_addons,
-		``{
-		    if (contains (available_addons, installed))		// we have a newer selection for an installed one
+		    foreach (string installed, installed_addons,
 		    {
-			Pkg::SetSelection (installed);			// update this selection too (selection solving included)
-		    }
-		});
+			if (contains (available_addons, installed))	// we have a newer selection for an installed one
+			{
+			    Pkg::SetSelection (installed);		// update this selection too (selection solving included)
+			}
+		    });
+		}
 	    }
 
-	    Pkg::ActivateSelections ();					// no go through all selected selections and select their packages
+	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
 
 	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 	    Update::affected_packages = tmp1[0]:0;
@@ -137,7 +140,7 @@
 	{
 	    if (false)		// FIXME
 	    {
-		return $[ "warning" : _("Update to another version is not supported from the running system."),
+		return $[ "warning" : _("Updating to another version is not supported from the running system."),
 			  "warning_level" : `fatal ];
 	    }
 	}

@@ -47,7 +47,7 @@
 
 
     // Only an update, NOT an upgrade
-    global boolean onlyUpdateSelected = false;
+    global boolean onlyUpdateSelected = ProductFeatures::onlyUpdateSelected;
 
     global string selected_selection = "";
 
@@ -79,6 +79,10 @@
     global integer packagesInstalled = 0;
 
 
+    // see bug #40358
+    global boolean manual_interaction = false;
+
+
 
     /*-----------------------------------------------------------------------
      * GLOBAL FUNCTIONS
@@ -92,6 +96,8 @@
 
 	deleteOldPackages = ProductFeatures::delete_old_packages;
 	disallow_upgrade = false;
+
+	manual_interaction = false;
 
 	backup_modified = true;
 	backup_sysconfig = true;

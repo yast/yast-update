@@ -1,8 +1,38 @@
 -------------------------------------------------------------------
+Thu May 27 15:26:02 CEST 2004 - arvin@suse.de
+
+- used original target map during update (bug #41250)
+
+-------------------------------------------------------------------
+Wed May 12 11:29:46 CEST 2004 - arvin@suse.de
+
+- only update selections if the user did not make an manual
+  interaction (bug #40358)
+
+-------------------------------------------------------------------
+Tue May 04 11:18:58 CEST 2004 - arvin@suse.de
+
+- merged proofread messages
+
+-------------------------------------------------------------------
+Thu Apr 29 15:57:33 CEST 2004 - arvin@suse.de
+
+- handle renaming of device names on iseries (bug #39437)
+
+-------------------------------------------------------------------
 Mon Apr 19 09:30:00 CEST 2004 - kkaempf@suse.de
 
 - update gnome-postinstall script (#38644)
-- 2.10.1
+
+-------------------------------------------------------------------
+Tue Apr  6 18:41:49 CEST 2004 - nashif@suse.de
+
+- Use product feature value for update/upgrade (#38486)
+
+-------------------------------------------------------------------
+Tue Apr 06 12:44:15 CEST 2004 - arvin@suse.de
+
+- added error popup for wrong device of root partition in fstab
 
 -------------------------------------------------------------------
 Mon Apr 05 15:02:11 CEST 2004 - arvin@suse.de
