@@ -40,7 +40,7 @@ do this.</P>
       `helptext     : UI(_("Update your complete system. Insert CD 1 before proceeding.")),
    
       ////////////////////////////////////////////////////////////////////////////////
-      // leaf nil, experts only ;-)
+      // leave nil, experts only ;-)
       `codefragment : nil 
    
    ]
