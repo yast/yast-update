@@ -11,6 +11,8 @@
 {
     module "RootPart";
 
+    textdomain "update";
+
     import "Directory";
     import "Storage";
     import "Popup";
