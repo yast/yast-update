@@ -31,5 +31,5 @@ Summary:	YaST2 update
 @desktopdir@/*.desktop
 @moduledir@/*
 @clientdir@/*.ycp
-
+/usr/share/YaST2/control/*.xml
 %doc @docdir@
