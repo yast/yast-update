@@ -52,6 +52,8 @@
     global integer packagesInstalled = 0;
     // counter for installed packages
 
+    global boolean userChangedState = false;
+    // Flag, if user changed the packager state
 
     // original targetMap for Storage::, used after [Back]
     // (needed if root partition was changed to discard previous settings)

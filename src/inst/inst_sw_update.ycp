@@ -240,9 +240,17 @@ if the package should be updated.
 	    Pkg::SaveState();
 	    ret = UI::RunPkgSelection (`id(`selector));
 	    if (ret == `accept)
+	    {
+		if (Pkg::RestoreState(true))
+		{
+		    Update::userChangedState = true;
+		}
 		Pkg::ClearSaveState();
+	    }
 	    else
+	    {
 		Pkg::RestoreState();
+	    }
 	    UI::CloseDialog();
 
 	    ret = `again;		// stay in loop
@@ -288,6 +296,10 @@ Would you like to browse though these packages?
 		    }
 		    else
 		    {
+			if (Pkg::RestoreState(true))
+			{
+			    Update::userChangedState = true;
+			}
 			Pkg::ClearSaveState();
 		    }
 

@@ -84,17 +84,15 @@
     });
 
     string wrn_msg = "";
-    boolean added = false;
 
     // Checking: already selected addons or single selection?
 
-    if (Pkg::IsManualSelection())
+    if (Upgrade::userChangedState)		// check if state changed
     {
 	// Display warning message
 	wrn_msg = _("\
 You have already chosen software from \"Detailed selection\".\n\
 You will lose that selection if you change the basic selection.");
-	added = true;
     }
 
     // Build and show dialog
@@ -215,7 +213,7 @@ be missing, such as new YaST2 modules.
 	    || Update::deleteOldPackages !=  UI::QueryWidget( `id(`delete), `Value ))
 	{
 	    Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
-	    if (!added
+	    if (!Update::userChangedState
 			// yes/no question
 		|| UI::YesNoPopup(_("Do you really want\nto reset your detailed selection?") ) )
 	    {
@@ -249,7 +247,8 @@ be missing, such as new YaST2 modules.
 
 		// Evaluate update packages new
 		Update::updateEvaluated = false;
-		
+		Update::userChangedState = false;
+
 	    }
 	    // rebuild
 	    ret = `again;

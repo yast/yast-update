@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Mar  5 15:07:33 CET 2003 - kkaempf@suse.de
+
+- check "selection changed by user" status better (#23616).
+
+-------------------------------------------------------------------
 Tue Mar  4 15:16:50 CET 2003 - kkaempf@suse.de
 
 - default to 'delete packages without replacement' during
