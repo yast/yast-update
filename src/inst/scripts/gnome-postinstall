@@ -12,6 +12,17 @@ exec 2>&1
 TEMP=$(mktemp -d /tmp/tmp.gnome-postinstall.XXXXXX) || { echo "could not create temp dir" >&2; exit 1; }
 echo -n "" >$TEMP/list
 
+# Fix gstreamer configuration. At least in SuSE Linux 9.2, some packages
+# from gstreamer-plugins have bug in scriptlets (#46870), including
+# %postun. This can cause gstreamer registry corruption. We have to fix
+# it now.
+
+# Did user install gstramer?
+if test -e /opt/gnome/bin/gst-register
+then
+    /opt/gnome/bin/gst-register
+fi
+
 # Inspect all backed-up schemas (back-up was done by
 # gnome-preinstall). If no update was done, re-generate gconf database
 # entries. Otherwise it was done during package update.
