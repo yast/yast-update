@@ -40,7 +40,9 @@
 	Update::affected_count = brokenPackages[0]:0;
 	Update::manuall_update_list = brokenPackages[1]:[];
 	Update::unmaintained_list = brokenPackages[2]:[];
-
+y2milestone ("Update::affected_count %1", Update::affected_count);
+y2milestone ("Update::manuall_update_list %1", Update::manuall_update_list);
+y2milestone ("Update::unmaintained_list %1", Update::unmaintained_list);
 	map update_inf = Pkg::TargetUpdateInf (Installation::destdir + "/var/lib/YaST/update.inf");
 
 	Update::installedVersion = update_inf["distname"]:"?" + " " + update_inf["distversion"]:"";
@@ -64,7 +66,7 @@
 	    if (!requires_selected
 		&& !Pkg::IsProvided (product_package))
 	    {
-		Pkg::DoProvide (product_package);
+		Pkg::PkgInstall (product_package);
 		requires_selected = true;
 	    }
 	    Update::updateBasePackages = requires_selected;
@@ -73,13 +75,13 @@
 	// do not delete "aps" if it is in use
 	if (SCR::Execute(.target.bash, sformat("grep -q apsfilter %1/etc/printcap", Installation::destdir)) == 0)
 	{
-	    Pkg::DoProvide ("aps");
+	    Pkg::PkgInstall ("aps");
 	}
 		
 	// adding vnc package if in vnc update mode
 	if ( Mode::vnc )
 	{
-	    Pkg::DoProvide ("vnc");
+	    Pkg::PkgInstall ("vnc");
 	}
 
 	UI::CloseDialog();
@@ -177,18 +179,13 @@ if the package should be updated.
 </p>
 ");
 
-    
+    //****************************************************************
     // Checking depencenies
+
     boolean ok = Pkg::PkgSolve();
-
-    // FIXME
-    if (!ok)
-    {
-	// There are unresolved package-dependencies while upgrade
-	any ret = CallFunction( `inst_packages() );
-	return `again;
-    }
-
+    
+    //****************************************************************
+    
     // Checking disk-space
     SpaceCalculation::ShowPartitionWarning();
     
