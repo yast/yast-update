@@ -42,31 +42,42 @@
     make_partition_list (RootPart::showAllPartitions);
 
 
+    string title = "";
     string label = "";
     string help_text = "";
 
     if (flavor == `boot_popup)
     {
 	// label for selection of root partition (for boot)
-	label = _("Select system to boot:");
+	label = _("Select partition/system to boot:");
 
 	// help text for root partition dialog (for boot)
 	help_text = _("<p>
-Select system to boot.
-</p>
-");
+Select the partition/system you want to boot.
+</p>");
     }
     else
     {
 	// label for selection of root partition (for update)
-	label = _("Select system to update:");
+	label = _("Select partition/system to update:");
 
 	// help text for root partition dialog (for update)
 	help_text = _("<p>
-Select system to update.
-</p>
-");
+Select the partition/system you want to update.
+</p>");
+
+	if (flavor == `update_dialog)
+	{
+	    // headline for dialog "Select for update"
+	    title = _("Select for update");
+	}
     }
+
+    // help text for root partition dialog (general part)
+    help_text = help_text + _("<p>
+<b>Show all partitions</b> will expand the list to an
+general partitions overview of your system.
+</p>");
 
     term contents =
 	`VBox (
@@ -93,7 +104,7 @@ Select system to update.
     if (flavor == `update_dialog)
     {
 	Wizard::OpenAcceptDialog ();
-	Wizard::SetContents ("", contents, help_text, Args(0), Args(1));
+	Wizard::SetContents (title, contents, help_text, Args(0), Args(1));
     }
     else
     {
