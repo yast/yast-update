@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Mar 31 12:26:52 CEST 2004 - kkaempf@suse.de
+
+- update gnome-postinstall script (sbrabec@suse.cz)
+
+-------------------------------------------------------------------
 Thu Mar 25 18:18:19 CET 2004 - arvin@suse.de
 
 - change for new crypto handling
