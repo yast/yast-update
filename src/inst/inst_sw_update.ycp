@@ -192,8 +192,10 @@ if the package should be updated.
 
     //****************************************************************
     // Checking depencenies
+    // if adding more packages via selections (Update::onlyUpdateSelected == false)
+    // prefer already installed packages in conflicts
 
-    boolean ok = Pkg::PkgSolve();
+    boolean ok = Pkg::PkgSolve (!Update::onlyUpdateSelected);
     
     //****************************************************************
     

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 11 00:34:00 CEST 2002 - kkaempf@suse.de
+
+- pass "update_installed_only" to solver
+- 2.6.12
+
+-------------------------------------------------------------------
 Tue Sep 10 16:18:22 CEST 2002 - arvin@suse.de
 
 - added provides/obsoletes y2t_update (bug #19325)
