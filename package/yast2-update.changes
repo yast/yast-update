@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep  9 19:47:59 CEST 2002 - kkaempf@suse.de
+
+- add script to update passwd and groups so both include
+  the minimal set of required entries
+- 2.6.10
+
+-------------------------------------------------------------------
 Mon Sep  9 12:16:02 CEST 2002 - kkaempf@suse.de
 
 - drop Save/Restore from Update, it's done via "remaining"
