@@ -33,15 +33,6 @@
 	return `auto;
 
 
-    // message in a progress popup
-    string rebuild_message = _("Checking package database. This process can take some time.");
-
-    // seems obsolete
-    // popup message, %1 will be replace with the name of the logfile
-    string rebuild_message_error = sformat (_("Package database check has returned an error.
-Check the log file %1.\n"), "/var/log/YaST2/y2log");
-
-
     /**
      *  Some misc preparations.
      */
@@ -123,6 +114,10 @@ Check the log file %1.\n"), "/var/log/YaST2/y2log");
     }
 
     define void rpmrebuild () ``{
+
+	// message in a progress popup
+	string rebuild_message = _("Checking package database. This process can take some time.");
+
 	UI::OpenDialog(`opt(`decorated),
 		       `VBox( `Heading( _("RPM DB rebuild")) ,
 			      `VBox( `Label(rebuild_message),
