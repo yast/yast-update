@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Aug 13 16:11:37 CEST 2003 - arvin@suse.de
+
+- fixed detection of root partitions (bug #28719)
+
+-------------------------------------------------------------------
 Mon Jul 28 13:14:38 CEST 2003 - arvin@suse.de
 
 - ignore read-only option when mounting partitions for update

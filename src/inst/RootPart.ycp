@@ -163,8 +163,8 @@
 
 	if (!Mode::test)
 	{
-	    symbol used_fs = FileSystems::DetectFs (partition);
-	    if (used_fs == `ext2)
+	    symbol detected_fs = FileSystems::DetectFs (partition);
+	    if (detected_fs == `ext2)
 	    {
 		string out = sformat (_("Checking partition %1"), partition);
 		UI::OpenDialog (`opt(`decorated ), `Label(out));
@@ -502,12 +502,12 @@ Check the log file %1.
 	string p_dev = partition["device"]:"error";
 	integer p_fsid = partition["fsid"]:0;
 	symbol p_type = partition["type"]:`primary;
-	symbol p_used_fs = partition["used_fs"]:`unknown;
+	symbol p_detect_fs = partition["detected_fs"]:`unknown;
 
 	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
 
 	if ((p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
-	    contains (possible_root_fs, p_used_fs))
+	    contains (possible_root_fs, p_detect_fs))
 	{
 	    // mount (read-only) partition to Installation::destdir
 	    if (SCR::Execute (.target.mount, [p_dev, Installation::destdir, Installation::mountlog], "-o ro"))
@@ -578,7 +578,7 @@ Check the log file %1.
 	    foreach (`partition, description["partitions"]:[], ``{
 
 		// some partitions don't make sense at all
-		if (partition["used_fs"]:`unknown == `swap ||
+		if (partition["detected_fs"]:`unknown == `swap ||
 		    partition["type"]:`primary == `extended)
 		    continue;
 
