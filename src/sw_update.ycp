@@ -8,90 +8,73 @@
   textdomain "sw_update";
 
   include "package_utils.ycp";
+  include "ui/wizard_dialog.ycp";
   include "ui/common_popups.ycp";
-
+  include "misc_defines.ycp";
+  include "arch_defines.ycp";
+  
   Include (`yast_version());
   string version = yast_version ();
 
   y2milestone ( "YaST2-version: %1", version );
 
-  // Menuentry for the YaST2 menu
-
+  // wizard stage
   integer current_stage = -1;
 
-  include "ui/wizard_dialog.ycp";
-
+  // Create the  wizard dialog
   UI(`CreateWizardDialog() );
 
   // --------------------------------------------------------------
+
+  map user_settings = $[];
 
   // map user_settings contains:
   // - continue_mode -> module inst_rpmupdate
   // - language -> module inst_rpmupdate
   // - updateTarget -> module inst_rpmupdate
-  // - architecture -> moduel inst_rpmupdate
+  // - architecture -> module inst_rpmupdate
 
   string default_language = "en";
-  string default_architecture = "i386";
-  string default_board	= "wintel";
 
-  map user_settings = $[];
+  // report_architecture returns all used information about architecture, boards ...
+  user_settings = union ( user_settings, report_architecture() );
+
+  y2debug("ARCHITECTURE: %1", user_settings);
   
-  string targetroot = SCR(`Read(.target.root));
-  user_settings = add (user_settings, "targetroot",
-		       targetroot );  // It is from an installed system
-
-
-  string architecture = SCR(`Read(.probe.architecture));
-  boolean arch_i386	= (architecture == "i386");
-  boolean arch_sparc32= (architecture == "sparc");
-  boolean arch_sparc64= (architecture == "sparc64");
-  boolean arch_sparc	= (arch_sparc32 || arch_sparc64);
-  boolean arch_ppc	= (architecture == "ppc");
-  boolean arch_alpha	= (architecture == "axp");
-  boolean arch_s390	= (architecture == "s390");
-  boolean arch_ia64	= (architecture == "ia64");
-
-  string board_type   = default_board;
-  list systemProbe = SCR(`Read(.probe.system));
-  foreach (`systemEntry, systemProbe, ``{
-      string checksys = lookup (systemEntry, "system", "");
-      if (checksys != "")
-        board_type = checksys;
-  });
-  boolean board_wintel= (board_type == "");	// for now
-  boolean board_mac	= (board_type == "MacRISC");
-  boolean board_chrp	= (board_type == "CHRP");
-  boolean board_chrp64= (board_type == "CHRP64");
-  boolean board_prep	= (board_type == "PReP");
-
-  map user_settings = $[];
-
   string language = UI( `GetLanguage() );
-  string architecture = SCR(`Read(.probe.architecture));
 
   map lang2yast1 = ReadY2("lang2yast1.ycp");
-
   string  long_language 	= lookup(lang2yast1, language, "english");
 
   // setting targetroot
   string targetroot            = SCR(`Read(.target.root));
-  user_settings = add( user_settings, "targetroot", targetroot );
+
+  // !!!??? targetroot is NOT USED ???!!!
+  // user_settings = add( user_settings, "targetroot", targetroot ); 
 
   // informations needed in all following frames
   user_settings = add(user_settings, "updateTarget", targetroot);
   user_settings = add( user_settings, "language", language);
   user_settings = add( user_settings, "continue_mode", false);
-  user_settings = add( user_settings, "architecture" , architecture);
   user_settings = add( user_settings, "post_install", true );
-  // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
-  // user_settings = add(user_settings, "test_mode", true );
-  // !!!!!!!!!!!!!!! ONLY FOR TESTING !!!!!!!!!!!!!!!!!!!!
+
+
+  // check test_mode
+
+  boolean test_mode = false;
+  integer arg_n = size(Args()) - 1;
+
+  while (arg_n >= 0) {
+      if (Args(arg_n) == .test)
+      {
+	  test_mode = true;
+      }
+  }
+  
+  user_settings = add( user_settings, "test_mode", test_mode );
+  y2debug("Testmode %1", test_mode );
 
   PKGINFO( `setDebugLevel(3) );
-
-  include "misc_defines.ycp";
-
 
   boolean go_on = ChangeCD( 1, false );	// don't show additional popup
 	  
