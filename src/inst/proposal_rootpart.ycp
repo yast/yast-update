@@ -15,6 +15,22 @@
     map    param = WFM::Args(1);
     map    ret   = $[];
 
+
+    define boolean mount_target () ``{
+
+	UI::OpenDialog (`opt(`decorated ),
+			// intermediate popup while mounting partitions
+			`Label(_("Mounting partitions. One moment please...")));
+
+	boolean tmp = Update::MountPartitions (Update::selectedRootPartition);
+	sleep (500);
+
+	UI::CloseDialog ();
+
+	return tmp;
+    }
+
+
     if ( func == "MakeProposal" )
     {
 	boolean force_reset      = param["force_reset"     ]:false;
@@ -68,6 +84,8 @@
 		}
 	    }
 
+	    mount_target ();
+
 	    if (size (Update::validRootPartitions) == 1)
 	    {
 		ret = $[ "raw_proposal" :
@@ -97,6 +115,12 @@
 	string tmp = Update::selectedRootPartition;
 
 	symbol result = WFM::CallFunction (`inst_rootpart (true, has_next, `update_dialog));
+
+	if (Update::selectedRootPartition != tmp)
+	{
+	    Update::Detach ();
+	    mount_target ();
+	}
 
 	// Fill return map
 

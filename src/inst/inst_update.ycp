@@ -13,7 +13,6 @@
 {
     textdomain "update";
 
-    import "Arch";
     import "Mode";
     import "Installation";
     import "Language";
@@ -21,46 +20,30 @@
     import "Update";
     import "Packages";
 
-    // ------------------------------------------------------------------------
-
-    boolean retval = false;
-    list current_sel = Pkg::GetSelections (`installed, "base");
-    if (current_sel == nil || current_sel == [])
-	current_sel = Pkg::GetSelections (`selected, "base");
-    if (current_sel == nil)
-	current_sel = [];
 
     // screen title for update options
     string title = _("Update Options");
 
+
+    // create box with base selections
+
+    term baseconfsbox = `VBox ();
     list available_base_selections = Pkg::GetSelections (`available, "base");
+    string current_selection = Update::GetSelection ();
 
-    // Construct Box with Checkbox for each software category
-
-    // Title of frame around "Upgrade"
-    term baseconfsbox = `VBox();
-
-    foreach(`sel, available_base_selections, ``{
-	map seldata = Pkg::SelectionData (sel);
-
-	string seldesc = seldata["summary"]:"";
-
-	if (size ( current_sel ) == 0
-	    && !Update::onlyUpdateSelected
-	    && sel == "default" )
-	{
-	    // resetting to default selection
-	    current_sel = [sel];
-	}
-
-	baseconfsbox = add(baseconfsbox, `Left(`RadioButton(`id(sel),`opt(`notify, `autoShortcut),
-						seldata["summary"]:"",
-						contains (current_sel, sel))));
+    foreach (`selection, available_base_selections, ``{
+	map selection_data = Pkg::SelectionData (selection);
+	string selection_summary = selection_data["summary"]:"";
+	baseconfsbox = add (baseconfsbox, `Left(`RadioButton(`id(selection),
+							     `opt(`notify, `autoShortcut),
+							     selection_summary,
+							     selection == current_selection)));
     });
 
-    string wrn_msg = "";
 
     // Checking: already selected addons or single selection?
+
+    string wrn_msg = "";
 
     if (Update::userChangedState)		// check if state changed
     {
@@ -72,9 +55,13 @@ You will lose that selection if you change the basic selection.");
 
     // Build and show dialog
 
+    string from_version = Update::validRootPartitions[Update::selectedRootPartition]:"error";
+    string to_version = "FIXME";
+
     term contents = `HVSquash(
 	`VBox(
-	      `Label (sformat (_("Update from %1 to %2>"), "SuSE Linux 4.2", "SuSE Linux 8.3")),
+	      // label showing from what version to what version we are updating
+	      `Label (sformat (_("Update from %1 to %2"), from_version, to_version)),
 	      // frame title for update selection
 	      `Frame( _("Update Mode"),
 		      `VBox(
@@ -157,6 +144,8 @@ be missing, such as new YaST2 modules.
 
     any ret = nil;
 
+    list current_sel = [];
+
     while (true)
     {
 	list save_sel = [];
@@ -173,6 +162,7 @@ be missing, such as new YaST2 modules.
 	    break;
 
 	// Add the selection of the basic group
+
 	current_sel = [];
 	if (  !UI::QueryWidget(`id(`notupgrade), `Value) )
 	{
@@ -185,7 +175,7 @@ be missing, such as new YaST2 modules.
 	{
 	    Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
 	    if (!Update::userChangedState
-			// yes/no question
+		// yes/no question
 		|| UI::YesNoPopup(_("Do you really want\nto reset your detailed selection?") ) )
 	    {
 		if ( save_sel != current_sel
@@ -218,7 +208,6 @@ be missing, such as new YaST2 modules.
 		// Evaluate update packages new
 		Update::updateEvaluated = false;
 		Update::userChangedState = false;
-
 	    }
 
 	    // rebuild
@@ -232,8 +221,10 @@ be missing, such as new YaST2 modules.
     // set the flag 'deleteOldPackages' to inform inst_sw_update.ycp
     if (ret == `next)
     {
-	Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
-	if (!UI::QueryWidget(`id(`notupgrade), `Value))
+	Update::onlyUpdateSelected = UI::QueryWidget (`id(`notupgrade), `Value);
+	Update::deleteOldPackages = UI::QueryWidget (`id(`delete), `Value);
+
+	if (!Update::onlyUpdateSelected)
 	{
 	    // software-group-selection must change
 	    Pkg::SetSelection (current_sel[0]:"");

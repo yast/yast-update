@@ -3,7 +3,7 @@
  *
  * Author:	Arvin Schnell <arvin@suse.de>
  *
- * Purpose:	Let user choose backup during update.
+ * Purpose:	Let user choose packages during update.
  */
 {
     textdomain "update";
@@ -13,6 +13,43 @@
     string func  = WFM::Args(0);
     map    param = WFM::Args(1);
     map    ret   = $[];
+
+
+    define symbol call_packageselector () ``{
+
+	Update::seen_details = true;
+
+	if (Update::unknown_count > 0)
+	{
+	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector),
+								  `opt(`updateMode )));
+	}
+	else
+	{
+	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
+	}
+
+	Pkg::SaveState();
+
+	symbol ret = UI::RunPkgSelection (`id(`selector));
+	if (ret == `accept)
+	{
+	    if (Pkg::RestoreState(true))
+	    {
+		Update::userChangedState = true;
+	    }
+	    Pkg::ClearSaveState();
+	}
+	else
+	{
+	    Pkg::RestoreState();
+	}
+
+	UI::CloseDialog();
+
+	return ret;
+    }
+
 
     if ( func == "MakeProposal" )
     {
@@ -27,11 +64,27 @@
 
 	// FIXME: add space check
 
-	ret = $[ "preformatted_proposal" :
-		 // Proposal for backup during update
-		 HTML::List (["Update 12 packages",
-			      "Remove 10 packages"])
-	];
+	list tmp = [];
+
+	// proposal for packages during update
+	tmp = add (tmp, sformat (_("Affected packages: %1"),
+				 Update::affected_count));
+
+	if (Update::unknown_count > 0)
+	{
+	    // proposal for packages during update
+	    tmp = add (tmp, sformat (_("Packages to check manually: %1"),
+				     Update::unknown_count));
+
+	    ret = $[ "preformatted_proposal" : HTML::List (tmp),
+		     // the proposal for the packages requires manual intervention
+		     "warning" : "Requires manual intervention",
+		     "warning_level" : `blocker ];
+	}
+	else
+	{
+	    ret = $[ "preformatted_proposal" : HTML::List (tmp) ];
+	}
     }
     else if ( func == "AskUser" )
     {
@@ -42,7 +95,7 @@
 	//
 	// sequence = DummyMod::AskUser( has_next );
 
-	symbol result = WFM::CallFunction (`inst_packages (true, true));
+	symbol result = call_packageselector ();
 
 	// Fill return map
 

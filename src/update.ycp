@@ -3,15 +3,14 @@
  * Module:	System update
  * Summary:	Main update client
  * Authors:	Klaus Kaempf <kkaempf@suse.de>
+ *		Arvin Schnell <arvin@suse.de>
  *
  * $Id$
  */
 
 {
-
     textdomain "update";
 
-    import "Arch";
     import "Installation";
     import "Mode";
     import "Wizard";
@@ -19,32 +18,36 @@
     import "PackageInstallation";
     import "SlideShow";
 
-    /* Set normal mode */
+    // set normal mode and update
     Mode::normal = true;
+    Mode::installation = false;
+    Mode::update = true;
+    Mode::test = true;
 
     include "ui/common_popups.ycp";
     include "ui/common_functions.ycp";
 
-    /* Wizard stage */
+    // wizard stage
     integer current_stage = -1;
 
-
     // create initial dialog
-    Wizard::CreateDialog();
+    Wizard::CreateDialog ();
 
-    // Calling inst_updateControl
-    any ret_single = CallFunction( `inst_updateControl( ) );
+    // calling inst_proposal
+    any ret = CallFunction (`inst_proposal (true, true, `ini));
 
-    y2debug( "SW: Return inst_updateControl %1", ret_single );
-
-    if ( ret_single == `finish )
+    /*
+    if (ret == `finish)
     {
+	CallFunction (`inst_rpmupdate (false, false));
+
 	Wizard::OpenNextBackDialog();
-	CallFunction( `inst_suseconfig (false, false) );
+	CallFunction (`inst_suseconfig (false, false));
 	Wizard::CloseDialog();
     }
+    */
 
-    Wizard::CloseDialog();
+    Wizard::CloseDialog ();
 
     return `next;
 }

@@ -13,17 +13,19 @@
 
     import "Storage";
 
-    global integer affected_count = 0;
     // number of packages affected by update
+    global integer affected_count = 0;
 
+    // number of packages unknown by update (e.g. non-suse, dropped etc.)
     global integer unknown_count = 0;
-    // number of packages unknown by update (non-suse packages)
 
-    global boolean kernel_affected = false;
     // if the kernel was affected in _normal_ update mode
+    global boolean kernel_affected = false;
 
-    global boolean deleteOldPackages = true;
+
     // Flag is set true if the user decides to delete unmaintained packages
+    global boolean deleteOldPackages = true;
+
 
     global integer last_runlevel = -1;
 
@@ -42,32 +44,37 @@
     global boolean backup_sysconfig = true;
     global boolean remove_old_backups = false;
 
-    global boolean onlyUpdateSelected = false;
+
     // Only an update, NOT an upgrade
+    global boolean onlyUpdateSelected = false;
 
-    global boolean updateEvaluated = false;
+    global string selected_selection = "";
+
+
+
     // Flag if the updatelist has already evaluated
+    global boolean updateEvaluated = false;
 
-    global string installedName = "";
     // Name of the targetsystem
+    global string installedName = "";
 
-    global string installedVersion = "";
     // Version of the targetsystem
+    global string installedVersion = "";
 
-    global string updateVersion = "";
     // Version of the source medium
+    global string updateVersion = "";
 
-    global boolean updateBasePackages = false;
     // Flag, if the basesystem have to be installed
+    global boolean updateBasePackages = false;
 
-    global integer packagesInstalled = 0;
     // counter for installed packages
+    global integer packagesInstalled = 0;
 
-    global boolean userChangedState = false;
     // Flag, if user changed the packager state
+    global boolean userChangedState = false;
 
-    global boolean seen_details = false;
     // Flag, if user has seen all the glory update details
+    global boolean seen_details = false;
 
     // original targetMap for Storage::, used after [Back]
     // (needed if root partition was changed to discard previous settings)
@@ -568,6 +575,36 @@ Check the log file %1.
 	didSearchForRootPartitions = true;
 
 	y2milestone ("validRootPartitions: %1", validRootPartitions);
+    }
+
+
+    /**
+     * Find out which base selection is installed on the target system. Reset to
+     * "default" if it can't be determined.
+     */
+    global define string GetSelection () ``{
+
+	list selections = Pkg::GetSelections (`installed, "base");
+
+	if (selections == nil || selections == [])
+	    selections = Pkg::GetSelections (`selected, "base");
+
+	if (selections == nil || selections == [])
+	    selections = ["default"];
+
+	return selections[0]:"";
+    }
+
+
+    /**
+     *
+     */
+    global define void Detach () ``{
+
+	Pkg::TargetFinish ();
+
+	UnmountPartitions ();
+
     }
 
 }
