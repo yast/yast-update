@@ -296,6 +296,7 @@ or restart your computer.
 		string out = sformat (_("Checking partition %1"), partition);
 		UI::OpenDialog (`opt(`decorated ), `Label(out));
 
+		// FIXME why is the sleep here?
 		sleep (1000);
 
 		y2milestone ("command: /sbin/e2fsck -y %1", partition);
@@ -306,33 +307,56 @@ or restart your computer.
 	}
     }
 
+/**
+ * Mount partition on specified mount point
+ * @param mount_point string mount point to monut the partition at
+ * @param device string device to mount
+ * @param mount_type string filesystem type to be specified while mounting
+ * @return string nil on success, error description on fail
+ */
+define string MountPartition (string mount_point, string device,
+    string mount_type)
+{
+    if (mount_type == "")
+	mount_type = FileSystems::GetMountString (
+	    FileSystems::DetectFs (device), "");
+    if (mount_type != "")
+	mount_type = "-t " + mount_type;
 
-    /**
-     *
-     */
-    define boolean fsck_and_mount (string mount_point, string device, string mount_type)
-    {
-	if (mount_type == "")
-	    mount_type = FileSystems::GetMountString (FileSystems::DetectFs (device), "");
+    boolean ret = (boolean) SCR::Execute (.target.mount,
+	[device, Installation::destdir + mount_point, Installation::mountlog],
+	mount_type );
+    if (ret)
+	return nil;
+    else
+	return (string)SCR::Read (.target.string, Installation::mountlog);
+}
 
-	if (mount_type != "")
-	    mount_type = "-t " + mount_type;
 
-	FSCKPartition (device);
 
-	boolean ret = (boolean) SCR::Execute (.target.mount, [device,
-							      Installation::destdir + mount_point,
-							      Installation::mountlog],
-					      mount_type );
+/**
+ * Check filesystem on a partition and mount the partition on specified mount
+ *  point
+ * @param mount_point string mount point to monut the partition at
+ * @param device string device to mount
+ * @param mount_type string filesystem type to be specified while mounting
+ * @return string nil on success, error description on fail
+ */
+define string FsckAndMount (string mount_point, string device,
+    string mount_type)
+{
+    FSCKPartition (device);
 
-	if (ret)
-	    AddMountedPartition($[`type : "mount", `device : device, `mntpt : mount_point]);
+    string ret = MountPartition (mount_point, device, mount_type);
 
-	y2milestone ("mounting (%1, %2, %3) yield %4", Installation::destdir +
-		     mount_point, device, mount_type, ret);
+    if (ret == nil)
+	AddMountedPartition($[`type : "mount", `device : device, `mntpt : mount_point]);
 
-	return ret;
-    }
+    y2milestone ("mounting (%1, %2, %3) yield %4", Installation::destdir +
+	mount_point, device, mount_type, ret);
+
+    return ret;
+}
 
 
     /**
@@ -369,21 +393,26 @@ or restart your computer.
 	return true;
     }
 
+/**
+ * Find a monut poing in fstab
+ * @param fstab a list of fstab entries
+ * @param mountpoint string a mount point to find
+ * @return string the found partition
+ */
+define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
+    if (substring (mountpoint, size (mountpoint) - 1, 1) == "/")
+	mountpoint = substring (mountpoint, 0, size (mountpoint) - 1);
 
-    define boolean fstab_has_var (list <map> fstab, string& found_partition)
-    {
-	list <map> tmp = filter (map entry, fstab, ``(entry["file"]:"" == "/var"));
+    list <map> tmp = filter (map entry, fstab, {
+	return entry["file"]:"" == mountpoint
+	    || entry["file"]:"" == mountpoint + "/";
+    });
 
-	if (size (tmp) == 0)
-	{
-	    found_partition = "none";
-	    return false;
-	}
+    if (size (tmp) == 0)
+	return nil;
 
-	found_partition = tmp[0,"spec"]:"";
-	return true;
-    }
-
+    return tmp[0,"spec"]:"";
+}
 
     /**
      *
@@ -567,21 +596,26 @@ or restart your computer.
     }
 
 
-    /**
-     *
-     */
-    define boolean var_is_mounted ()
-    {
-	boolean ret = false;
+/**
+ * Check if specified mount point is mounted
+ * @param mountpoint the mount point to be checked
+ * @return boolean true if it is mounted
+ */
+define boolean IsMounted (string mountpoint) {
+    if (substring (mountpoint, size (mountpoint) - 1, 1) == "/")
+	mountpoint = substring (mountpoint, 0, size (mountpoint) - 1);
 
-	foreach (map e, activated, {
-	    if (e[`type]:"" == "mount" && e[`mntpt]:"" == "/var")
-		ret = true;
-	});
-
-	return ret;
-    }
-
+    boolean ret = true;
+    foreach (map e, activated, {
+	if (e[`type]:"" == "mount"
+	    && (e[`mntpt]:"" == mountpoint
+		|| e[`mntpt]:"" == mountpoint + "/"))
+	{
+	    ret = true;
+	}
+    });
+    return ret;
+}
 
     /**
      *
@@ -603,7 +637,7 @@ or restart your computer.
 	    string fspath  = mounts["file"]:"";
 
 	    if (contains (allowed_fs, vfstype)
-		&& fspath != "/" && (fspath != "/var" || !var_is_mounted())
+		&& fspath != "/" && (fspath != "/var" || ! IsMounted("/var"))
 		&& !issubstring (mntops,"noauto"))
 	    {
 		y2milestone ("mounting %1 to %2", spec, fspath);
@@ -637,25 +671,26 @@ or restart your computer.
 			mount_type = vfstype;
 		    }
 
-		    boolean ret_bool = false;
-		    while ( !ret_bool )
+		    string mount_err = "";
+		    while (mount_err != nil)
 		    {
-			ret_bool = fsck_and_mount (fspath, spec, mount_type);
-			if (! ret_bool)
+			mount_err = FsckAndMount (fspath, spec, mount_type);
+			if (mount_err != nil)
 			{
 			    y2error("mounting %1 (type %2) on %3 failed", spec,
 				mount_type, Installation::destdir + fspath);
 			    UI::OpenDialog (`VBox (
 				`Label (sformat (
-				    // label in a popup, %1 is device (eg. /dev/hda1), %2 is file name
+				    // label in a popup, %1 is device (eg. /dev/hda1), %2 is output of the 'mount' command
 				    _("The partition %1 could not be mounted.
-Check the log file %2.
+
+%2
 
 If you are sure that the partition is not necessary for the
 update (it is not any system partition), click Continue.
 To check or fix the mount options, click Specify Mount Options.
 To abort update, click Cancel."),
-				    spec, Directory::logdir + "/y2log")
+				    spec, mount_err)
 				),
 				`VSpacing (1),
 				`HBox (
@@ -669,12 +704,12 @@ To abort update, click Cancel."),
 			    UI::CloseDialog ();
 			    if (act == `cancel)
 			    {
-				ret_bool = true;
+				mount_err = nil;
 				success = false;
 			    }
 			    else if (act == `cont)
 			    {
-				ret_bool = true;
+				mount_err = nil;
 			    }
 			    else if (act == `cmd)
 			    {
@@ -746,30 +781,39 @@ Check the log file %2.
 	return success;
     }
 
-
-    /**
-     *
-     */
-    define boolean mount_var_if_required (list <map> fstab, string root_device_current,
-					  string& message)
+/**
+ * Mount /var partition
+ * @param device string device holding the /var subtree
+ * @return string nil on success, error description on fail
+ */
+string MountVarPartition (string device) {
+    string mount_err = FsckAndMount ("/var", device, "");
+    string err_message = nil;
+    if (mount_err != nil)
     {
-	string var_device_fstab = "";
-	if (!fstab_has_var (fstab, var_device_fstab))
-	    return true;
+	y2error ("failed to mount /var");
+	err_message = sformat (
+	    // error message
+	    _("The /var partition %1 could not be mounted.\n"),
+	    device) + "\n" + mount_err + "\n\n" + sdb;
+    }
+    return err_message;
+}
+
+/**
+ * Check if /var partition is needed, mount it if it is
+ * @param fstab a list of fstab entries
+ * @param root_device_current string current root device
+ * @return string nil on success, error description on fail
+ */
+define string MountVarIfRequired (list <map> fstab, string root_device_current)
+{
+	string var_device_fstab = FindPartitionInFstab (fstab, "/var");
+	if (var_device_fstab == nil)
+	    return nil;
 
 	if (!Storage::DeviceRealDisk (var_device_fstab))
-	{
-	    if (!fsck_and_mount ("/var", var_device_fstab, ""))
-	    {
-		y2error ("failed to mount /var");
-		// error message
-		message = sformat (_("The /var partition %1 could not be mounted.\n"),
-				   var_device_fstab) + sdb;
-		return false;
-	    }
-
-	    return true;
-	}
+	    return MountVarPartition (var_device_fstab);
 
 	list <map> tmp1 = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
 	string root_device_fstab = tmp1[0,"spec"]:"";
@@ -782,16 +826,7 @@ Check the log file %2.
 	    map tmp2 = Storage::GetDiskPartition (root_device_current);
 	    string var_partition_current = Storage::GetDeviceName (tmp2["disk"]:"", var_info["nr"]:0);
 
-	    if (!fsck_and_mount ("/var", var_partition_current, ""))
-	    {
-		y2error ("failed to mount /var");
-		// error message
-		message = sformat (_("The /var partition %1 could not be mounted.\n"),
-				     var_partition_current) + sdb;
-		return false;
-	    }
-
-	    return true;
+	    return MountVarPartition (var_partition_current);
 	}
 
 	list <string> realdisks = [];
@@ -804,24 +839,14 @@ Check the log file %2.
 	{
 	    y2error ("don't know how to handle more than two disks at this point");
 		// error message
-	    message = _("Unable to mount /var partition with this disk configuration.\n") + sdb;
-	    return false;
+	    return _("Unable to mount /var partition with this disk configuration.\n") + sdb;
 	}
 
 	string other_disk = realdisks[ realdisks[0]:"" == root_info["disk"]:"" ? 1 : 0 ]:"";
 	string var_partition_current = Storage::GetDeviceName (other_disk, var_info["nr"]:0);
 
-	if (!fsck_and_mount ("/var", var_partition_current, ""))
-	{
-	    y2error ("failed to mount /var");
-	    // error message
-	    message = sformat (_("The /var partition %1 could not be mounted.\n"),
-				 var_partition_current) + sdb;
-	    return false;
-	}
-
-	return true;
-    }
+	return MountVarPartition (var_partition_current);
+}
 
 
     /**
@@ -854,7 +879,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	// Mount selected root partition to Installation::destdir
 	if ( !Mode::test () )
 	{
-	    ret_bool = fsck_and_mount ("/", root_device_current, "");
+	    ret_bool = nil == FsckAndMount ("/", root_device_current, "");
 	}
 
 	if ( ret_bool )
@@ -881,9 +906,11 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    }
 	    else
 	    {
-		if (!mount_var_if_required (fstab, root_device_current, message))
+		string tmp_msg = MountVarIfRequired (fstab, root_device_current);
+		if (tmp_msg != nil)
 		{
 		    y2error ("failed to mount /var!");
+		    message = tmp_msg;
 		    success = false;
 		}
 		else
@@ -1117,7 +1144,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
     }
 
 global string GetDistroArch () {
-    return RootPart::GetArchOfELF ("/bin/bash");
+    return GetArchOfELF ("/bin/bash");
 }
 
 }
