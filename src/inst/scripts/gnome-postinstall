@@ -44,9 +44,6 @@ then
     then
 	export GCONF_CONFIG_SOURCE=`/opt/gnome/bin/gconftool-2 --get-default-source`
 	cd /etc/opt/gnome/gconf/schemas-old
-	# FIXME: We do not search for *.entries. Those are only in
-	# gnome-panel package, and this code expects it was upgraded
-	# since last SuSE Linux.
 	for SCHEMAS in *.schemas
 	do
 	    # Files were backed-up by hardlink. If both still exists and
@@ -58,14 +55,25 @@ then
 	    fi
 	    rm $SCHEMAS
 	done
+	for ENTRIES in *.entries
+	do
+	    # Files were backed-up by hardlink. If both still exists and
+	    # have the same inode, file was not updated.
+	    if test $ENTRIES -ef ../schemas/$ENTRIES
+	    then
+		echo "File $ENTRIES survived upgrade. Re-generating GConf entries."
+		/opt/gnome/bin/gconftool-2 --direct --config-source=$GCONF_CONFIG_SOURCE --load /etc/opt/gnome/gconf/schemas/$ENTRIES
+	    fi
+	    rm $ENTRIES
+	done
 	cd -
 	# Update entries for all files in /usr/local.
 	if test -d /usr/local/etc/gconf/schemas ; then
 	    echo "Re-generating GConf entries fin /usr/local/etc/gconf/schemas."
 	    cd /usr/local/etc/gconf/schemas
 	    # FIXME: We do not search for *.entries. Those are only in
-	    # gnome-panel package, and this code expects it was
-	    # upgraded since last SuSE Linux.
+	    # gnome-panel package, and we do not expect any *.entries
+	    # for packages in /usr/local.
 	    for SCHEMAS in *.schemas
 	    do
 		echo "Re-generating /usr/local GConf entry for $SCHEMAS."
