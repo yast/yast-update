@@ -201,15 +201,15 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 	Storage::SetTargetMap (target_map);
     }
 
-
     /**
      * Unmount all mounted partitions, deactivate swaps, detach loopback
      * devices. Uses list activated to make actions in reverse order.
+     * @param keeep_in_target Do not remove mounts from targetmap
      * @return void
      */
-    global define void UnmountPartitions ()
+    global define void UnmountPartitions (boolean keep_in_target)
     {
-	y2milestone ("UnmountPartitions");
+	y2milestone ("UnmountPartitions: %1", keep_in_target);
 
 	did_try_mount_partitions = false;
 
@@ -259,7 +259,8 @@ or restart your computer."), file));
 
 	// now remove the mount points of the mounted partitions
 	// in the target map of the storage module
-	RemoveFromTargetMap ();
+        if (!keep_in_target)
+	    RemoveFromTargetMap ();
 
 
 	// clear activated list
@@ -925,7 +926,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    Popup::Message(message);
 
 	    // some mount failed, unmount all mounted fs
-	    UnmountPartitions();
+	    UnmountPartitions(false);
 	    did_try_mount_partitions = true;
 	}
 	else
