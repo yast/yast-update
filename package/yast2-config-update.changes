@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul 20 10:05:50 MEST 2001 - schubi@suse.de
+
+- error popup with right language #8375
+
+-------------------------------------------------------------------
 Thu May 10 13:08:46 MEST 2001 - gs@suse.de
 
 - missing include "common_functions.ycp" added (bug # 8003)
