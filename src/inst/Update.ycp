@@ -52,6 +52,15 @@
     global integer packagesInstalled = 0;
     // counter for installed packages
 
+
+    // original targetMap for Storage::, used after [Back]
+    // (needed if root partition was changed to discard previous settings)
+    global map targetMap_bak = $[];
+
+    // map of mountpoints for each found root
+    // (key=root partition name, value=map: [device:mountpoint])
+    global map partitions_mount = $[];
+
     /**
      * List of mounted partitions, activated swap partitions and loop devices.
      * Used for reversing action if mode is changed from update to new

@@ -45,7 +45,7 @@
 	Wizard::CloseDialog();
     }
 
+    Wizard::CloseDialog();
 
     return `next;
-
 }

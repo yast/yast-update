@@ -17,6 +17,7 @@
     import "Arch";
     import "Mode";
     import "Installation";
+    import "Language";
     import "Wizard";
     import "Update";
     import "Packages";
@@ -25,6 +26,9 @@
 
     y2milestone("Setting targetroot of package DB: %1", Installation::destdir);    
     Pkg::TargetInit (Installation::destdir, false);
+
+    Pkg::SetLocale (Language::language);
+
     SCR::Execute(.target.mkdir, Installation::destdir+"/var/log/YaST2");	// just in case
     Pkg::TargetLogfile (Installation::destdir+"/var/log/YaST2/y2logRPM");
 
@@ -211,7 +215,6 @@ be missing, such as new YaST2 modules.
 	    || Update::deleteOldPackages !=  UI::QueryWidget( `id(`delete), `Value ))
 	{
 	    Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
-
 	    if (!added
 			// yes/no question
 		|| UI::YesNoPopup(_("Do you really want\nto reset your detailed selection?") ) )
@@ -256,6 +259,13 @@ be missing, such as new YaST2 modules.
 	if ( ret == `next )
 	{
 	    Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
+	    if (!UI::QueryWidget(`id(`notupgrade), `Value))
+	    {
+		// software-group-selection must change
+		Pkg::SetSelection (current_sel[0]:"");
+		Pkg::ActivateSelections ();
+		Update::onlyUpdateSelected = false;
+	    }
 	}
 	
 	if (ret == `cancel || ret == `back || ret == `next || ret == `again )

@@ -4,6 +4,61 @@ Fri Feb 07 12:58:17 CET 2003 - arvin@suse.de
 - merged proofread messages
 
 -------------------------------------------------------------------
+Tue Nov  5 14:29:39 CET 2002 - kkaempf@suse.de
+
+- close initial dialog window properly (#21377)
+- 2.6.23
+
+-------------------------------------------------------------------
+Fri Sep 13 16:06:20 CEST 2002 - lslezak@suse.cz
+
+- propagate info about all partitions to Storage:: at update
+- version 2.6.22
+
+-------------------------------------------------------------------
+Fri Sep 13 14:41:18 CEST 2002 - lnussel@suse.de
+
+- write /var/lib/YaST2/backup_path so info about backups doesn't get lost after
+  reboot (#19629)
+- 2.6.21
+
+-------------------------------------------------------------------
+Fri Sep 13 13:16:32 CEST 2002 - fehr@suse.de
+
+- fix another code path where to propagate info about root partition
+- 2.6.20
+
+-------------------------------------------------------------------
+Thu Sep 12 20:41:21 CEST 2002 - fehr@suse.de
+
+- propagate info about root partition for update to Storage module
+- make update on md partition work
+- remove keyboard handling stuff was wrong anyway, keyboard is now
+  set at start of installation in inst_language
+- 2.6.19
+
+-------------------------------------------------------------------
+Thu Sep 12 17:53:33 CEST 2002 - kkaempf@suse.de
+
+- set selection if user accepts default.
+- init space calculation (#19548)
+- 2.6.18
+
+-------------------------------------------------------------------
+Thu Sep 12 15:50:00 CEST 2002 - kkaempf@suse.de
+
+- set locale in package manager (#19536)
+- 2.6.17
+
+-------------------------------------------------------------------
+Thu Sep 12 12:16:06 CEST 2002 - kkaempf@suse.de
+
+- check vfstype for "proc", not "spec". Older systems have
+  a different fstab.
+- show installed product if called from running system.
+- 2.6.16
+
+-------------------------------------------------------------------
 Wed Sep 11 23:35:26 CEST 2002 - kkaempf@suse.de
 
 - implement save/restore for package selection

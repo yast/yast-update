@@ -21,8 +21,8 @@
     import "Update";
     import "Language";
     import "Mouse";
-    import "Keyboard";
     import "Timezone";
+
 
     if ( !Mode::initial )
     {
@@ -72,6 +72,8 @@ Check the log file /var/log/y2log.
 	integer ret_from_shell = 0;
 	boolean ret_bool = true;
 
+	map parts = $[];
+
 	if ( !Mode::test )
 	{
 	    // Checking filesystem
@@ -114,6 +116,7 @@ Check the log file /var/log/y2log.
 	if ( ret_bool )
 	{
 	    Update::AddMountedPartition([Installation::destdir, "mount"]);
+	    parts["/"] = partition;
 
 	    // Reading fstab and mount all required mount-points to Installation::destdir
 	    if (SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/fstab /etc") == 0)
@@ -289,9 +292,9 @@ Check the log file /var/log/y2log.
 				}
 
 				string mount_type = "";
-				if (spec == "proc")
+				if (vfstype == "proc")
 				{
-				    mount_type = spec;
+				    mount_type = vfstype;
 				}
 				else
 				{
@@ -314,6 +317,7 @@ Check the log file /var/log/y2log.
 				else
 				{
 				    Update::AddMountedPartition([Installation::destdir + mounts["file"]:"", "mount"]);
+				    parts[mounts["file"]:""] = mounts["spec"]:"";
 				}
 			    }
 			}
@@ -364,11 +368,9 @@ Check the log file /var/log/y2log.
 	// setting timezone
 	Timezone::Set(Timezone::timezone);
 
-	// setting keyboard
-	Keyboard::SetConsole( Keyboard::current_kbd );
-	Keyboard::SetX11( Keyboard::current_kbd );
-
 	y2milestone ("mountPartition(%1) = %2", partition, success);
+
+	Update::partitions_mount[partition] = parts;
 	return success;
 
     };
@@ -378,7 +380,8 @@ Check the log file /var/log/y2log.
 //***************************** Main-Function ********************************
 //
 
-    // activate lvm
+    // activate lvm and md
+    SCR::Write (.md.activate, "");
     SCR::Write (.lvm.activate, "");
 
     // if no valid partitions defined yet, go look for them
@@ -446,6 +449,7 @@ Check the log file /var/log/y2log.
 	UI::CloseDialog();
     }
 
+
     // now the partitionMap should be filled
 
     if ( size ( partitionMap ) <= 0 )
@@ -482,6 +486,18 @@ Check the log file /var/log/y2log.
 	    if (mountPartition (first_partition))
 	    {
 		Update::selectedRootPartition =  first_partition;
+
+		foreach(string mntp, string part, Update::partitions_mount[Update::selectedRootPartition]:$[], ``{
+			targetMap = Storage::SetPartitionData( targetMap,
+				    part,
+				    "mount", mntp );
+		    }
+		);
+
+		y2milestone("New target map: %1", targetMap);
+
+		Storage::SetTargetMap( targetMap );
+
 		return `next;
 	    }
 	    else
@@ -592,9 +608,41 @@ Select the <b>root partition</b> to use.
 		else
 		{
 		    Update::selectedRootPartition = selectedRootPartition;
-		    y2milestone ("Update::selectedRootPartition %1", Update::selectedRootPartition);
+		    y2milestone("Update::selectedRootPartition %1", Update::selectedRootPartition);
+		    y2debug("partitions_mount: %1", Update::partitions_mount);
+
+
+		    if (size(Update::targetMap_bak) == 0)
+		    {
+			// remember original target map
+			Update::targetMap_bak = eval(targetMap);
+			y2debug("Stored original target map: %1", targetMap);
+		    }
+		    else
+		    {
+			// restore original target map
+			targetMap = eval(Update::targetMap_bak);
+			Storage::SetTargetMap( targetMap );
+			y2debug("Restored original target map: %1", targetMap);
+			y2debug("Storage::GetTargetMap(): %1", Storage::GetTargetMap());
+		    }
+
+		    foreach(string mntp, string part, Update::partitions_mount[Update::selectedRootPartition]:$[], ``{
+			    targetMap = Storage::SetPartitionData( targetMap,
+					part,
+					"mount", mntp );
+
+			    y2debug("Added partition info: dev: %1 dir: %2", part, mntp);
+			    y2debug("Storage::GetTargetMap(): %1", Storage::GetTargetMap());
+			}
+		    );
+		    // FIXME after root partition is changed, old
+		    // target mount points appears in targetmap
+		    y2milestone("New target map: %1", targetMap);
+
+		    Storage::SetTargetMap( targetMap );
 		}
- 	    }
+	    }
 	}
     } until (ret == `next );
 

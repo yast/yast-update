@@ -7,18 +7,25 @@
 # /etc/x == file from inst-sys
 # $1/etc/x == file from target
 #
-for file in passwd group ; do 
-  if test -f $1/etc/$file ; then 
-    # like fillup, but : is the only separator 
-    rm -f /etc/$file.add 
-    sort -k 1,1 -t: -u $1/etc/$file /etc/$file \ 
-	| sort -k 1,1 -t: $1/etc/$file - | uniq -u > /etc/$file.add 
-    cat /etc/$file.add >> $1/etc/$file 
-    rm -f /etc/$file.add 
-    # fix permissions if this script is called with strange umask 
-    chmod 644 $1/etc/$file 
-  else 
-    cat /etc/$file > $1/etc/$file 
-  fi 
-done 
+# Rename game -> games, wwwadmin -> www
+for i in $1/etc/group $1/etc/gshadow ; do
+  if test -e $i ; then
+    sed -e "s|^game:|games:|" -e "s|^wwwadmin:|www:|" $i > $i.t
+    cat $i.t > $i
+    rm -f $i.t
+  fi
+done
+for file in passwd group ; do
+  if test -f $1/etc/$file ; then
+    # like fillup, but : is the only separator
+    rm -f /tmp/$file.add
+    sort -k 1,1 -t: -u $1/etc/$file /etc/$file | sort -k 1,1 -t: $1/etc/$file - | uniq -u > /tmp/$file.add
+    cat /tmp/$file.add >> $1/etc/$file
+    rm -f /tmp/$file.add
+    # fix permissions if this script is called with strange umask
+    chmod 644 $1/etc/$file
+  else
+    cat /etc/$file > $1/etc/$file
+  fi
+done
 

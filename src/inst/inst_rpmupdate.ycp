@@ -209,6 +209,7 @@ Check the log file /var/log/y2log
 	    Kernel::switched = true;
 	    import "Boot";
 	    Boot::Write();			// re-write initrd and bootloader
+	    Mode::update = true;		// flag for inst_suseconfig to warn about reboot
 	}
 	else
 	{

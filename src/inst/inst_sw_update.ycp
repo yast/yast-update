@@ -32,6 +32,13 @@
 
 	//---------------------------------------
 	Pkg::PkgNeutral ("cups");			// *** neutralize cups
+
+	// do not delete "aps" if it is in use
+	if (SCR::Execute(.target.bash, sformat("grep -q apsfilter %1/etc/printcap", Installation::destdir)) == 0)
+	{
+	    Pkg::PkgInstall ("aps");
+	}
+		
 	//---------------------------------------
 
 	// [ integer affected, integer unknown ]
@@ -63,8 +70,8 @@
 	if (update_inf == nil)
 	{
 	    list products = Pkg::TargetProducts();
-	    Update::installedName = products[0,"distname"]:"?";
-	    Update::installedVersion = products[0,"distversion"]:"";
+	    Update::installedName = products[0,"product"]:"?";
+	    Update::installedVersion = "";
 	}
 	else
 	{
@@ -97,12 +104,6 @@
 	    Update::updateBasePackages = requires_selected;
 	}
  
-	// do not delete "aps" if it is in use
-	if (SCR::Execute(.target.bash, sformat("grep -q apsfilter %1/etc/printcap", Installation::destdir)) == 0)
-	{
-	    Pkg::PkgInstall ("aps");
-	}
-		
 	// adding vnc package if in vnc update mode
 	if ( Mode::vnc )
 	{
@@ -224,6 +225,9 @@ if the package should be updated.
 
 	if ( ret == `details )
 	{
+	    import "SpaceCalculation";
+	    SpaceCalculation::GetPartitionInfo();
+
 	    seen_details = true;
 	    if ( Update::unknown_count > 0 )
 	    {
@@ -266,6 +270,9 @@ Would you like to browse though these packages?
 
 		if ( UI::YesNoPopup(message) )
 		{
+		    import "SpaceCalculation";
+		    SpaceCalculation::GetPartitionInfo();
+
 		    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector), `opt(`updateMode ))); 
 
 		    Pkg::SaveState();

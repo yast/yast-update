@@ -194,6 +194,9 @@ configuration files will be saved.
 	}
 
 	Pkg::SetBackupPath (backupPath);
+
+	// remember path for continue mode
+	SCR::Write(.target.string, Installation::destdir + "/var/lib/YaST2/backup_path", backupPath);
     }
     y2debug( "inst_sw_backup return: %1", ret );
 
