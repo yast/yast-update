@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Mar 16 21:10:23 CET 2004 - kkaempf@suse.de
+
+- add clean up scripts for GNOME (#36196)
+
+-------------------------------------------------------------------
 Tue Mar 16 07:23:12 CET 2004 - nashif@suse.de
 
 - Dont format list partitions (autoinst mode)
