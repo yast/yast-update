@@ -304,6 +304,8 @@
 	if (ret)
 	    AddMountedPartition([Installation::destdir + mount_point, "mount", device]);
 
+	y2milestone ("mounting (%1, %2, %3) yield %4", mount_point, device, mount_type, ret);
+
 	return ret;
     }
 
@@ -545,14 +547,12 @@
      */
     define boolean var_is_mounted ()
     {
-	boolean ret = false;
-
 	foreach (list l, activated, {
 	    if (l[0]:"" == Installation::destdir + "/var")
-		ret = true;
+		return true;
 	});
 
-	return ret;
+	return false;
     }
 
 
@@ -590,8 +590,7 @@
 			y2milestone( "Raidarray for partition %1 on device %2 found",
 				     fspath, spec );
 			string command = "/sbin/raidstart --all --configfile "
-			    + Installation::destdir
-			    + "/etc/raidtab";
+			    + Installation::destdir + "/etc/raidtab";
 
 			integer ret_from_shell = (integer) SCR::Execute (.target.bash, command);
 			if ( ret_from_shell != 0 )
@@ -665,53 +664,54 @@
 	    if (!fsck_and_mount ("/var", var_device_fstab, ""))
 	    {
 		y2error ("failed to mount /var");
+		return false;
 	    }
 
 	    return true;
 	}
-	else
+
+	list <map> tmp1 = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
+	string root_device_fstab = tmp1[0,"spec"]:"";
+
+	map root_info = Storage::GetDiskPartition (root_device_fstab);
+	map var_info = Storage::GetDiskPartition (var_device_fstab);
+
+	if (root_info["disk"]:"" == var_info["disk"]:"")
 	{
-	    list <map> tmp1 = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
-	    string root_device_fstab = tmp1[0,"spec"]:"";
+	    map tmp2 = Storage::GetDiskPartition (root_device_current);
+	    string var_partition_current = Storage::GetDeviceName (tmp2["disk"]:"", var_info["nr"]:0);
 
-	    map root_info = Storage::GetDiskPartition (root_device_fstab);
-	    map var_info = Storage::GetDiskPartition (var_device_fstab);
-
-	    if (root_info["disk"]:"" == var_info["disk"]:"")
+	    if (!fsck_and_mount ("/var", var_partition_current, ""))
 	    {
-		map tmp2 = Storage::GetDiskPartition (root_device_current);
-		string var_partition_current = Storage::GetDeviceName (tmp2["disk"]:"", var_info["nr"]:0);
-
-		if (!fsck_and_mount ("/var", var_partition_current, ""))
-		{
-		    y2error ("failed to mount /var");
-		    return false;
-		}
-
-		return true;
-	    }
-	    else
-	    {
-		map <string, map> target_map = Storage::GetTargetMap ();
-
-		list <string> realdisks = [ ];
-		foreach (string s, map m, target_map, {
-		    if (Storage::DeviceRealDisk (s))
-			realdisks = add (realdisks, s);
-		});
-
-		if (size (realdisks) != 2)
-		{
-		    y2error ("don't know how to handle more than two disks at this point");
-		    return false;
-		}
-
-		// FIXME
-		return true;
+		y2error ("failed to mount /var");
+		return false;
 	    }
 
+	    return true;
+	}
+
+	list <string> realdisks = [];
+	foreach (string s, map m, Storage::GetTargetMap (), {
+	    if (Storage::DeviceRealDisk (s))
+		realdisks = add (realdisks, s);
+	});
+
+	if (size (realdisks) != 2)
+	{
+	    y2error ("don't know how to handle more than two disks at this point");
 	    return false;
 	}
+
+	string other_disk = realdisks[ realdisks[0]:"" == root_info["disk"]:"" ? 1 : 0 ]:"";
+	string var_partition_current = Storage::GetDeviceName (other_disk, var_info["nr"]:0);
+
+	if (!fsck_and_mount ("/var", var_partition_current, ""))
+	{
+	    y2error ("failed to mount /var");
+	    return false;
+	}
+
+	return true;
     }
 
 
