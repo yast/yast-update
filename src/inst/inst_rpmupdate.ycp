@@ -92,6 +92,10 @@ Check the log file /var/log/y2log
 
     if ( Mode::initial )
     {
+	// check passwd and group of target
+
+	SCR::Execute (.target.bash, "/usr/lib/YaST2/bin/update_users_groups " + Installation::destdir);
+
 	// /etc/inittab will be overridden by package aaa_base. So we will
 	// have to save the run-level
 
