@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 04 10:52:33 CET 2004 - arvin@suse.de
+
+- handle ProductFeatures::delete_old_packages (bug #35235)
+
+-------------------------------------------------------------------
 Wed Mar 03 15:43:04 CET 2004 - arvin@suse.de
 
 - correctly initialize old product name during update

@@ -12,6 +12,7 @@
     module "Update";
 
     import "Packages";
+    import "ProductFeatures";
 
     // number of packages affected by update
     global integer affected_packages = 0;
@@ -26,7 +27,7 @@
     global boolean kernel_affected = false;
 
     // Flag is set true if the user decides to delete unmaintained packages
-    global boolean deleteOldPackages = true;
+    global boolean deleteOldPackages = ProductFeatures::delete_old_packages;
 
     // don't allow upgrade only update
     global boolean disallow_upgrade = false;
@@ -71,6 +72,22 @@
     /*-----------------------------------------------------------------------
      * GLOBAL FUNCTIONS
      *-----------------------------------------------------------------------*/
+
+
+    /**
+     *
+     */
+    global define void Reset () ``{
+
+	deleteOldPackages = ProductFeatures::delete_old_packages;
+	disallow_upgrade = false;
+
+	backup_modified = true;
+	backup_sysconfig = true;
+	remove_old_backups = false;
+	backup_path = "/var/adm/backup";
+
+    }
 
 
     /**
