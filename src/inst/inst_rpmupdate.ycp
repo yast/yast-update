@@ -43,10 +43,14 @@ Check the log file /var/log/y2log
     // Popup to start rpm --rebuild
     //
 
-    define rpmrebuild( ) ``{
+    // progress callback
+    define void setProgress (integer progress)
+    ``{
+	UI::ChangeWidget(`id(`progress), `Value, 0 );
+    }
 
-	boolean success = true;
-
+    define void rpmrebuild( )
+    ``{
 	UI::OpenDialog(`opt(`decorated),
 			`VBox( `Heading( _("RPM DB rebuild")) ,
 			     `VBox( `Label(rebuild_message),
@@ -60,77 +64,16 @@ Check the log file /var/log/y2log
 				    `VSpacing(1)
 				    )
 			     )
-			);
+			); // UI::OpenDialog()
 
+	setProgress (0);
+	Pkg::CallbackProgressRebuildDB ("setProgress");
 
-	UI::ChangeWidget(`id(`progress), `Value, 0 );
-
-	// rebuilding DB
-	if ( !SCR::Execute (.targetpkg.rebuildDb, "") )
-	{
-	    y2error("SCR::Execute (.targetpkg.rebuildDb) not OK ");
-	    success = false;
-	}
-	else
-	{
-	    y2milestone("SCR::Execute (.targetpkg.rebuildDb) OK ");
-
-	    integer progress = 0;
-	    integer nullCounter = 0;
-	    integer changed = 0;
-	    integer saveProgress = 0;
-
-	    while ( progress < 100
-		   && progress != -1
-		   && nullCounter < 20
-		   && changed < 20 )
-	    {
-		sleep ( 2000 );
-		if ( progress > 0 )
-		{
-		    saveProgress = progress;
-		}
-		progress = SCR::Read (.targetpkg.rebuildDbProgress );
-		if ( progress == 0 )
-		{
-		    nullCounter = nullCounter +1;
-		}
-		else
-		{
-		    nullCounter = 0;
-		}
-
-		if ( saveProgress > 0 )
-		{
-		    if( progress == saveProgress )
-		    {
-			changed = changed +1;
-		    }
-		    else
-		    {
-			changed = 0;
-		    }
-		}
-
-		if ( progress >= 0 && progress <= 100 )
-		{
-		    UI::ChangeWidget(`id(`progress),`Value, progress );
-		}
-	    }
-	    if (nullCounter >= 20
-		|| progress == -1
-		|| changed >= 20 )
-	    {
-		success = false;
-	    }
-	}
-
-	// save
-	sleep ( 3000 );
+	Pkg::TargetRebuildDB();
 
 	UI::CloseDialog();
 
-	return (success);
+	return;
     };
 
 
@@ -146,7 +89,6 @@ Check the log file /var/log/y2log
 
     SlideShow::SetLanguage( language );
     SlideShow::OpenSlideShowDialog();
-
 
     if ( Mode::cont )
     {
@@ -186,12 +128,11 @@ Check the log file /var/log/y2log
 
     SlideShow::InitPkgData();
 
-    y2milestone("install_list: %1", install_list);
-
     if ( !Mode::cont )
     {
+	y2milestone ("rpmrebuild");
 	// rebuilding RPM-Database only while first run of installation
-	boolean ret = rpmrebuild();
+	rpmrebuild();
     }
 
     any ret = `ok;
@@ -200,21 +141,55 @@ Check the log file /var/log/y2log
 
     if (Mode::normal)
     {
-	list kernels = filter (string k, Pkg::GetPackages(`installed, true), ``(substring(k, 0, 2) == "k_" ));
-	kernel_affected = (size (kernels) > 0);
+	list filterKernel = filter(string k, Pkg::GetPackages(`installed, true), ``(substring(k, 0, 2) == "k_" ));
+	kernel_affected = (size (filterKernel) > 0);
     }
+
+    list commit_result = [];
+
+    SlideShow::UpdateAllCdProgress (false);
+    SlideShow::StartTimer();
 
     if ( Mode::initial )
     {
-	Pkg::PkgCommit(1);
+	y2milestone ("Pkg::PkgCommit(1)");
+	commit_result = Pkg::PkgCommit(1);
     }
     else
     {
-	Pkg::PkgCommit(0);
+	y2milestone ("Pkg::PkgCommit(0)");
+	commit_result = Pkg::PkgCommit(0);
     }
+
+    SlideShow::StopTimer();
+
+    //*********************************************************
+
+	integer count = commit_result[0]:0;
+	y2milestone ("%1 packages installed", count);
+
+	list failed = commit_result[1]:[];
+	if (size (failed) > 0)
+	{
+	    y2milestone ("failed: %1", failed);
+	    list previous_failed = SCR::Read (.target.ycp, Installation::destdir + "/var/lib/YaST2/failed_packages", []);
+	    if (size (previous_failed) > 0)
+		failed = union (previous_failed, failed);
+	    SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/failed_packages", failed);
+	}
+	list remaining = commit_result[2]:[];
+	if (size (remaining) > 0)
+	{
+	    y2milestone ("remaining: %1", remaining);
+	    SCR::Write (.target.ycp, Installation::destdir + "/var/lib/YaST2/remaining", remaining);
+	}
+
+
+    //*********************************************************
 
     if (kernel_affected)			// kernel affected
     {
+	y2milestone ("Boot::Write()");
 	import "Boot";
 	Boot::Write();				// re-write initrd and bootloader
     }

@@ -215,13 +215,14 @@ if the package should be updated.
 
 	if ( ret == `next )
 	{
+/**							FIXME
 	    if ( Update::affected_count <= 0 )
 	    {
 		UI::MessagePopup(_("There is nothing to update."));
 		ret = `again;
 		break;
 	    }
-
+**/
 	    if ( size ( Update::manuall_update_list ) > 0 )
 	    {
 		string message =
