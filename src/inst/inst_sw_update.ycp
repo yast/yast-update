@@ -33,16 +33,13 @@
 
 	UI::OpenDialog(`opt(`decorated ),`Label(_("Evaluating update packages. One moment please...")));
 
-	// [ affected, not installed, not deleted ]
+	// [ integer affected, integer unknown ]
 	list brokenPackages = Pkg::PkgUpdateAll();
 
 	// store all those packages to provide the list for inst_sw_single.ycp
 	Update::affected_count = brokenPackages[0]:0;
-	Update::manuall_update_list = brokenPackages[1]:[];
-	Update::unmaintained_list = brokenPackages[2]:[];
-y2milestone ("Update::affected_count %1", Update::affected_count);
-y2milestone ("Update::manuall_update_list %1", Update::manuall_update_list);
-y2milestone ("Update::unmaintained_list %1", Update::unmaintained_list);
+	Update::unkown_count = brokenPackages[1]:0;
+y2milestone ("Update::affected_count %1, unkown_count %2", Update::affected_count, Update::unkown_count);
 	map update_inf = Pkg::TargetUpdateInf (Installation::destdir + "/var/lib/YaST/update.inf");
 
 	Update::installedVersion = update_inf["distname"]:"?" + " " + update_inf["distversion"]:"";
@@ -96,7 +93,7 @@ y2milestone ("Update::unmaintained_list %1", Update::unmaintained_list);
     }
 
     integer automatikUpdate = Update::affected_count;
-    integer manuellUpdate = size ( Update::manuall_update_list );
+    integer unknownUpdate = Update::unknown_count;
 
     // screen title for software selection
     string title = _("Software Update");
@@ -192,7 +189,7 @@ if the package should be updated.
     Wizard::SetContents(title, contents, helptext, Args(0),Args(1));
   
     any ret = nil;
-    boolean error_found = false;
+    boolean seen_details = false;
 
     while (true)
     {
@@ -205,25 +202,31 @@ if the package should be updated.
 
 	if ( ret == `details )
 	{
-	    ret = CallFunction( `inst_packages ( ) );
+	    seen_details = true;
+	    if ( Update::unknown_count > 0 )
+	    {
+		UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector), `opt(`updateMode ))); 
+	    }
+	    else
+	    {
+		UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector))); 
+	    }
+	    ret = UI::RunPkgSelection (`id(`selector));
+	    UI::CloseDialog();
 
-	    if ( ret == `ok || ret == `cancel_single )
-		ret = `again;
-	    break;
-
+	    ret = `again;		// stay in loop
 	}
 
 	if ( ret == `next )
 	{
-/**							FIXME
-	    if ( Update::affected_count <= 0 )
+	    if (Update::affected_count <= 0 )
 	    {
 		UI::MessagePopup(_("There is nothing to update."));
-		ret = `again;
-		break;
+// FIXME		ret = `again;
+// FIXME		break;
 	    }
-**/
-	    if ( size ( Update::manuall_update_list ) > 0 )
+	    if (!seen_details
+		&& Update::unknown_count > 0 )
 	    {
 		string message =
 			_("There are packages that need a manual decision
@@ -236,9 +239,11 @@ Would you like to browse though these packages?
 
 		if ( UI::YesNoPopup(message) )
 		{
-		    ret = CallFunction( `inst_packages () );
+		    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector), `opt(`updateMode ))); 
+		    ret = UI::RunPkgSelection (`id(`selector));
+		    UI::CloseDialog();
 
-		    if ( ret == `ok || ret == `cancel_single )
+		    if ( ret == `cancel )
 			ret = `again;
 		    break;
 		}

@@ -14,15 +14,12 @@
     global integer affected_count = 0;
     // number of packages affected by update
 
+    global integer unknown_count = 0;
+    // number of packages unknown by update (non-suse packages)
+
     global string newKernel = "";
     // update kernelname if there has not been found a old kernel
     // in the db.
-
-    global list manuall_update_list = [];
-    // List of packages which have to decide the user
-
-    global list unmaintained_list = [];
-    // List of packages which are not maintained
 
     global boolean deleteOldPackages = false;
     // Flag is set true if the user decides to delete unmaintained packages
