@@ -15,6 +15,10 @@
     import "Storage";
     import "Popup";
 
+    include "partitioning/partition_defines.ycp";
+    include "partitioning/custom_part_helptexts.ycp";
+    include "partitioning/custom_part_dialogs.ycp";
+
 
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
