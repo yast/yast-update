@@ -1,5 +1,5 @@
 /**
- * Module:	proposal_backup.ycp
+ * Module:	proposal_packages.ycp
  *
  * Author:	Arvin Schnell <arvin@suse.de>
  *
@@ -27,8 +27,8 @@
 
 	ret = $[ "preformatted_proposal" :
 		 // Proposal for backup during update
-		 HTML::List (["Create of changed files in /var/adm/backup",
-			      "Create complete backup of /etc/sysconfig"])
+		 HTML::List (["Update 12 packages",
+			      "Remove 10 packages"])
 	];
     }
     else if ( func == "AskUser" )
@@ -55,10 +55,10 @@
 	ret =
 	    $[
 	      // this is a heading
-	      "rich_text_title"	:	_( "Backup"  ),
+	      "rich_text_title"	:	_( "Packages"  ),
 	      // this is a menu entry
-	      "menu_title"	:	_( "&Backup" ),
-	      "id"		:	"backup_stuff"
+	      "menu_title"	:	_( "&Packages" ),
+	      "id"		:	"packages_stuff"
 	    ];
     }
 

@@ -1,9 +1,9 @@
 /**
- * Module:	proposal_backup.ycp
+ * Module:	proposal_update.ycp
  *
  * Author:	Arvin Schnell <arvin@suse.de>
  *
- * Purpose:	Let user choose backup during update.
+ * Purpose:	Let user choose update settings.
  */
 {
     textdomain "update";
@@ -27,8 +27,9 @@
 
 	ret = $[ "preformatted_proposal" :
 		 // Proposal for backup during update
-		 HTML::List (["Create of changed files in /var/adm/backup",
-			      "Create complete backup of /etc/sysconfig"])
+		 HTML::List (["Update to SuSE Linux 8.3",
+			      "Update based on \"Default\" selection",
+			      "Clean up system"])
 	];
     }
     else if ( func == "AskUser" )
@@ -40,7 +41,7 @@
 	//
 	// sequence = DummyMod::AskUser( has_next );
 
-	symbol result = WFM::CallFunction (`inst_backup (true, has_next));
+	symbol result = WFM::CallFunction (`inst_update (true, has_next));
 
 	// Fill return map
 
@@ -55,10 +56,10 @@
 	ret =
 	    $[
 	      // this is a heading
-	      "rich_text_title"	:	_( "Backup"  ),
+	      "rich_text_title"	:	_( "Update options"  ),
 	      // this is a menu entry
-	      "menu_title"	:	_( "&Backup" ),
-	      "id"		:	"backup_stuff"
+	      "menu_title"	:	_( "&Update options" ),
+	      "id"		:	"update_stuff"
 	    ];
     }
 

@@ -185,8 +185,6 @@ configuration files will be saved.
 	}
     }
 
-    Wizard::CloseDialog();
-
     if ( ret == `next )
     {
 	if ( !UI::QueryWidget(`id(`backup), `Value) )
@@ -206,6 +204,8 @@ configuration files will be saved.
     }
 
     y2debug( "inst_sw_backup return: %1", ret );
+
+    Wizard::CloseDialog();
 
     return ret;
 }

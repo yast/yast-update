@@ -9,7 +9,7 @@
     textdomain "update";
 
     import "HTML";
-    import "Mode";
+    import "Update";
 
     string func  = WFM::Args(0);
     map    param = WFM::Args(1);
@@ -26,10 +26,59 @@
 
 	// Fill return map
 
-	ret = $[ "raw_proposal" :
-		 // Proposal for installation mode
-		 [ HTML::Bold( _("Root Partition") ) ]
-	];
+	if (size (Update::validRootPartitions) == 0 || force_reset)
+	{
+	    UI::OpenDialog (`opt(`decorated ),
+			    `Label(_("Evaluating root partition. One moment please...")));
+
+	    Update::FindRootPartitions ();
+
+	    UI::CloseDialog ();
+
+	    Update::selectedRootPartition = "";
+	}
+
+	if (size (Update::validRootPartitions) == 0)
+	{
+	    ret = $[ "warning" :
+		     // Proposal for system to update
+		     _("No root partition found"),
+		     "warning_level" : `blocker
+	    ];
+	}
+	else
+	{
+	    if (Update::selectedRootPartition == "")
+	    {
+		if (size (Update::validRootPartitions) == 1)
+		{
+		    foreach (`p, `r, Update::validRootPartitions, ``{
+			if (Update::selectedRootPartition == "")
+			    Update::selectedRootPartition = p;
+		    });
+		}
+		else
+		{
+		    symbol result = WFM::CallFunction (`inst_rootpart (true, true, true));
+		}
+	    }
+
+	    if (size (Update::validRootPartitions) == 1)
+	    {
+		ret = $[ "raw_proposal" :
+			 [ Update::validRootPartitions[Update::selectedRootPartition]:"error" ]
+		];
+	    }
+	    else
+	    {
+		ret = $[ "raw_proposal" :
+			 // Proposal for system to update
+			 [ sformat (_("%1 on root partition %2"),
+				    Update::validRootPartitions[Update::selectedRootPartition]:"error",
+				    Update::selectedRootPartition) ]
+		];
+	    }
+	}
     }
     else if ( func == "AskUser" )
     {
@@ -40,7 +89,7 @@
 	//
 	// sequence = DummyMod::AskUser( has_next );
 
-	symbol result = WFM::CallFunction (`inst_rootpart (true, has_next));
+	symbol result = WFM::CallFunction (`inst_rootpart (true, has_next, false));
 
 	// Fill return map
 
@@ -55,9 +104,9 @@
 	ret =
 	    $[
 	      // this is a heading
-	      "rich_text_title"	:	_( "Root Partition"  ),
+	      "rich_text_title"	:	_( "Selected for update"  ),
 	      // this is a menu entry
-	      "menu_title"	:	_( "&Root Partition" ),
+	      "menu_title"	:	_( "&Selected for update" ),
 	      "id"		:	"rootpart_stuff"
 	    ];
     }

@@ -1,14 +1,13 @@
 /**
- * Module: 		inst_upgrade.ycp
+ * Module: 		inst_update.ycp
  *
  * Authors:		Stefan Schubert <schubi@suse.de>
+ *			Arvin Schnell <arvin@suse.de>
  *
  * Purpose:
  * Displays software selection screen of previous installed software-groups.
  * Show checkboxes for software categories. Let the user select his software.
  * if he want to UPGRADE his system.
- *
- * $Id$
  */
 
 {
@@ -24,26 +23,6 @@
 
     // ------------------------------------------------------------------------
 
-    y2milestone("Setting targetroot of package DB: %1", Installation::destdir);
-    Pkg::TargetInit (Installation::destdir, false);
-
-    Pkg::SetLocale (Language::language);
-
-    SCR::Execute(.target.mkdir, Installation::destdir + "/var/log/YaST2");	// just in case
-    Pkg::TargetLogfile (Installation::destdir+"/var/log/YaST2/y2logRPM");
-
-    UI::OpenDialog(`opt(`decorated ),
-		   // intermediate popup while initializing internal packagemanagement
-		   `Label(_("Reading package information; One moment please...")));
-
-    Mode::update = true;
-    Packages::Init( true );
-    Update::updateEvaluated = false; // evaluate updatelist new
-    UI::CloseDialog();
-
-    // ------------------------------------------------------------------------
-    // retrieve selection information
-
     boolean retval = false;
     list current_sel = Pkg::GetSelections (`installed, "base");
     if (current_sel == nil || current_sel == [])
@@ -51,11 +30,8 @@
     if (current_sel == nil)
 	current_sel = [];
 
-    y2milestone("Current software sel: %1", current_sel);
-
-    // screen title for software selection
-
-    string title = _("Choose update mode");
+    // screen title for update options
+    string title = _("Update Options");
 
     list available_base_selections = Pkg::GetSelections (`available, "base");
 
@@ -64,8 +40,7 @@
     // Title of frame around "Upgrade"
     term baseconfsbox = `VBox();
 
-    foreach(`sel, available_base_selections,
-    ``{
+    foreach(`sel, available_base_selections, ``{
 	map seldata = Pkg::SelectionData (sel);
 
 	string seldesc = seldata["summary"]:"";
@@ -99,38 +74,40 @@ You will lose that selection if you change the basic selection.");
 
     term contents = `HVSquash(
 	`VBox(
-		// frame title for update selection
-		`Frame( _("Please choose the type of upgrade you desire"),
-			`VBox(
-			`VSpacing(0.8),
-			`RadioButtonGroup( `id(`bgoup), `opt(`notify),
-				 `VBox(
-					 `Left(`RadioButton(`id(`upgrade),`opt(`notify),
-							// radio button label for update including new packages
-							// translator: add a & shortcut
-							  _("&Update your system to one of the predefined software selections\n(this may include new software packages):"), false) ),
-					 `VSpacing(0.5),
-					 `HBox(
-					     `HSpacing(4),
-					     `RadioButtonGroup(`id(`baseconf),`opt(`notify), baseconfsbox)
-					     ),
-					 `VSpacing(1.5),
-					 `Left(`RadioButton(`id(`notupgrade),`opt(`notify),
-							// radio button label for update of already installed packages only
-							// translator: add a & shortcut
-							  _("U&pdate installed packages only. No additional software will be installed."), true) ),
-					 `VSpacing(1.5),
-					 `Left(`CheckBox(`id(`delete),`opt(`notify),
-							// check box label
-							// translator: add a & shortcut
-							 _("&Clean up the system - delete unmaintained packages."), Update::deleteOldPackages) ),
-					 `VSpacing(1.5)
-					 )
-					 )
-			)
-			),
-		`Label( `id(`wrn_label), wrn_msg )
-		)
+	      `Label (sformat (_("Update from %1 to %2>"), "SuSE Linux 4.2", "SuSE Linux 8.3")),
+	      // frame title for update selection
+	      `Frame( _("Update Mode"),
+		      `VBox(
+			    `VSpacing(0.8),
+			    `RadioButtonGroup( `id(`bgoup), `opt(`notify),
+					       `VBox(
+						     `Left(`RadioButton(`id(`upgrade),`opt(`notify),
+									// radio button label for update including new packages
+									// translator: add a & shortcut
+									_("&Update and install new stuff:"), false) ),
+						     `VSpacing(0.5),
+						     `HBox(
+							   `HSpacing(4),
+							   `RadioButtonGroup(`id(`baseconf),`opt(`notify), baseconfsbox)
+							   ),
+						     `VSpacing(1.5),
+						     `Left(`RadioButton(`id(`notupgrade),`opt(`notify),
+									// radio button label for update of already installed packages only
+									// translator: add a & shortcut
+									_("U&pdate installed packages only."), true) ),
+						     `VSpacing(1.5)
+						     )
+					       )
+			    )
+		      ),
+
+	      `Left(`CheckBox(`id(`delete),`opt(`notify),
+			      // check box label
+			      // translator: add a & shortcut
+			      _("&Clean up the system - delete unmaintained packages."), Update::deleteOldPackages) ),
+	      `VSpacing(1.5),
+	      `Label( `id(`wrn_label), wrn_msg )
+	      )
 	);
 
 
@@ -157,12 +134,13 @@ some important packages might
 be missing, such as new YaST2 modules.
 </p>\n");
 
+    Wizard::OpenAcceptDialog ();
+
     Wizard::SetContents(title, contents, helptext, Args(0),Args(1));
 
     if ( Update::onlyUpdateSelected )
     {
-	foreach(`sel, available_base_selections,
-	``{
+	foreach (`sel, available_base_selections, ``{
 	    UI::ChangeWidget(`id(sel), `Enabled, false);
 	});
 
@@ -170,8 +148,7 @@ be missing, such as new YaST2 modules.
     }
     else
     {
-	foreach(`sel, available_base_selections,
-	``{
+	foreach (`sel, available_base_selections, ``{
 	    UI::ChangeWidget(`id(sel), `Enabled, true);
 	});
 
@@ -189,17 +166,11 @@ be missing, such as new YaST2 modules.
 	{
 	    save_sel = add( save_sel, UI::QueryWidget(`id(`baseconf), `CurrentButton));
 	}
-	if (!Mode::autoinst)
-	{
-	    ret = Wizard::UserInput();
-	}
-	else
-	{
-	    ret = `next;
-	}
 
-	if ( ret == `abort && CallFunction(`inst_confirm_abort(`painless) ) )
-	    return `abort;
+	ret = Wizard::UserInput ();
+
+	if (ret == `abort && CallFunction (`inst_confirm_abort (`painless)))
+	    break;
 
 	// Add the selection of the basic group
 	current_sel = [];
@@ -230,8 +201,7 @@ be missing, such as new YaST2 modules.
 		    {
 			Update::onlyUpdateSelected = true;
 
-			foreach(`sel, available_base_selections,
-			``{
+			foreach(`sel, available_base_selections, ``{
 			    UI::ChangeWidget(`id(sel), `Enabled, false);
 			});
 		    }
@@ -250,28 +220,29 @@ be missing, such as new YaST2 modules.
 		Update::userChangedState = false;
 
 	    }
+
 	    // rebuild
 	    ret = `again;
 	}
 
-	// set the flag 'deleteOldPackages' to inform inst_sw_update.ycp
-	if ( ret == `next )
-	{
-	    Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
-	    if (!UI::QueryWidget(`id(`notupgrade), `Value))
-	    {
-		// software-group-selection must change
-		Pkg::SetSelection (current_sel[0]:"");
-		Pkg::ActivateSelections ();
-		Update::onlyUpdateSelected = false;
-	    }
-	}
-
-	if (ret == `cancel || ret == `back || ret == `next || ret == `again )
+	if (ret == `back || ret == `next)
 	    break;
-
     }
 
-    y2milestone( "inst_upgrade return: %1", ret );
+    // set the flag 'deleteOldPackages' to inform inst_sw_update.ycp
+    if (ret == `next)
+    {
+	Update::deleteOldPackages = UI::QueryWidget( `id(`delete), `Value );
+	if (!UI::QueryWidget(`id(`notupgrade), `Value))
+	{
+	    // software-group-selection must change
+	    Pkg::SetSelection (current_sel[0]:"");
+	    Pkg::ActivateSelections ();
+	    Update::onlyUpdateSelected = false;
+	}
+    }
+
+    Wizard::CloseDialog ();
+
     return ret;
 }
