@@ -212,6 +212,7 @@ Check the log file /var/log/y2log
     if (Mode::initial)
     {
 	SCR::Write(.target.string, Installation::destdir + "/var/lib/YaST2/update_mode", "YES");
+	SCR::Execute (.target.remove, Installation::destdir + "/var/lib/YaST/update.inf");
     }
 
     // close "Slide" dialog (inst_rpmupdate doesn't use the "Wizard" dialog)
