@@ -12,6 +12,7 @@
     import "Mode";
     import "Linuxrc";
     import "Update";
+    import "PackageCallbacks";
     import "RootPart";
 
     string func  = (string) WFM::Args(0);
@@ -38,6 +39,8 @@
     {
 	boolean force_reset      = param["force_reset"     ]:false;
 	boolean language_changed = param["language_changed"]:false;
+
+	PackageCallbacks::SetRebuildDBCallbacks ();
 
 	// call some function that makes a proposal here:
 	//

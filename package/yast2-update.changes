@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 14 16:29:52 CET 2005 - jsrain@suse.cz
+
+- initialize rebuilddb callbacks during proposal (#50695)
+
+-------------------------------------------------------------------
 Fri Feb 11 13:41:05 CET 2005 - jsrain@suse.cz
 
 - warn in proposal if out-of-disk-space durign update (#50376)
