@@ -10,6 +10,7 @@
 
     import "HTML";
     import "Update";
+    import "RootPart";
 
     string func  = WFM::Args(0);
     map    param = WFM::Args(1);
@@ -22,7 +23,7 @@
 			// intermediate popup while mounting partitions
 			`Label(_("Mounting partitions. One moment please...")));
 
-	boolean tmp = Update::MountPartitions (Update::selectedRootPartition);
+	boolean tmp = RootPart::MountPartitions (RootPart::selectedRootPartition);
 	sleep (500);
 
 	UI::CloseDialog ();
@@ -42,26 +43,26 @@
 
 	// Fill return map
 
-	if (!Update::didSearchForRootPartitions)
+	if (!RootPart::didSearchForRootPartitions)
 	{
 	    UI::OpenDialog (`opt(`decorated ),
 			    `Label(_("Evaluating root partition. One moment please...")));
 
-	    Update::FindRootPartitions ();
+	    RootPart::FindRootPartitions ();
 
 	    UI::CloseDialog ();
 
-	    Update::selectedRootPartition = "";
+	    RootPart::selectedRootPartition = "";
 	}
 
 	if (force_reset)
 	{
-	    Update::selectedRootPartition = "";
+	    RootPart::selectedRootPartition = "";
 	}
 
-	if (size (Update::validRootPartitions) == 0)
+	if (size (RootPart::validRootPartitions) == 0)
 	{
-	    Update::targetOk = false;
+	    RootPart::targetOk = false;
 
 	    ret = $[ "warning" :
 		     // Proposal for system to update
@@ -71,13 +72,13 @@
 	}
 	else
 	{
-	    if (Update::selectedRootPartition == "")
+	    if (RootPart::selectedRootPartition == "")
 	    {
-		if (size (Update::validRootPartitions) == 1)
+		if (size (RootPart::validRootPartitions) == 1)
 		{
-		    foreach (`p, `r, Update::validRootPartitions, ``{
-			if (Update::selectedRootPartition == "")
-			    Update::selectedRootPartition = p;
+		    foreach (`p, `r, RootPart::validRootPartitions, ``{
+			if (RootPart::selectedRootPartition == "")
+			    RootPart::selectedRootPartition = p;
 		    });
 		}
 		else
@@ -85,13 +86,13 @@
 		    symbol result = WFM::CallFunction (`inst_rootpart (true, true, `update_popup));
 		}
 
-		Update::targetOk = mount_target ();
+		RootPart::targetOk = mount_target ();
 	    }
 
-	    if (size (Update::validRootPartitions) == 1)
+	    if (size (RootPart::validRootPartitions) == 1)
 	    {
 		ret = $[ "raw_proposal" :
-			 [ Update::validRootPartitions[Update::selectedRootPartition]:"error" ]
+			 [ RootPart::validRootPartitions[RootPart::selectedRootPartition]:"error" ]
 		];
 	    }
 	    else
@@ -99,15 +100,15 @@
 		ret = $[ "raw_proposal" :
 			 // Proposal for system to update
 			 [ sformat (_("%1 on root partition %2"),
-				    Update::validRootPartitions[Update::selectedRootPartition]:"error",
-				    Update::selectedRootPartition) ]
+				    RootPart::validRootPartitions[RootPart::selectedRootPartition]:"error",
+				    RootPart::selectedRootPartition) ]
 		];
 	    }
 
-	    if (!Update::targetOk)
+	    if (!RootPart::targetOk)
 	    {
 		// inform user in the proposal about the failed mount
-		ret = add (ret, "warning", _("Failed to mount target"));
+		ret = add (ret, "warning", _("Failed to mount target system"));
 		ret = add (ret, "warning_level", `fatal);
 	    }
 	}
@@ -121,20 +122,22 @@
 	//
 	// sequence = DummyMod::AskUser( has_next );
 
-	string tmp = Update::selectedRootPartition;
+	string tmp = RootPart::selectedRootPartition;
 
 	symbol result = WFM::CallFunction (`inst_rootpart (true, has_next, `update_dialog));
 
-	if (Update::selectedRootPartition != tmp)
+	if (RootPart::selectedRootPartition != tmp)
 	{
 	    Update::Detach ();
-	    Update::targetOk = mount_target ();
+	    RootPart::UnmountPartitions ();
+
+	    RootPart::targetOk = mount_target ();
 	}
 
 	// Fill return map
 
 	ret = $[ "workflow_sequence" : result,
-		 "rootpart_changed" : Update::selectedRootPartition != tmp ];
+		 "rootpart_changed" : RootPart::selectedRootPartition != tmp ];
     }
     else if ( func == "Description" )
     {

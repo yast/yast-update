@@ -5,14 +5,14 @@
  *		Arvin Schnell <arvin@suse.de>
  *
  * Purpose:	Select root partition for update or booting.
- *		Update::validRootPartitions must be filled before
+ *		RootPart::validRootPartitions must be filled before
  *		calling this module.
  */
 {
     textdomain "update";
 
     import "Wizard";
-    import "Update";
+    import "RootPart";
 
 
     // This dialog comes in three different flavors: `update_dialog,
@@ -21,7 +21,7 @@
 
 
     list partition_list = [];
-    foreach (`p, `r, Update::validRootPartitions, ``{
+    foreach (`p, `r, RootPart::validRootPartitions, ``{
 	partition_list = add (partition_list, `item (`id (p), r, p));
     });
 
@@ -98,8 +98,8 @@ Select the <b>root partition</b> to use.
 	UI::OpenDialog (full);
     }
 
-    if (size (Update::selectedRootPartition) > 0)
-	UI::ChangeWidget (`id(`partition), `CurrentItem, Update::selectedRootPartition);
+    if (size (RootPart::selectedRootPartition) > 0)
+	UI::ChangeWidget (`id(`partition), `CurrentItem, RootPart::selectedRootPartition);
 
     any ret = nil;
 
@@ -119,7 +119,7 @@ Select the <b>root partition</b> to use.
 
     if (ret == `next)
     {
-	Update::selectedRootPartition = UI::QueryWidget (`id(`partition), `CurrentItem);
+	RootPart::selectedRootPartition = UI::QueryWidget (`id(`partition), `CurrentItem);
     }
 
     if (flavor == `update_dialog)

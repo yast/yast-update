@@ -17,6 +17,7 @@
     import "Installation";
     import "Language";
     import "Wizard";
+    import "RootPart";
     import "Update";
     import "Packages";
 
@@ -56,7 +57,7 @@ You will lose that selection if you change the basic selection.");
 
     // Build and show dialog
 
-    string from_version = Update::validRootPartitions[Update::selectedRootPartition]:"error";
+    string from_version = RootPart::validRootPartitions[RootPart::selectedRootPartition]:"error";
     string to_version = "FIXME";
 
     term contents = `HVSquash(

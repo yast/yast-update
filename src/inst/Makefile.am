@@ -5,7 +5,8 @@
 SUBDIRS = scripts
 
 module_DATA =				\
-	Update.ycp
+	Update.ycp			\
+	RootPart.ycp
 
 client_DATA =				\
 	inst_rootpart.ycp		\

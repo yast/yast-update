@@ -1,0 +1,551 @@
+/**
+ * Module:	RootPart.ycp
+ *
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:	Responsible for searching of root partitions and
+ *		mounting of target partitions.
+ *
+ * $Id$
+ */
+{
+    module "RootPart";
+
+    import "Storage";
+
+    // Selected root partition for the update or boot.
+    global string selectedRootPartition = "";
+
+    // Available rootpartitions (key) and SuSE versions (value)
+    global map validRootPartitions = $[];
+
+    // Did we search for root partitions
+    global boolean didSearchForRootPartitions = false;
+
+    // We successfully mounted the target partitions
+    global boolean targetOk = false;
+
+    //
+    global boolean did_try_mount_partitions = false;
+
+    // map of mountpoints (key = device, value = mountpoint)
+    // TODO: combine partitions_mount and activated?
+    map partitions_mount = $[];
+
+    /**
+     * List of mounted partitions, activated swap partitions and loop devices.
+     * Used for reversing action if mode is changed from update to new
+     * installation or if root partition for update is changed. Each item is
+     * list [string value, string type], where type is "mount", "swap", "loop",
+     * value is path to mounted directory, swap partition name or loop device
+     * name according to type value.
+     */
+    list activated = [];
+
+
+    /*-----------------------------------------------------------------------
+     * GLOBAL FUNCTIONS
+     *-----------------------------------------------------------------------*/
+
+    /**
+     * Unmount all mounted partitions, deactivate swaps, detach loopback
+     * devices. Uses list activated to make actions in reverse order.
+     * @return void
+     */
+    global define void UnmountPartitions () ``{
+
+	y2milestone ("unmount partitions: %1", activated);
+
+	did_try_mount_partitions = false;
+
+	foreach (list info, activated, ``{
+
+	    string file = info[0]:"";
+	    string type = info[1]:"";
+
+	    if (file != "" && type != "")
+	    {
+		if (type == "mount")
+		{
+		    if (SCR::Execute (.target.umount, file) != 0)
+		    {
+			y2error("Cannot unmount partition %1", file);
+		    }
+		}
+		else if (type == "swap")
+		{
+		    if (SCR::Execute (.target.bash, "/sbin/swapoff " + file) != 0)
+		    {
+			y2error("Cannot deactivate swap %1", file);
+		    }
+		}
+		else if (type == "loop")
+		{
+		    if (WFM::Execute(.local.bash, "losetup -d " + file) != 0)
+		    {
+			y2error("Cannot deactivate loopback device %1", file);
+		    }
+		}
+	    }
+	});
+
+	SCR::Write(.lvm.deactivate, "");
+	SCR::Write(.md.deactivate, "");
+
+	// clear activated list
+	activated = [];
+
+
+	// now remove the mount points of the mounted partitions
+	// in the target map of the storage module
+
+	map target_map = Storage::GetTargetMap ();
+
+	foreach (string mntpt, string part, partitions_mount, ``{
+	    target_map = Storage::SetPartitionData (target_map, part, "mount", "");
+	});
+
+	Storage::SetTargetMap (target_map);
+    }
+
+
+    /**
+     * Add information about mounted partition to internal list.
+     * @param partinfo partinfo has to be list with exactly two strings,
+     * see description of list "activated"
+     * @return void
+     */
+    define void AddMountedPartition (list partinfo) ``{
+	y2debug("Added partition info: %1", partinfo);
+	activated = prepend(activated, partinfo);
+	y2debug("Total partition info: %1", activated);
+    }
+
+
+    /**
+     * Mounting root-partition; reading fstab and mounting read partitions
+     */
+    global define boolean MountPartitions (string partition) ``{
+
+	y2milestone ("mount partitions: %1", partition);
+
+	if (did_try_mount_partitions)
+	    return true;
+
+	did_try_mount_partitions = true;
+
+	boolean success = true;
+
+	// popup message, %1 will be replace with the name of the logfile
+	string message =  sformat (_("Partitions could not be mounted.
+Check the log file %1.
+"), "/var/log/YaST2/y2log");
+	y2milestone("selected partition: %1", partition );
+
+	integer ret_from_shell = 0;
+	boolean ret_bool = true;
+
+	list fstab = [];
+	list crtab = [];
+
+	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
+			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
+
+	map parts = $[];
+
+	if ( !Mode::test )
+	{
+	    // Checking filesystem
+	    symbol used_fs = FileSystems::DetectFs( partition );
+	    if ( used_fs == `ext2 )
+	    {
+		// is ext2-fs
+		y2milestone("checking partition: %1", partition );
+		string out = sformat ( _("Checking partition %1"), partition );
+
+		UI::OpenDialog(`opt(`decorated ), `Label(out));
+		y2milestone("command: /sbin/e2fsck -y %1", partition );
+
+		// only for showing, case we have no change
+		// to check the status
+
+		sleep(1500);
+
+		SCR::Execute (.target.bash, "/sbin/e2fsck -y " + partition );
+		UI::CloseDialog();
+	    }
+	}
+
+	// Mount selected partition to Installation::destdir
+
+	if ( !Mode::test )
+	{
+	    string mount_type = FileSystems::GetMountString( FileSystems::DetectFs( partition ), "");
+
+	    if (mount_type != "")
+	    {
+		mount_type = "-t " + mount_type;
+	    }
+
+	    ret_bool = SCR::Execute (.target.mount,
+				     [partition, Installation::destdir, Installation::mountlog],
+				     mount_type);
+	}
+
+	if ( ret_bool )
+	{
+	    AddMountedPartition([Installation::destdir, "mount"]);
+	    parts["/"] = partition;
+
+	    // Reading fstab and mount all required mount-points to Installation::destdir
+	    if (SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/fstab /etc") == 0)
+	    {
+		fstab = SCR::Read( .etc.fstab );
+	    }
+	    else
+	    {
+		fstab = [];
+	    }
+
+	    if ((SCR::Read (.target.size, Installation::destdir + "/etc/cryptotab") > 0)
+		&& (SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/cryptotab /etc") == 0))
+	    {
+		crtab = SCR::Read( .etc.cryptotab );
+	    }
+	    else
+	    {
+		crtab = [];
+	    }
+
+	    if (SCR::Read (.target.size, Installation::destdir + "/etc/raidtab") > 0)
+	    {
+		SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/raidtab /etc");
+	    }
+
+	    y2milestone("fstab: %1", fstab);
+	    y2milestone("crtab: %1", crtab);
+
+	    if ( size ( fstab ) == 0 )
+	    {
+		y2error("no fstab found !!" );
+		message =  _("No fstab found.");
+		success = false;
+	    }
+	    else
+	    {
+		integer crypt_nb = 0;
+		boolean crypt_ok = true;
+
+		y2milestone("fstab :%1", fstab );
+		y2milestone("crtab :%1", crtab );
+
+		foreach ( `mounts, crtab, ``{
+
+		    string vfstype = mounts["vfstype"]:"";
+		    string mntops  = mounts["opt2"]:"";
+		    string loop    = mounts["loop"]:"";
+		    string fspath  = mounts["mount"]:"";
+		    string device  = mounts["file"]:"";
+
+		    y2milestone( "vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5", vfstype, mntops, loop, fspath, device );
+		    crypt_ok = true;
+
+		    if (!issubstring (mntops,"noauto"))
+		    {
+			if (crypt_nb == 0)
+			{
+			    SCR::Execute(.target.modprobe, "loop_fish2", "");
+			    crypt_nb = crypt_nb + 1;
+			}
+
+			string crypt_passwd = DlgUpdateCryptFs( device, fspath );
+
+			if ( crypt_passwd == nil )
+			{
+			    crypt_ok = false;
+			}
+
+			y2milestone("crypt pwd ok:%1", crypt_ok );
+
+			if( crypt_ok )
+			{
+			    map setloop = $[ "encryption"    : "twofish",
+					     "passwd"        : crypt_passwd,
+					     "loop_dev"      : loop,
+					     "partitionName" : device ];
+
+			    crypt_ok = SCR::Write(.losetup, setloop );
+
+			    y2milestone("crypt ok: %1", crypt_ok );
+			}
+
+			if ( crypt_ok )
+			{
+			    map add_fs = $[ "file" : fspath,
+			                    "mntops" : mntops,
+					    "spec" : loop,
+					    "freq" : 0,
+					    "passno" : 0,
+					    "vfstype": vfstype ];
+			    fstab = prepend( fstab, add_fs );
+			    AddMountedPartition([loop, "loop"]);
+			}
+
+		    }
+
+		}); // foreach (crypto entry)
+
+		y2milestone("fstab :%1 ", fstab );
+
+		boolean raidMounted = false;
+
+		foreach ( `mounts, fstab, ``{
+
+		    string vfstype = mounts["vfstype"]:"";
+		    string mntops  = mounts["mntops"]:"";
+		    string spec    = mounts["spec"]:"";
+		    string fspath  = mounts["file"]:"";
+
+		    if (contains (allowed_fs, vfstype)
+		        && fspath != "/"
+		        && !issubstring (mntops,"noauto"))
+		    {
+			y2milestone("mounting %1 to %2", spec, fspath);
+
+			if ( !Mode::test )
+			{
+			    // Checking filesystem, if needed
+			    symbol used_fs = FileSystems::DetectFs( spec );
+			    if ( used_fs == `ext2 )
+			    {
+				// is ext2-fs
+				y2milestone("checking partition: %1", spec);
+
+				// before starting update, check the partition (e.g. with fsck)
+				// since this might take awhile, inform the user about this
+				string out = sformat (_("Checking partition %1"), spec);
+
+				UI::OpenDialog(`opt(`decorated ), `Label(out));
+				// only for showing, case we have no change
+				// to check the status
+				sleep(1500);
+				WFM::Execute (.local.bash, "/sbin/e2fsck -y " +	spec );
+				UI::CloseDialog();
+			    }
+			}
+
+			if (issubstring(mntops,"ro,")
+			    || issubstring(mntops,",ro")
+			    || mntops == "ro" )
+			{
+			    y2error("Mounting %1 on %2 is only for ro possible after reboot.",
+				    spec, Installation::destdir + fspath);
+			    y2error("Please change /etc/fstab");
+			    success = false;
+			}
+			else
+			{
+			    if ( !Mode::test )
+			    {
+				//Checking for raid systems
+				if ( issubstring( spec,"/dev/md")
+				     && !raidMounted )
+				{
+				    y2milestone( "Raidarray for partition %1 on device %2 found",
+						 fspath,
+						 spec );
+				    string command = "/sbin/raidstart --all --configfile "
+					+ Installation::destdir
+					+ "/etc/raidtab";
+
+				    ret_from_shell = SCR::Execute (.target.bash, command);
+				    if ( ret_from_shell != 0 )
+				    {
+					y2milestone("raidstart failed ( does no matter ): %1", command );
+				    }
+				    else
+				    {
+					y2milestone("raidstart OK: %1", command );
+					raidMounted = true;
+				    }
+				}
+
+				string mount_type = "";
+				if (vfstype == "proc")
+				{
+				    mount_type = vfstype;
+				}
+				else
+				{
+				    mount_type = FileSystems::GetMountString( FileSystems::DetectFs( spec ), "");
+				}
+
+				if (mount_type != "")
+				{
+				    mount_type = "-t " + mount_type;
+				}
+
+				ret_bool = SCR::Execute (.target.mount,
+							 [ spec, Installation::destdir + mounts["file"]:"", Installation::mountlog],
+							 mount_type );
+				if ( !ret_bool )
+				{
+				    y2error("mounting %1 (type %2) on %3 failed", mounts["spec"]:"", mount_type, "/mnt" + mounts["file"]:"");
+				    success = false;
+				}
+				else
+				{
+				    AddMountedPartition([Installation::destdir + mounts["file"]:"", "mount"]);
+				    parts[mounts["file"]:""] = mounts["spec"]:"";
+				}
+			    }
+			}
+		    }  // allowed_fs
+		    else if (vfstype == "swap" && fspath == "swap" )
+		    {
+			y2milestone("mounting %1 to %2", spec, fspath);
+
+			if ( !Mode::test )
+			{
+			    string command = "/sbin/swapon ";
+			    if ( spec != "" )
+			    {
+				//swap-partition
+				command = command + spec;
+
+				// run /sbin/swapon
+				ret_from_shell = SCR::Execute (.target.bash, command);
+				if ( ret_from_shell != 0 )
+				{
+				    y2error("swapon failed: %1", command );
+				}
+				else
+				{
+				    AddMountedPartition([spec, "swap"]);
+				}
+			    }
+			}
+		    }
+		}); // foreach (mount entry)
+
+	    } // fstab found
+	}  // mount successful
+	else
+	{
+	    y2error("Could not mount root '%1' to '%2'", partition, Installation::destdir);
+	    success = false;
+	}
+
+	if ( !success )
+	{
+	    UI::MessagePopup(message);
+
+	    // some mount failed, unmount all mounted fs
+	    UnmountPartitions();
+	    did_try_mount_partitions = true;
+	}
+
+	y2milestone ("mountPartition(%1) = %2", partition, success);
+
+
+	// now enter the mount points of the newly mounted partitions
+	// in the target map of the storage module
+
+	partitions_mount = parts;
+
+	map target_map = Storage::GetTargetMap ();
+
+	foreach (string mntpt, string part, partitions_mount, ``{
+	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt);
+	});
+
+	Storage::SetTargetMap (target_map);
+
+
+	return success;
+    }
+
+
+    /**
+     * Find all valid root partitions and place the result in validRootPartitions.
+     * The partitions are mounted and unmounted again (to Installation::destdir).
+     * Loads a bunch of kernel modules.
+     * @return void
+     */
+    global define void FindRootPartitions () ``{
+
+	if (didSearchForRootPartitions)
+	    return;
+
+	SCR::Execute (.target.modprobe, "reiserfs", "");
+	SCR::Execute (.target.modprobe, "jfs", "");
+	SCR::Execute (.target.modprobe, "xfs", "");
+	SCR::Execute (.target.modprobe, "ext3", "");
+	SCR::Execute (.target.modprobe, "xor", "");
+	SCR::Execute (.target.modprobe, "raid0", "");
+	SCR::Execute (.target.modprobe, "raid1", "");
+	SCR::Execute (.target.modprobe, "raid5", "");
+	SCR::Execute (.target.modprobe, "multipath", "");
+	SCR::Execute (.target.modprobe, "lvm-mod", "");
+
+	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
+
+	map targetMap = Storage::GetTargetMap ();
+	if ( Mode::test )
+	{
+	    targetMap = SCR::Read(.target.yast2, "test_target_map.ycp");
+	}
+
+	y2milestone ("targetMap: %1", targetMap);
+
+	validRootPartitions = $[];
+
+	foreach (`device, `description, targetMap, ``{
+
+	    foreach (`partition, description["partitions"]:[], ``{
+
+		integer p_fsid = partition["fsid"]:0;
+		symbol p_type  = partition["type"]:`primary;
+
+		if ( (p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
+		     contains(possible_root_fs, partition["used_fs"]:`unknown) )
+		{
+		    string pdev = partition["device"]:"";
+
+		    // test if partition is root
+		    if ( !Mode::test )
+		    {
+			// mount partition to Installation::destdir
+			if (SCR::Execute (.target.mount, [pdev, Installation::destdir, Installation::mountlog]))
+			{
+			    // Is this a root partition, does /etc/fstab exists ?
+
+			    if (SCR::Read (.target.size, Installation::destdir + "/etc/fstab") > 0)
+			    {
+				y2milestone("found fstab on %1", partition);
+				string suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/SuSE-release", "?"]);
+				if (suse_release == "?")
+				{
+				    suse_release = SCR::Read (.target.string, [ Installation::destdir + "/etc/UnitedLinux-release", "?"]);
+				}
+				list release_lines = splitstring (suse_release, "\n");
+				validRootPartitions[pdev] = release_lines[0]:"?";
+			    }
+
+			    // unmount partition
+			    SCR::Execute (.target.umount, Installation::destdir);
+			}
+		    }
+		    else
+		    {
+			validRootPartitions[pdev] = "SuSE Linux 4.2";
+		    }
+		}
+	    });
+	});
+
+	didSearchForRootPartitions = true;
+
+	y2milestone ("validRootPartitions: %1", validRootPartitions);
+    }
+}
