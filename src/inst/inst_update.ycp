@@ -43,7 +43,6 @@
 							     selection == current_selection)));
     });
 
-
     // Checking: already selected addons or single selection?
 
     string wrn_msg = "";
@@ -64,17 +63,18 @@ You will lose that selection if you change the basic selection.");
     term contents = `HVSquash(
 	`VBox(
 	      // label showing from what version to what version we are updating
-	      `Label (sformat (_("Update from %1 to %2"), from_version, to_version)),
+	      `Left (`Label (sformat (_("Update from %1 to %2"), from_version, to_version))),
+	      `VSpacing (1),
 	      // frame title for update selection
 	      `Frame( _("Update Mode"),
 		      `VBox(
-			    `VSpacing(0.8),
+			    `VSpacing(1),
 			    `RadioButtonGroup( `id(`bgoup), `opt(`notify),
 					       `VBox(
 						     `Left(`RadioButton(`id(`upgrade),`opt(`notify),
 									// radio button label for update including new packages
-									// translator: add a & shortcut
-									_("&Update and install new stuff:"), false) ),
+									_("&Update with installation of new software and features
+based on the selection:"), false)),
 						     `VSpacing(0.5),
 						     `HBox(
 							   `HSpacing(4),
@@ -83,19 +83,18 @@ You will lose that selection if you change the basic selection.");
 						     `VSpacing(1.5),
 						     `Left(`RadioButton(`id(`notupgrade),`opt(`notify),
 									// radio button label for update of already installed packages only
-									// translator: add a & shortcut
-									_("U&pdate installed packages only."), true) ),
-						     `VSpacing(1.5)
+									_("Only u&pdate installed packages."), true)),
+						     `VSpacing(1.0)
 						     )
 					       )
 			    )
 		      ),
-
+	      `VSpacing (1),
 	      `Left(`CheckBox(`id(`delete),
 			      // check box label
 			      // translator: add a & shortcut
 			      _("&Clean up the system - delete unmaintained packages."), true)),
-	      `VSpacing(1.5),
+	      `VSpacing(1),
 	      `Label( `id(`wrn_label), wrn_msg )
 	      )
 	);
