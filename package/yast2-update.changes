@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep  6 21:14:59 CEST 2002 - kkaempf@suse.de
+
+- forceUpdate not needed any more.
+- 2.6.7
+
+-------------------------------------------------------------------
 Fri Sep  6 21:08:07 CEST 2002 - kkaempf@suse.de
 
 - clean up code, use yast2-packager after restart
