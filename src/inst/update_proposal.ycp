@@ -23,8 +23,31 @@
     map <string, any> ret = $[];
 
 
-    define void init_stuff () ``{
+    define void add_kernel_subpackage ()
+    {
+	list <list> provides = Pkg::PkgQueryProvides ("kernel");
+	y2milestone ("provides: %1", provides);
 
+	list <list> kernels = filter (list l, provides, {
+	    return l[1]:`NONE == `BOTH || l[1]:`NONE == l[2]:`NONE;
+	});
+
+	if (size (kernels) != 1)
+	    y2error ("not exactly one package provides tag kernel");
+
+	string kernel = kernels[0,0]:"none";
+	string kernel_nongpl = kernel + "-nongpl";
+
+	if (Pkg::IsAvailable (kernel_nongpl))
+	{
+	    y2milestone ("adding kernel subpackage %1", kernel_nongpl);
+	    Pkg::PkgInstall (kernel_nongpl);
+	}
+    }
+
+
+    define void init_stuff ()
+    {
 	// initialize package manager
 	if (true)
 	{
@@ -92,6 +115,8 @@
 	    list tmp1 = Pkg::PkgUpdateAll (Update::deleteOldPackages);
 	    Update::affected_packages = tmp1[0]:0;
 	    Update::unknown_packages = tmp1[1]:0;
+
+	    add_kernel_subpackage ();
 
 	    if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
 		Update::solve_errors = 0;
