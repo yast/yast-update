@@ -1,7 +1,7 @@
 /**
  * Module:		Update.ycp
  *
- * Authors:		Anas Nashif (nashif@suse.de)
+ * Authors:		Anas Nashif <nashif@suse.de>
  *			Arvin Schnell <arvin@suse.de>
  *
  * Purpose:		Update module
@@ -12,7 +12,7 @@
     module "Update";
 
     import "Packages";
-    
+
     // number of packages affected by update
     global integer affected_packages = 0;
 
