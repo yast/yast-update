@@ -41,7 +41,7 @@
 
   y2debug("ARCHITECTURE: %1", user_settings);
   
-  string language = UI( `GetLanguage() );
+  string language = UI( `GetLanguage(true) );
 
   map lang2yast1 = ReadY2("lang2yast1.ycp");
   string  long_language 	= lookup(lang2yast1, language, "english");
