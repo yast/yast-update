@@ -58,15 +58,16 @@
      *
      * Each item is list [string value, string type [, string device]] where:
      *
-     * Type is "mount", "swap" or "loop".
+     * Keys/values are:
      *
-     * Value is path to mounted directory (aka mount point), swap partition
-     * name or loop device name according to type value.  Does not include
-     * Installation::destdir.
+     *   `type     The type, one of "mount", "swap" or "loop".
      *
-     * Device is only present for type "mount" as is the device.
+     *   `device   The device.
+     *
+     *   `mntpt    The mount point, only for `type = "mount".  Does not
+     *             include Installation::destdir.
      */
-    list <list> activated = [];
+    list <map <symbol, string> > activated = [];
 
 
     /*
@@ -175,9 +176,10 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
     define void AddToTargetMap ()
     {
 	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
-	list <list> tmp = filter (list e, activated, ``(e[1]:"" == "mount"));
-	foreach (list e, tmp, {
-	    target_map = Storage::SetPartitionData (target_map, e[2]:"", "mount", e[0]:"");
+	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
+	foreach (map e, tmp, {
+	    target_map = Storage::SetPartitionData (target_map, e[`device]:"",
+						    "mount", e[`mntpt]:"");
 	});
 	Storage::SetTargetMap (target_map);
     }
@@ -189,9 +191,10 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
     define void RemoveFromTargetMap ()
     {
 	map <string, map> target_map = Storage::GetTargetMap ();
-	list <list> tmp = filter (list e, activated, ``(e[1]:"" == "mount"));
-	foreach (list e, tmp, {
-	    target_map = Storage::SetPartitionData (target_map, e[2]:"", "mount", "");
+	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
+	foreach (map e, tmp, {
+	    target_map = Storage::SetPartitionData (target_map, e["device"]:"",
+						    "mount", "");
 	});
 	Storage::SetTargetMap (target_map);
     }
@@ -208,17 +211,15 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 
 	did_try_mount_partitions = false;
 
-	foreach (list info, activated, {
+	foreach (map info, activated, {
 
-	    string file = info[0]:"";
-	    string type = info[1]:"";
+	    string type = info[`type]:"";
 
-	    if (file != "" && type != "")
+	    if (type != "")
 	    {
-		file = Installation::destdir + file;
-
 		if (type == "mount")
 		{
+		    string file = Installation::destdir + info["mntpt"]:"";
 		    if (SCR::Execute (.target.umount, file) != 0)
 		    {
 			y2error("Cannot unmount partition %1", file);
@@ -226,16 +227,18 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 		}
 		else if (type == "swap")
 		{
-		    if (SCR::Execute (.target.bash, "/sbin/swapoff " + file) != 0)
+		    string device = info["device"]:"";
+		    if (SCR::Execute (.target.bash, "/sbin/swapoff " + device) != 0)
 		    {
-			y2error("Cannot deactivate swap %1", file);
+			y2error("Cannot deactivate swap %1", device);
 		    }
 		}
 		else if (type == "loop")
 		{
-		    if (WFM::Execute(.local.bash, "losetup -d " + file) != 0)
+		    string device = info["device"]:"";
+		    if (WFM::Execute(.local.bash, "losetup -d " + device) != 0)
 		    {
-			y2error("Cannot deactivate loopback device %1", file);
+			y2error("Cannot deactivate loopback device %1", device);
 		    }
 		}
 	    }
@@ -261,11 +264,10 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
      * see description of list "activated"
      * @return void
      */
-    define void AddMountedPartition (list partinfo)
+    define void AddMountedPartition (map <symbol, string> partinfo)
     {
-	y2debug("Added partition info: %1", partinfo);
-	activated = prepend(activated, partinfo);
-	y2debug("Total partition info: %1", activated);
+	activated = prepend (activated, partinfo);
+	y2debug ("adding %1 yields %2", partinfo, activated);
     }
 
 
@@ -312,7 +314,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 					      mount_type );
 
 	if (ret)
-	    AddMountedPartition([mount_point, "mount", device]);
+	    AddMountedPartition($[`type : "mount", `device : device, `mntpt : mount_point]);
 
 	y2milestone ("mounting (%1, %2, %3) yield %4", Installation::destdir +
 		     mount_point, device, mount_type, ret);
@@ -542,8 +544,8 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 				    "freq" : 0,
 				    "passno" : 0,
 				    "vfstype": vfstype ];
-		    fstab = prepend( fstab, add_fs );
-		    AddMountedPartition([loop, "loop"]);
+		    fstab = prepend (fstab, add_fs);
+		    AddMountedPartition ($[`type : "loop", `device : device]);
 		}
 	    }
 
@@ -558,12 +560,14 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
      */
     define boolean var_is_mounted ()
     {
-	foreach (list l, activated, {
-	    if (l[0]:"" == "/var")
-		return true;
+	boolean ret = false;
+
+	foreach (map e, activated, {
+	    if (e[`type]:"" == "mount" && e[`mntpt]:"" == "/var")
+		ret = true;
 	});
 
-	return false;
+	return ret;
     }
 
 
@@ -574,6 +578,8 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
     {
 	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
 			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
+
+	boolean success = true;
 
 	boolean raidMounted = false;
 
@@ -627,7 +633,7 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 			message = sformat (_("The partition %1 could not be mounted.\n
 Check the log file %2.
 "), spec, "/var/log/YaST2/y2log");
-			return false;
+			success = false;
 		    }
 		}
 	    }  // allowed_fs
@@ -651,14 +657,14 @@ Check the log file %2.
 			}
 			else
 			{
-			    AddMountedPartition([spec, "swap"]);
+			    AddMountedPartition ($[`type : "swap", `device : spec]);
 			}
 		    }
 		}
 	    }
 	});
 
-	return true;
+	return success;
     }
 
 
@@ -862,12 +868,12 @@ Check the log file %1.
     {
         map <string, map> target_map = Storage::GetTargetMap ();
 
-	list <list> tmp = filter (list e, activated, ``(e[1]:"" == "mount"));
+	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
 
-	foreach (list e, tmp, {
+	foreach (map e, tmp, {
 
-	    string mntpt = e[0]:"";
-	    string part = e[2]:"";
+	    string mntpt = e["mntpt"]:"";
+	    string part = e["device"]:"";
 
 	    map p = select(filter(map pp, fstabpart, ``(pp["mount"]:"" == mntpt)), 0 , $[]);
 	    boolean format_partition = false;
