@@ -78,14 +78,19 @@
      */
     global define boolean GetProductName () ``{
 
+	/*
+	 *  Be careful: The maps returned by from Pkg::TargetProducts and
+	 *  Pkg::SourceProductData have different content.
+	 */
+
 	// get old product name
 
 	list old_products = Pkg::TargetProducts ();
 	map old_product = old_products[0]:$[];
 	y2milestone ("First installed product %1", old_product);
 
-	installedVersion = old_product["productname"]:"?" + " " +
-	    old_product["productversion"]:"";
+	installedVersion = old_product["name"]:"?" + " " +
+	    old_product["version"]:"";
 
 	// get new product name
 
