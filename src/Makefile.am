@@ -1,6 +1,7 @@
 #
 # Makefile.am for update/src
 #
+SUBDIRS = inst
 
 client_DATA = update.ycp sw_update.ycp
 

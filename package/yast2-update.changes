@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep  4 16:14:51 CEST 2002 - kkaempf@suse.de
+
+- re-add inst_* modules from update in order to keep
+  textdomains apart (#18876)
+- 2.6.3
+
+-------------------------------------------------------------------
 Wed Sep  4 12:01:27 CEST 2002 - msvec@suse.cz
 
 - provide the old client name temporarily for compatibility
