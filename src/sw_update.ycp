@@ -58,7 +58,9 @@ Continue with choosing new installation source?"));
 
     if ( ret_single == `finish )
     {
+	Wizard::OpenNextBackDialog();	
 	CallFunction( `inst_suseconfig (false, false) );
+	Wizard::CloseDialog();	
     }
 
     // Kill package agent, in order to release file-handles

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb 12 15:50:51 CET 2002 - schubi@suse.de
+
+- Showing SuSEConfig correctly. 
+
+-------------------------------------------------------------------
 Tue Feb 12 13:53:25 CET 2002 - schubi@suse.de
 
 - user_settings and PKGINFO calls removed 
