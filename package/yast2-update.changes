@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Sep 29 22:36:38 CEST 2004 - arvin@suse.de
+
+- partly workaround for bug #42074
+
+-------------------------------------------------------------------
 Mon Sep 20 15:32:58 CEST 2004 - arvin@suse.de
 
 - use Storage::GetOndiskTarget where appropriate

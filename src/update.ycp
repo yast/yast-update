@@ -14,6 +14,7 @@
     import "Mode";
     import "Update";
     import "Wizard";
+    import "Directory";
 
     // set normal mode and update
     Mode::normal = true;
@@ -39,6 +40,9 @@
     {
 	WFM::CallFunction ("inst_kickoff", [false, false]);
 	WFM::CallFunction ("inst_rpmcopy", [false, false]);
+
+	// crap-fix for bug #42074
+	SCR::Execute (.target.bash, Directory::ybindir + "/gnome-postinstall");
 
 	Wizard::OpenNextBackDialog();
 	WFM::CallFunction ("inst_suseconfig", [false, false]);
