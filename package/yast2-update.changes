@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Mar 29 10:57:13 CEST 2005 - jsrain@suse.cz
+
+- updated the layout of the source files in the repository
+
+-------------------------------------------------------------------
 Fri Mar 11 11:18:49 CET 2005 - jsrain@suse.cz
 
 - fixed deleting packages marked to keep during update (#45605)
