@@ -1,7 +1,12 @@
 -------------------------------------------------------------------
+Mon Mar 15 16:20:49 CET 2004 - arvin@suse.de
+
+- adapted to changed mode stuff
+
+-------------------------------------------------------------------
 Fri Mar 12 06:11:53 CET 2004 - nashif@suse.de
 
-- add function to format/mount partitions using installed 
+- add function to format/mount partitions using installed
   fstab to be used for auto-installation.
 
 -------------------------------------------------------------------

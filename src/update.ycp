@@ -19,6 +19,8 @@
     Mode::normal = true;
     Mode::installation = false;
     Mode::update = true;
+    Mode::mode = "update";
+
     Update::disallow_upgrade = true;
     Update::onlyUpdateSelected = true;
     Update::deleteOldPackages = false;
