@@ -8,7 +8,7 @@
     textdomain "sw_update";
 
     import "Arch";
-    import "Installation":
+    import "Installation";
 
     include "package_utils.ycp";
     include "ui/wizard_dialog.ycp";
@@ -51,7 +51,7 @@ Continue with choosing new installation source?"));
 	    result = CallFunction( `inst_source( true, true ) );
 	    if ( result != `next )
 	    {
-		UI::CloseDialog() );
+		UI::CloseDialog();
 		return `cancel;
 	    }
 	    medium_number = InstMedia::MountMedium ( 1 );	// don't show additional popup
