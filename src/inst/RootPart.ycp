@@ -424,8 +424,6 @@
 	    old_names = add (old_names, m["spec"]:"");
 	});
 
-	GetProductName ();
-
 	list <string> new_names = Storage::GetTranslatedDevices (installedVersion,
 								 updateVersion,
 								 old_names);
@@ -755,6 +753,8 @@ Check the log file %1.
 
 	if ( ret_bool )
 	{
+	    GetProductName ();
+
 	    read_fstab_and_cryptotab (fstab, crtab);
 
 	    y2milestone ("fstab: %1", fstab);
