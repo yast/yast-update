@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 11 13:33:03 CEST 2005 - jsrain@suse.cz
+
+- added more descriptive text when dependencies can't be resolved
+  automatically (#75312)
+
+-------------------------------------------------------------------
 Thu Mar 31 13:10:21 CEST 2005 - jsrain@suse.cz
 
 - adapted to some code moved to SuSERelease.ycp
