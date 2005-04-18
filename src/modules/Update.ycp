@@ -31,7 +31,7 @@
     global integer solve_errors = 0;
 
     // Flag is set true if the user decides to delete unmaintained packages
-    global boolean deleteOldPackages = ProductFeatures::delete_old_packages;
+    global boolean deleteOldPackages = ProductFeatures::GetBooleanFeature ("software", "delete_old_packages");
 
     // don't allow upgrade only update
     global boolean disallow_upgrade = false;
@@ -51,7 +51,7 @@
 
 
     // Only an update, NOT an upgrade
-    global boolean onlyUpdateInstalled = ProductFeatures::onlyUpdateInstalled;
+    global boolean onlyUpdateInstalled = ProductFeatures::GetBooleanFeature ("software", "only_update_installed");
 
     global string selected_selection = "";
 
@@ -156,7 +156,7 @@ global void IgnoreProductCompatibility () {
      */
     global define void Reset ()
     {
-	deleteOldPackages = ProductFeatures::delete_old_packages;
+	deleteOldPackages = ProductFeatures::GetBooleanFeature ("software", "delete_old_packages");
 	disallow_upgrade = false;
 
 	manual_interaction = false;
