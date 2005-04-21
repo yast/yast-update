@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoinstResource=
 
-Icon=system_update
+Icon=yast-update
 Exec=/sbin/yast2 update 
 
 Name=System Update
