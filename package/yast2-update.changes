@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon May 30 13:08:15 CEST 2005 - jsrain@suse.cz
+
+- don't remove /var/lib/YaST2/users.ycp during update (#84087)
+
+-------------------------------------------------------------------
 Mon Apr 18 17:02:28 CEST 2005 - jsrain@suse.cz
 
 - adapted to new interfrace of ProductFeatures.ycp
