@@ -59,7 +59,19 @@ textdomain="update"
 	            <label>Clean Up</label>
                     <name>inst_suseconfig</name>
                 </module>
+		<module>
+		    <label>Update System Configuration</label>
+		    <name>inst_finish</name>
+		</module>
             </modules>
         </workflow>
     </workflows>
+    <inst_finish_stages config:type="list">
+	<inst_finish_stage>
+	    <label>Update Configuration</label>
+	    <steps config:type="list">
+		<step>pkg</step>
+	    </steps>
+	</inst_finish_stage>
+    </inst_finish_stages>
 </productDefines>

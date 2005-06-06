@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jun  6 12:54:37 CEST 2005 - jsrain@suse.cz
+
+- update product database when finished update (called from within
+  installed system (#75231)
+
+-------------------------------------------------------------------
 Mon May 30 13:08:15 CEST 2005 - jsrain@suse.cz
 
 - don't remove /var/lib/YaST2/users.ycp during update (#84087)
