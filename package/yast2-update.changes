@@ -3,6 +3,7 @@ Mon Jun  6 12:54:37 CEST 2005 - jsrain@suse.cz
 
 - update product database when finished update (called from within
   installed system (#75231)
+- 2.12.2
 
 -------------------------------------------------------------------
 Mon May 30 13:08:15 CEST 2005 - jsrain@suse.cz
