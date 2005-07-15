@@ -1059,7 +1059,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 	if (Mode::test ())
 	{
-	    Storage::SetTargetMap ((map) SCR::Read (.target.yast2, "test_target_map.ycp"));
+	    Storage::SetTargetMap ((map<string,map>) SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
 
 	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
