@@ -214,9 +214,7 @@ or restart your computer.
 	    }
 	});
 
-	SCR::Write(.lvm.deactivate, "");
-	SCR::Write(.md.deactivate, "");
-
+	Storage::ActivateHld(false);
 
 	// now remove the mount points of the mounted partitions
 	// in the target map of the storage module
@@ -885,8 +883,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	list <map> fstab = [];
 	list <map> crtab = [];
 
-	SCR::Write(.md.activate, "");
-	SCR::Write(.lvm.activate, "");
+	Storage::ActivateHld(true);
 
 	// Mount selected root partition to Installation::destdir
 	if ( !Mode::test () )
@@ -1125,8 +1122,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	rootPartitions = $[];
 	numberOfValidRootPartitions = 0;
 
-	SCR::Write(.md.activate, "");
-	SCR::Write(.lvm.activate, "");
+	Storage::ActivateHld(true);
 
 	foreach (string device, map description, target_map, {
 	    foreach (map partition, description["partitions"]:[], {
@@ -1150,8 +1146,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    });
 	});
 
-	SCR::Write(.lvm.deactivate, "");
-	SCR::Write(.md.deactivate, "");
+	Storage::ActivateHld(false);
 
 	didSearchForRootPartitions = true;
 
