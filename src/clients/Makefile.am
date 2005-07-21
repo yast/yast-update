@@ -10,7 +10,8 @@ client_DATA =				\
 	update_proposal.ycp		\
 	packages_proposal.ycp		\
 	backup_proposal.ycp		\
-	update.ycp
+	update.ycp			\
+	inst_update_partition.ycp
 
 EXTRA_DIST = $(client_DATA)
 

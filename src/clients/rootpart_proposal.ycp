@@ -15,24 +15,11 @@
     import "PackageCallbacks";
     import "RootPart";
 
+    include "update/rootpart.ycp";
+
     string func  = (string) WFM::Args(0);
     map    param = (map) WFM::Args(1);
     map    ret   = $[];
-
-
-    define boolean mount_target ()
-    {
-	UI::OpenDialog (`opt(`decorated ),
-			// intermediate popup while mounting partitions
-			`Label(_("Mounting partitions. One moment please...")));
-
-	boolean tmp = RootPart::MountPartitions (RootPart::selectedRootPartition);
-	sleep (500);
-
-	UI::CloseDialog ();
-
-	return tmp;
-    }
 
 
     if ( func == "MakeProposal" )
@@ -47,19 +34,6 @@
 	// DummyMod::MakeProposal( force_reset );
 
 	// Fill return map
-
-	if (!RootPart::didSearchForRootPartitions)
-	{
-	    UI::OpenDialog (`opt(`decorated ),
-			    // label
-			    `Label(_("Evaluating root partition. One moment please...")));
-
-	    RootPart::FindRootPartitions ();
-
-	    UI::CloseDialog ();
-
-	    RootPart::selectedRootPartition = "";
-	}
 
 	if (force_reset)
 	{
@@ -91,7 +65,11 @@
 		    symbol result = (symbol) WFM::CallFunction ("inst_rootpart", [true, true, `update_popup]);
 		}
 
-		RootPart::targetOk = mount_target ();
+		RootPart::targetOk = RootPart::mount_target ();
+	    }
+	    else if (! RootPart::Mounted ())
+	    {
+		RootPart::targetOk = RootPart::mount_target ();
 	    }
 
 	    if (RootPart::numberOfValidRootPartitions == 1)
@@ -130,14 +108,14 @@
 
 	string tmp = RootPart::selectedRootPartition;
 
-	symbol result = (symbol) WFM::CallFunction ("inst_rootpart", [true, has_next, `update_dialog]);
+	symbol result = RootPartitionDialog (`update_dialog);
 
 	if (result == `next)
 	{
 	    Update::Detach ();
 	    RootPart::UnmountPartitions (false);
 
-	    RootPart::targetOk = mount_target ();
+//	    RootPart::targetOk = mount_target ();
 	}
 
 	// Fill return map
