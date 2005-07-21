@@ -2,7 +2,8 @@
 Thu Jul 21 15:06:01 CEST 2005 - jsrain@suse.cz
 
 - added root partition selection step to installation workflow
-- fixed mounting target
+- fixed mounting update target
+- 2.12.4
 
 -------------------------------------------------------------------
 Fri Jul 15 12:10:03 CEST 2005 - jsrain@suse.cz
