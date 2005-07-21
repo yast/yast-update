@@ -71,6 +71,10 @@
      */
     list <map <symbol, string> > activated = [];
 
+    global boolean Mounted () {
+	return size (activated) > 0;
+    }
+
 
     /*
      *  Information about old and new product.
@@ -465,16 +469,67 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
      */
     define boolean read_fstab_and_cryptotab (list <map>& fstab, list <map>& crtab)
     {
-	if (SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/fstab /etc") == 0)
+	integer default_scr = WFM::SCRGetDefault ();
+	integer new_scr = nil;
+	if (Stage::initial ())
+	{
+	    SCR::RegisterAgent (.target.etc.fstab, `ag_anyagent(
+		  `Description (
+		      (`File(Installation::destdir+"/etc/fstab")),
+		      "#\n",                    // Comment
+		      false,                    // read-only
+		      (`List (
+		        `Tuple (
+		          `spec (`String("^\t ")),
+		          `Separator ("\t "),
+		          `file (`String("^\t ")),
+		          `Separator ("\t "),
+		          `vfstype (`String("^\t ")),
+		          `Separator ("\t "),
+		          `mntops (`String("^ \t\n")),
+		          `Optional(`Whitespace()),
+		          `Optional(`freq (`Number())),
+		          `Optional(`Whitespace()),
+		          `Optional(`passno (`Number()))
+		        ),
+		        "\n"
+		      ))
+		    )
+		));
+	    SCR::RegisterAgent (.target.etc.cryptotab, `ag_anyagent(
+		  `Description (
+		      (`File(Installation::destdir+"/etc/cryptotab")),
+		      "#\n",			// Comment
+		      false,			// read-only
+		      (`List (
+			`Tuple (
+			  `loop (`String("^\t ")),
+			  `Separator ("\t "),
+			  `file (`String("^\t ")),
+			  `Separator ("\t "),
+			  `mount (`String("^\t ")),
+		          `Separator ("\t "),
+			  `vfstype (`String("^\t ")),
+			  `Separator ("\t "),
+			  `opt1 (`String("^\t ")),
+			  `Separator ("\t "),
+			  `opt2 (`String("^ \t\n"))
+			),
+			"\n"
+		      ))
+		    )
+		));
+	    fstab = (list<map>) SCR::Read (.target.etc.fstab);
+	    crtab = (list<map>) SCR::Read (.target.etc.cryptotab);
+	    SCR::UnregisterAgent (.target.etc.fstab);
+	    SCR::UnregisterAgent (.target.etc.cryptotab);
+	}
+	else
 	{
 	    fstab = (list<map>) SCR::Read (.etc.fstab);
-	}
-
-	if ((SCR::Read (.target.size, Installation::destdir + "/etc/cryptotab") > 0)
-	    && (SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/cryptotab /etc") == 0))
-	{
 	    crtab = (list<map>) SCR::Read (.etc.cryptotab);
 	}
+
 
 	if (SCR::Read (.target.size, Installation::destdir + "/etc/raidtab") > 0)
 	{
@@ -1064,6 +1119,8 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
 	y2milestone ("target_map: %1", target_map);
+//	target_map = (map <string, map>) Storage::GetTargetMap ();
+//	y2milestone ("target_map: %1", target_map);
 
 	rootPartitions = $[];
 	numberOfValidRootPartitions = 0;
@@ -1103,6 +1160,58 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 global string GetDistroArch () {
     return GetArchOfELF ("/bin/bash");
+}
+
+    global boolean mount_target ()
+    {
+        UI::OpenDialog (`opt(`decorated ),
+                        // intermediate popup while mounting partitions
+                        `Label(_("Mounting partitions. One moment please...")));
+
+        boolean tmp = RootPart::MountPartitions (RootPart::selectedRootPartition);
+        sleep (500);
+
+        UI::CloseDialog ();
+
+        return tmp;
+    }
+
+global void Detect () {
+    if (!didSearchForRootPartitions)
+    {
+        UI::OpenDialog (`opt(`decorated ),
+                        // label
+                        `Label(_("Evaluating root partition. One moment please...")));
+
+        FindRootPartitions ();
+
+        UI::CloseDialog ();
+
+        selectedRootPartition = "";
+	y2milestone ("Detected root partitions: %1", rootPartitions);
+    }
+}
+
+global void Propose (boolean force_reset) {
+    y2milestone ("Proposing root partition");
+    Detect ();
+    if (force_reset)
+    {
+        selectedRootPartition = "";
+    }
+
+    if (numberOfValidRootPartitions == 0
+        && selectedRootPartition == "")
+    {
+        targetOk = false;
+    }
+    else
+    {
+        if (selectedRootPartition == "")
+        {
+            SetSelectedToValid ();
+        }
+    }
 }
 
 }

@@ -18,12 +18,9 @@ import "RootPart";
 
 include "update/rootpart.ycp";
 
+RootPart::Detect ();
 
-// This dialog comes in three different flavors: `update_dialog,
-// `update_popup and `boot_popup
-symbol flavor = (symbol) WFM::Args (2);
-
-return RootPartitionDialog (flavor);
+return RootPartitionDialog (`update_dialog);
 
 
 }
