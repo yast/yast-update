@@ -20,7 +20,7 @@ Icon=yast-update
 Exec=/sbin/yast2 update 
 
 Name=System Update
-GenericName=Update your entire system. Insert CD 1 before proceeding.
+GenericName=Update your entire system
 Name[cs]=Aktualizace systému
 GenericName[cs]=Aktualizace celého systému; před pokračováním vložte první CD.
 Name[de]=System-Update
