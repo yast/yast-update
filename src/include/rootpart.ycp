@@ -39,7 +39,7 @@ y2internal ("WA: %1", withall);
 }
 
 // This dialog comes in three different flavors: `update_dialog,
-// `update_popup and `boot_popup
+// `update_popup and `boot_popup, `update_dialog_proposal
 symbol RootPartitionDialog (symbol flavor) {
 
     list<term> partition_list = make_partition_list (
@@ -72,7 +72,7 @@ Select the partition or system to update.
 </p>
 ");
 
-	if (flavor == `update_dialog)
+	if (flavor == `update_dialog || flavor == `update_dialog_proposal)
 	{
 	    // headline for dialog "Select for update"
 	    title = _("Select for Update");
@@ -114,7 +114,13 @@ general overview of your system's partitions.
 
     if (flavor == `update_dialog)
     {
-	Wizard::SetContents (title, contents, help_text, GetInstArgs::enable_next (), GetInstArgs::enable_back ());
+	Wizard::SetContents (title, contents, help_text, true, true);
+    }
+    else if (flavor == `update_dialog_proposal)
+    {
+	Wizard::CreateDialog ();
+	Wizard::SetContentsButtons (title, contents, help_text,
+	    Label::BackButton (), Label::AcceptButton ());
     }
     else
     {
@@ -159,7 +165,7 @@ general overview of your system's partitions.
 
     while (true)
     {
-	if (flavor == `update_dialog)
+	if (flavor == `update_dialog || flavor == `update_dialog_proposal)
 	    ret = Wizard::UserInput ();
 	else
 	    ret = UI::UserInput ();
@@ -176,7 +182,8 @@ general overview of your system's partitions.
 		UI::ChangeWidget (`id(`partition), `CurrentItem, tmp);
 	    continue;
 	}
-	if ((flavor == `update_dialog || flavor == `update_popup)
+	if ((flavor == `update_dialog || flavor == `update_popup
+	    || flavor == `update_dialog_proposal)
 	    && ret == `next)
 	{
 	    string selected = (string) UI::QueryWidget (`id(`partition), `CurrentItem);

@@ -108,7 +108,7 @@
 
 	string tmp = RootPart::selectedRootPartition;
 
-	symbol result = RootPartitionDialog (`update_dialog);
+	symbol result = RootPartitionDialog (`update_dialog_proposal);
 
 	if (result == `next)
 	{
