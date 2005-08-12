@@ -104,7 +104,7 @@ general overview of your system's partitions.
 						  partition_list),
 					  `Left(`CheckBox(`id(`showall), `opt(`notify),
 							// check box
-							  _("Show All Partitions"), false))
+							  _("&Show All Partitions"), false))
 					  )
 				   )
 			 ),
@@ -130,7 +130,7 @@ general overview of your system's partitions.
 	{
 	    buttons = `HBox (
 			     // pushbutton to (rightaway) boot the system selected above
-			     `HWeight( 1, `PushButton(`id(`next), `opt(`default), _("Boot")) ),
+			     `HWeight( 1, `PushButton(`id(`next), `opt(`default), _("&Boot")) ),
 			     `HSpacing( 1 ),
 			     `HWeight( 1, `PushButton(`id(`cancel), Label::CancelButton() ) )
 			     );

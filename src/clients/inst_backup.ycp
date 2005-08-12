@@ -97,14 +97,14 @@
 			      `VBox(
 				    `Left(`CheckBox(`id(`modified),`opt(`notify),
 						    // checkbox label if user wants to backup modified files
-						    _("Create Backup of Modified Files"))),
+						    _("Create &Backup of Modified Files"))),
 				    `Left(`CheckBox(`id(`sysconfig),`opt(`notify),
 						    // checkbox label if user wants to backup /etc/sysconfig
-						    _("Create a Complete Backup of /etc/sysconfig"))),
+						    _("Create a &Complete Backup of /etc/sysconfig"))),
 				    `VSpacing (1),
 				    `Left(`CheckBox(`id(`remove),`opt(`notify),
 						    // checkbox label if user wants remove old backup stuff
-						    _("Remove Old Backups from the Backup Directory")))
+						    _("Remove &Old Backups from the Backup Directory")))
 				    )
 			      );
 
