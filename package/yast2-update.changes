@@ -3,6 +3,7 @@ Thu Aug 11 11:21:35 CEST 2005 - jsrain@suse.cz
 
 - fixed buttons in the root partition selection dialog run from
   the proposal (#104038)
+- 2.12.6
 
 -------------------------------------------------------------------
 Thu Jul 21 17:03:17 CEST 2005 - fehr@suse.de
