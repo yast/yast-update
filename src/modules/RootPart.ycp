@@ -247,7 +247,7 @@ or restart your computer.
     {
 	if (!Mode::test ())
 	{
-	    symbol detected_fs = FileSystems::DetectFs (partition);
+	    symbol detected_fs = Storage::DetectFs (partition);
 	    if (detected_fs == `ext2)
 	    {
 		// label, %1 is partition
@@ -277,7 +277,7 @@ define string MountPartition (string mount_point, string device,
 {
     if (mount_type == "")
 	mount_type = FileSystems::GetMountString (
-	    FileSystems::DetectFs (device), "");
+	    Storage::DetectFs (device), "");
     if (mount_type != "")
 	mount_type = "-t " + mount_type;
 
@@ -560,12 +560,6 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 
 	    if (!issubstring (mntops, "noauto"))
 	    {
-		if (crypt_nb == 0)
-		{
-		    SCR::Execute(.target.modprobe, "loop_fish2", "");
-		    crypt_nb = crypt_nb + 1;
-		}
-
 		string crypt_passwd = DlgUpdateCryptFs( device, fspath );
 
 		if (crypt_passwd == nil)
@@ -583,6 +577,8 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 				     "partitionName" : device ];
 
 		    crypt_ok = Storage::PerformLosetup( setloop, false );
+		    if( crypt_ok )
+			loop = setloop["loop_dev"]:"";
 
 		    y2milestone ("crypt ok: %1", crypt_ok);
 		}

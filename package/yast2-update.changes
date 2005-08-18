@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 18 10:54:42 CEST 2005 - fehr@suse.de
+
+- changes needed for udpate with crypted partition (#105020)
+- 2.12.7
+
+-------------------------------------------------------------------
 Thu Aug 11 11:21:35 CEST 2005 - jsrain@suse.cz
 
 - fixed buttons in the root partition selection dialog run from
