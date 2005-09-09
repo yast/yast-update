@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep  9 15:14:53 CEST 2005 - jsrain@suse.cz
+
+- offer to ask for password of crypted partition again if mounting
+  failed (#116082)
+
+-------------------------------------------------------------------
 Thu Aug 18 10:54:42 CEST 2005 - fehr@suse.de
 
 - changes needed for update with crypted partition (#105020)
