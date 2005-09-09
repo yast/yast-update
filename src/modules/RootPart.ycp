@@ -556,15 +556,18 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    y2milestone ("vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5",
 			 vfstype, mntops, loop, fspath, device);
 
-	    boolean crypt_ok = true;
-
 	    if (!issubstring (mntops, "noauto"))
 	    {
+	      boolean again = true;
+	      while (again)
+	      {
+		boolean crypt_ok = true;
 		string crypt_passwd = DlgUpdateCryptFs( device, fspath );
 
 		if (crypt_passwd == nil)
 		{
 		    crypt_ok = false;
+		    again = false;
 		}
 
 		y2milestone ("crypt pwd ok:%1", crypt_ok);
@@ -577,10 +580,14 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 				     "partitionName" : device ];
 
 		    crypt_ok = Storage::PerformLosetup( setloop, false );
+		    y2milestone ("crypt ok: %1", crypt_ok);
 		    if( crypt_ok )
 			loop = setloop["loop_dev"]:"";
-
-		    y2milestone ("crypt ok: %1", crypt_ok);
+		    else
+		    {
+			// yes-no popup
+			again = Popup::YesNo (_("Incorrect password. Try again?"));
+		    }
 		}
 
 		if (crypt_ok)
@@ -593,7 +600,9 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 				    "vfstype": vfstype ];
 		    fstab = prepend (fstab, add_fs);
 		    AddMountedPartition ($[`type : "loop", `device : device]);
+		    again = false;
 		}
+	      }
 	    }
 
 	});
