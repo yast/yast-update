@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 26 18:37:48 CEST 2005 - jsrain@suse.cz
+
+- do not ask whether reset detailed software selection if it had
+  not been changed (#104579)
+
+-------------------------------------------------------------------
 Fri Sep  9 15:14:53 CEST 2005 - jsrain@suse.cz
 
 - offer to ask for password of crypted partition again if mounting

@@ -42,6 +42,7 @@
 	    // FIXME: IT'S A MESS
 	    Update::solve_errors = 0;
 	    Update::unknown_packages = 0;
+	    Packages::base_selection_modified = true;
 	}
 	else
 	{
