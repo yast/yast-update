@@ -180,7 +180,9 @@ packages during the update.</p>
 	    if (UI::QueryWidget (`id(`delete), `Value ) != Update::deleteOldPackages)
 		something_changed = true;
 
-	    if (something_changed)
+	    
+
+	    if (something_changed && Packages::base_selection_modified)
 	    {
 		// yes/no question
 		if (!Popup::YesNo (_("Do you really want\nto reset your detailed selection?")))
