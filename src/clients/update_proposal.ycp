@@ -47,9 +47,20 @@
 	    });
 	}
 	list<string> kernel_packs = Kernel::ComputePackages ();
+	boolean kernel_refresh_needed = false;
 	foreach (string p, kernel_packs, {
-	    Pkg::PkgInstall (p);
+	    if (! Pkg::IsProvided (p))
+	    {
+		kernel_refresh_needed = true;
+		y2milestone ("Package %1 is not installed - forcing kernel update", p);
+	    }
 	});
+	if (kernel_refresh_needed)
+	{
+	    foreach (string p, kernel_packs, {
+		Pkg::PkgInstall (p);
+	    });
+	}
     }
 
     define void init_stuff ()
