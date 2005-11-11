@@ -15,6 +15,7 @@
 
     import "Directory";
     import "Mode";
+    import "Keyboard";
     import "Linuxrc";
     import "Storage";
     import "Popup";
@@ -898,6 +899,10 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 	if ( ret_bool )
 	{
+	    // read the keyboard settings now, so that it used when
+	    // typing passwords for encrypted partitions
+	    Keyboard::CheckKeyboardDuringUpdate (Installation::destdir);
+
 	    GetProductName ();
 
 	    read_fstab_and_cryptotab (fstab, crtab);
