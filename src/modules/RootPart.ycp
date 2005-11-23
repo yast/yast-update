@@ -1042,7 +1042,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
      */
     define map CheckPartition (map partition)
     {
-	map freshman = $[`valid : false, `name : "unknown", `arch : "unknown" ];
+	map freshman = $[`valid : false, `name : "unknown", `arch : "unknown", `label: partition["label"]:"" ];
 
 	string p_dev = partition["device"]:"error";
 	integer p_fsid = partition["fsid"]:0;
@@ -1144,7 +1144,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    map freshman = $[];
 
 		    if (Mode::test ())
-			freshman = $[`valid : true, `name : "SuSE Linux 4.2", `arch : "i286" ];
+			freshman = $[`valid : true, `name : "SuSE Linux 4.2", `arch : "i286", `label: "Label" ];
 		    else
 			freshman = CheckPartition (partition);
 
