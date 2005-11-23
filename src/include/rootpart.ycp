@@ -32,7 +32,9 @@ y2internal ("WA: %1", withall);
 		string a = i[`arch]:"error";
 		if (a == "unknown") a = _("Unknown");
 
-		part_list = add (part_list, `item (`id (p), s, p, a));
+		string l = i[`label]:"";
+
+		part_list = add (part_list, `item (`id (p), s, p, a, l));
 	    }
 	});
 	return part_list;
@@ -100,7 +102,9 @@ general overview of your system's partitions.
 								// table header
 							   _("Partition"),
 								// table header
-							   _("Architecture")),
+							   _("Architecture"),
+								// table header
+							   _("Label")),
 						  partition_list),
 					  `Left(`CheckBox(`id(`showall), `opt(`notify),
 							// check box
