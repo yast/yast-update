@@ -1,0 +1,186 @@
+/**
+ * Module: 	inst_backup.ycp
+ *
+ * Authors:	Stefan Schubert <schubi@suse.de>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:	Ask the user for backups during the update.
+ */
+
+{
+    textdomain "update";
+
+    import "Arch";
+    import "Mode";
+    import "Installation";
+    import "Update";
+    import "SpaceCalculation";
+    import "Wizard";
+    import "Popup";
+
+
+    //
+    // Check, if the backup fits to disk
+    //
+
+    define boolean check_backup_path (list<map> part_info)
+    {
+	string backup_path = Update::backup_path;
+	integer min_space = 50;
+
+	boolean found = false;
+	integer free_space = 0;
+
+	if ( size ( backup_path ) <= 1 ||
+	     substring(backup_path,0,1) != "/" )
+	{
+	    // error popup, user did not enter a valid directory specification
+	    Popup::Message( _("Invalid backup path.") );
+	    return false;
+	}
+
+	foreach( map part, part_info, {
+
+	    string part_name = part["name"]:"";
+
+	    if ( part_name == "/" && !found )
+	    {
+		free_space = part["free"]:0;
+		y2milestone("Partition :%1", part_name);
+		y2milestone("free:%1", free_space );
+	    }
+
+	    if ( size ( backup_path ) >= 2 && part_name != "/")
+	    {
+		string compare_string = substring ( backup_path, 0 , size ( part_name ) );
+		if (compare_string == part_name && !found)
+		{
+		    free_space   = part["free"]:0;
+		    y2milestone("Partition :%1", part_name );
+		    y2milestone("free:%1", free_space );
+		    found = true;
+		}
+		else
+		{
+		    y2milestone("Partition :%1<->%2", part_name, compare_string);
+		}
+	    }
+	} );
+
+	if (free_space >= min_space || Mode::test ())
+	{
+	    return true;
+	}
+	else
+	{
+	    // there is not enough space for the backup during update
+	    // inform the user about this (MB==megabytes)
+	    string message = sformat ( _("Minimum disk space of %1 MB required."), min_space);
+	    Popup::Message (message);
+	    return false;
+	}
+    };
+
+
+    // Get information about available partitions
+    list<map> partition = (list<map>)SpaceCalculation::GetPartitionInfo();
+    y2milestone("evaluate partitions: %1", partition);
+
+    // screen title for software selection
+    string title = _("Backup System Before Update");
+
+    // Build and show dialog
+
+    Wizard::OpenAcceptDialog();
+
+    term contents = `HVSquash(
+			      `VBox(
+				    `Left(`CheckBox(`id(`modified),`opt(`notify),
+						    // checkbox label if user wants to backup modified files
+						    _("Create &Backup of Modified Files"))),
+				    `Left(`CheckBox(`id(`sysconfig),`opt(`notify),
+						    // checkbox label if user wants to backup /etc/sysconfig
+						    _("Create a &Complete Backup of /etc/sysconfig"))),
+				    `VSpacing (1),
+				    `Left(`CheckBox(`id(`remove),`opt(`notify),
+						    // checkbox label if user wants remove old backup stuff
+						    _("Remove &Old Backups from the Backup Directory")))
+				    )
+			      );
+
+    // help text for backup dialog during update 1/7
+    string help_text = _("<p>To avoid any loss of information during update,
+it is possible to create a <b>backup</b> prior to updating.</p>
+");
+
+    // help text for backup dialog during update 2/7
+    help_text = help_text + _("<p><b>Warning:</b> This will not be a complete
+backup. Only modified files will be saved.</p>
+");
+
+    // help text for backup dialog during update 3/7
+    help_text = help_text + _("<p>Select the desired options.</p>
+");
+
+    // help text for backup dialog during update 4/7
+    help_text = help_text + _("<p><b>Create a Backup of Modified Files:</b>
+Stores those modified files that are replaced during update.</p>
+");
+
+    // help text for backup dialog during update 5/7
+    help_text = help_text + _("<p><b>Create a Complete Backup of
+/etc/sysconfig:</b> This covers all configuration files that are part of the
+sysconfig mechanism, even those that are not replaced.</p>
+");
+
+    // help text for backup dialog during update 6/7
+    help_text = help_text + _("<p><b>Remove Old Backups from the Backup
+Directory:</b> If your current system already is the result of an earlier
+update, there may be old configuration file backups. Select this option to
+remove them.</p>
+");
+
+    // help text for backup dialog during update 7/7
+    help_text = help_text + sformat (_("<p>All backups are placed in %1.</p>"),
+				     Update::backup_path);
+
+
+    Wizard::SetContents (title, contents, help_text, (boolean) WFM::Args(0), (boolean) WFM::Args(1));
+
+    UI::ChangeWidget (`id(`modified), `Value, Update::backup_modified);
+    UI::ChangeWidget (`id(`sysconfig), `Value, Update::backup_sysconfig);
+    UI::ChangeWidget (`id(`remove), `Value, Update::remove_old_backups);
+
+    any ret = nil;
+
+    while (true)
+    {
+	ret = Wizard::UserInput();
+
+	if (ret == `abort && Popup::ConfirmAbort (`painless))
+	    break;
+
+	if (ret == `cancel || ret == `back)
+	    break;
+
+	// any backup wanted?
+	boolean tmp = (boolean) UI::QueryWidget (`id(`modified), `Value) ||
+	    (boolean) UI::QueryWidget (`id(`sysconfig), `Value);
+
+	if (ret == `next)
+	{
+	    if (tmp && !check_backup_path (partition))
+		continue;
+
+	    Update::backup_modified = (boolean) UI::QueryWidget (`id(`modified), `Value);
+	    Update::backup_sysconfig = (boolean) UI::QueryWidget (`id(`sysconfig), `Value);
+	    Update::remove_old_backups = (boolean) UI::QueryWidget (`id(`remove), `Value);
+
+	    break;
+	}
+    }
+
+    Wizard::CloseDialog ();
+
+    return ret;
+}

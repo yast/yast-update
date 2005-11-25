@@ -1,0 +1,45 @@
+/**
+ * File:	clients/update.ycp
+ * Module:	System update
+ * Summary:	Main update client
+ * Authors:	Klaus Kaempf <kkaempf@suse.de>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    textdomain "update";
+
+    import "Mode";
+    import "Update";
+    import "Wizard";
+    import "Directory";
+    import "Report";
+    import "Kernel";
+    import "GetInstArgs";
+    import "ProductControl";
+
+    // set normal mode and update
+    Mode::SetMode ("update");
+
+    Update::disallow_upgrade = true;
+    Update::onlyUpdateInstalled = true;
+    Update::deleteOldPackages = false;
+
+    ProductControl::custom_control_file =  "/usr/share/YaST2/control/update.xml";
+
+    Wizard::OpenNextBackDialog();
+    if (!ProductControl::Init())
+    {
+        y2error("control file %1 not found", ProductControl::custom_control_file );
+    }
+    list<map> stage_mode = [$["stage": "normal",  "mode": Mode::mode() ]];
+    ProductControl::AddWizardSteps(stage_mode);
+
+    symbol ret = ProductControl::Run();
+
+    Wizard::CloseDialog ();
+
+    return `next;
+}

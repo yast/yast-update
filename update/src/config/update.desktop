@@ -1,0 +1,60 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Software;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=update
+
+X-SuSE-YaST-Group=Software
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoinstResource=
+
+Icon=yast-update
+Exec=/sbin/yast2 update 
+
+Name=System Update
+GenericName=Update your entire system
+Name[cs]=Aktualizace systému
+GenericName[cs]=Aktualizace celého systému; před pokračováním vložte první CD.
+Name[de]=System-Update
+GenericName[de]=Aktualisieren Sie Ihr gesamtes System. Legen Sie CD 1 ein, bevor Sie fortfahren.
+Name[es]=Actualización del sistema
+GenericName[es]=Actualizar el sistema completo. Introduzca el CD 1 antes de comenzar.
+Name[hu]=Rendszerfrissítés
+GenericName[hu]=Az rendszer teljes frissítése. Helyezze be az első CD-t, mielőtt továbblép.
+Name[it]=Aggiornamento del sistema
+GenericName[it]=Aggiornate il Vostro intero sistema. Inserite il CD 1 prima di proseguire.
+Name[ko]=시스템 업데이트
+GenericName[ko]=시스템 업데이트. 진행전에 CD 1 삽입 하십시오.
+Name[nl]=Systeem update
+GenericName[nl]=Update uw gehele systeem. Plaats CD 1 voordat u verder gaat.
+Name[pt]=Atualização do Sistema
+GenericName[pt]=Atualize todo seu sistema. Insira o CD 1 antes de continuar.
+Name[sk]=Aktualizácia systému
+GenericName[sk]=Kompletná aktualizácia vášho systému. Vložte CD 1.
+Name[sv]=Systemuppdatering
+GenericName[sv]=Uppdatera hela systemet. Lägg i cd 1 innan du fortsätter.
+Name[bg]=Подновяване на системата
+GenericName[bg]=Подновяване на цялата система. Поставете CD1 преди да продължите.
+Name[da]=System opdatering
+GenericName[da]=Opdater hele dit system. Vær venlig at indsætte CD 1 før du fortsætter.
+Name[el]=Ενημέρωση λογισμικού
+GenericName[el]=Ενημέρωση ολόκληρου του συστήματος σας. Εισάγετε το CD 1 πριν προχωρήσετε.
+Name[fr]=Mise à jour du système
+GenericName[fr]=Mise à jour complète de votre système. Insérez le premier CD avant de commencer.
+Name[ja]=システム・アップデート
+GenericName[ja]=全てのシステムをアップデートします。CD 1 を入れて下さい。
+Name[lt]=Sistemos atnaujinimas
+GenericName[lt]=Atnaujinti visą sistemą. Prieš tęsdami, įdėkite CD 1.
+Name[sl]=Posodobitev sistema
+GenericName[sl]=Posodobite vaš celoten sistem. Pred nadaljevanjem v CD-ROM enoto vstavite CD številka 1.
+Name[tr]=Sistem güncellemesi
+GenericName[tr]=Tüm sistemi günceller. Başlamadan önce CD 1'i takın.
+X-KDE-SubstituteUID=true

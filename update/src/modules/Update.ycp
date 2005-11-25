@@ -1,0 +1,315 @@
+/**
+ * Module:		Update.ycp
+ *
+ * Authors:		Anas Nashif <nashif@suse.de>
+ *			Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:		Update module
+ *
+ * $Id$
+ */
+{
+    module "Update";
+
+    import "Packages";
+    import "ProductFeatures";
+    import "Stage";
+
+    // number of packages to install
+    global integer packages_to_install = 0;
+
+    // number of packages to update
+    global integer packages_to_update = 0;
+
+    // number of packages to remove
+    global integer packages_to_remove = 0;
+
+    // number of packages unknown (problematic) by update
+    global integer unknown_packages = 0;
+
+    // number of errors (packages?) returned by solver
+    global integer solve_errors = 0;
+
+    // Flag is set true if the user decides to delete unmaintained packages
+    global boolean deleteOldPackages = ProductFeatures::GetBooleanFeature ("software", "delete_old_packages");
+
+    // don't allow upgrade only update
+    global boolean disallow_upgrade = false;
+
+    global boolean did_init1 = false;
+
+    global boolean did_init2 = false;
+
+
+    global integer last_runlevel = -1;
+
+
+    global boolean backup_modified = true;
+    global boolean backup_sysconfig = true;
+    global boolean remove_old_backups = false;
+    global string backup_path = "/var/adm/backup";
+
+
+    // Only an update, NOT an upgrade
+    global boolean onlyUpdateInstalled = ProductFeatures::GetBooleanFeature ("software", "only_update_installed");
+
+    global string selected_selection = "";
+
+    global boolean products_incompatible = false;
+
+
+    /*
+     *  Information about old and new product.
+     *
+     *  They do contain:
+     *    name (string), e.g. "SuSE Linux"
+     *    version (string), e.g. "9.1"
+     *    nameandversion (string), e.g. "SuSE Linux 9.1"
+     *
+     *  They may contain:
+     *    major (integer), e.g. "9"
+     *    minor (integer), e.g. "1"
+     *
+     *  They are not initialized during the mounting of the filesystems so don't
+     *  be so foolish to used them in RootPart.ycp.
+     */
+
+    // Version of the targetsystem
+    global map <string, any> installedVersion = $[];
+
+    // Version of the source medium
+    global map <string, any> updateVersion = $[];
+
+
+    // Flag, if the basesystem have to be installed
+    global boolean updateBasePackages = false;
+
+    // counter for installed packages
+    global integer packagesInstalled = 0;
+
+
+    // see bug #40358
+    global boolean manual_interaction = false;
+
+    // are the products (installed and to update) compatible?
+    boolean _products_compatible = nil;
+
+
+
+
+    /*-----------------------------------------------------------------------
+     * GLOBAL FUNCTIONS
+     *-----------------------------------------------------------------------*/
+
+
+/**
+ * Check if installed product and product to upgrade to are compatible
+ * @return boolean true if update is possible
+ */
+global boolean ProductsCompatible () {
+    if (_products_compatible == nil)
+    {
+	if (Stage::normal ())
+	{
+	    // check if name of one of the products on the installation
+	    // media is same as one of the installed products
+	    // assuming that multiple products on installation media
+	    // are compatible and compatibility is transitive
+	    list<map<string,string> > inst = (list<map<string,string> >)
+		Pkg::TargetProducts ();
+	    list<string> inst_names = maplist (map<string,string> p, inst, {
+		return p["name"]:"";
+	    });
+	    list<string> to_install = maplist (integer src,
+		Pkg::SourceGetCurrent (true),
+	    {
+		map<string,string> prod_info = Pkg::SourceProduct (src);
+		return prod_info["name"]:"";
+	    });
+	    y2milestone ("Installed products: %1", inst_names);
+	    y2milestone ("Products on installatino media: %1", to_install);
+
+	    string equal_product = find (string i, inst_names, {
+		string found = find (string u, to_install, {
+		    return u == i;
+		});
+		return found != nil;
+	    });
+	    _products_compatible = equal_product != nil;
+	}
+	else
+	{
+	    _products_compatible = true; // FIXME this is temporary
+	}
+	y2milestone ("Products found compatible: %1", _products_compatible);
+    }
+    return _products_compatible;
+}
+
+global void IgnoreProductCompatibility () {
+    _products_compatible = true;
+
+}
+
+    /**
+     *
+     */
+    global define void Reset ()
+    {
+	deleteOldPackages = ProductFeatures::GetBooleanFeature ("software", "delete_old_packages");
+	disallow_upgrade = false;
+
+	manual_interaction = false;
+	products_incompatible = false;
+	_products_compatible = nil;
+
+	backup_modified = true;
+	backup_sysconfig = true;
+	remove_old_backups = false;
+	backup_path = "/var/adm/backup";
+    }
+
+
+    /**
+     *
+     */
+    global define void fill_version_map (map <string, any>& data)
+    {
+	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
+
+	list <string> tmp1 = splitstring (data["version"]:"", ".");
+
+	integer tmp2 = tointeger (tmp1[0]:"-1");
+	if (tmp2 >= 0)
+	    data["major"] = tmp2;
+
+	integer tmp3 = tointeger (tmp1[1]:"-1");
+	if (tmp3 >= 0)
+	    data["minor"] = tmp3;
+    }
+
+
+    /**
+     *
+     */
+    global define boolean GetProductName ()
+    {
+	installedVersion = $[];
+	updateVersion = $[];
+
+	/*
+	 *  Be careful: The maps returned by from Pkg::TargetProducts and
+	 *  Pkg::SourceProductData have different content.
+	 */
+
+	// get old product name
+
+	list old_products = Pkg::TargetProducts ();
+	map old_product = old_products[0]:$[];
+	y2milestone ("First installed product %1", old_product);
+
+	installedVersion["name"] = old_product["name"]:"?";
+	installedVersion["version"] = old_product["version"]:"?";
+	fill_version_map (installedVersion);
+
+	// get new product name
+
+	integer num = size (Packages::theSources);
+	if (num <= 0)
+	{
+	    y2error ("No source");
+	    updateVersion["name"] = "?";
+	    updateVersion["version"] = "?";
+	    fill_version_map (updateVersion);
+	    return false;
+	}
+
+	map new_product = Pkg::SourceProductData (Packages::theSources[num-1]:0);
+	y2milestone ("First source product %1", new_product);
+	if (new_product == nil)
+	{
+	    y2error ("Screwed source");
+	    updateVersion["name"] = "?";
+	    updateVersion["version"] = "?";
+	    fill_version_map (updateVersion);
+	    return false;
+	}
+
+	updateVersion["name"] = new_product["productname"]:"?";
+	updateVersion["version"] = new_product["productversion"]:"?";
+	fill_version_map (updateVersion);
+
+	y2milestone ("update from %1 to %2", installedVersion, updateVersion);
+
+	return true;
+    }
+
+
+    /**
+     * Get all available base selections sorted in reverse order
+     * (highest ordered bases selection comes first).
+     */
+    global define list<string> GetBaseSelections ()
+    {
+	list<string> available_base_selections = sort (string x, string y, Pkg::GetSelections (`available, "base"), {
+	    map xmap = Pkg::SelectionData(x);
+	    map ymap = Pkg::SelectionData(y);
+	    return (xmap["order"]:"" > ymap["order"]:"");
+	});
+	y2milestone ("available_base_selections %1", available_base_selections);
+	return available_base_selections;
+    }
+
+
+    /**
+     * Propose a selection for the update and save it's name in
+     * Update::selected_selection.
+     */
+    global define void ProposeSelection ()
+    {
+	selected_selection = "";
+
+	list available_selections = GetBaseSelections ();
+
+	// first try: installed one
+
+	list tmp1 = Pkg::GetSelections (`installed, "base");
+	if (tmp1 != nil && tmp1 != [])
+	    selected_selection = tmp1[0]:"";
+
+	if (!contains (available_selections, selected_selection))
+	    selected_selection = "";
+
+	if (selected_selection != "") {
+	    y2milestone ("using installed selection: %1", selected_selection);
+	    return;
+	}
+
+	// second try: available selection with highest order
+
+	if (size (available_selections) > 0)
+	    selected_selection = available_selections[0]:"";
+
+	if (selected_selection != "") {
+	    y2milestone ("using highest order selection: %1", selected_selection);
+	    return;
+	}
+
+	// error: no selection available
+
+	y2error ("no selection available");
+
+    }
+
+
+    /**
+     *
+     */
+    global define void Detach ()
+    {
+	Pkg::TargetFinish ();
+	did_init1 = false;
+	did_init2 = false;
+    }
+
+}

@@ -1,0 +1,57 @@
+
+
+See bug #44286 why we need this workflow to update pre 9.2 systems.
+
+
+The user has chosen the root partition /, the partition is mounted and we have
+read fstab.
+
+
+0. Transform fstab based on fixed renaming schemes.
+
+
+1. Does fstab have a /var partition?
+
+   - No: Step 9.
+
+   - Yes: Step 2.
+
+
+2. Is device of /var on a real disk?
+
+   - No: Step 8.
+
+   - Yes: Step 3.
+
+
+3. Are / and /var on the same disk (only with a differnet number)?
+
+   - Yes: Transform device of /var just like / and Step 8.
+
+   - No: Step 4.
+
+
+4. How many real disks do we have?
+
+   - 2: Step 5.
+
+   - More than 2: Give it up.
+
+
+5. Mount partition with number of /var on other real disk.  Is it a /var
+   partition?
+
+   - Yes: Step 9.
+
+   - No: Give it up.
+
+
+8. Mount /var.
+
+
+9. Transform fstab and cryptotab using "hwinfo --map".  Mount the remaining
+   partitions from fstab.
+
+   Do a sanity check, e.g. device mounted as / is same as in transformed
+   fstab.
+
