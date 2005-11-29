@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Nov 29 09:15:07 CET 2005 - visnov@suse.cz
+
+- removed yast2-x11 from build dependencies 
+
+-------------------------------------------------------------------
 Wed Nov 23 14:37:56 CET 2005 - jsrain@suse.cz
 
 - show partition label when selecting for update
