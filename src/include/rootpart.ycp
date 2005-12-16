@@ -21,8 +21,6 @@ import "GetInstArgs";
 
 list<term> make_partition_list (boolean withall) {
 	list<term> part_list = [];
-y2internal ("RP: %1", RootPart::rootPartitions);
-y2internal ("WA: %1", withall);
 	foreach (string p, map i, RootPart::rootPartitions, {
 	    if (i[`valid]:false || withall)
 	    {
@@ -88,32 +86,30 @@ general overview of your system's partitions.
 </p>
 ");
 
-    term contents =
+    term contents = `HBox (
+	`HSpacing (2),
 	`VBox (
-	       // heading for 'select root partiton' dialogue
-	       `HCenter (
-			 `HSquash (
-				   `VBox (
-					  `HSpacing( 40 ),	// force minimum width
-					  `Left (`Label (label)),
-					  `Table (`id (`partition),
-								// table header
-						  `header (_("System"),
-								// table header
-							   _("Partition"),
-								// table header
-							   _("Architecture"),
-								// table header
-							   _("Label")),
-						  partition_list),
-					  `Left(`CheckBox(`id(`showall), `opt(`notify),
-							// check box
-							  _("&Show All Partitions"), false))
-					  )
-				   )
-			 ),
-	       `VSpacing (2)
-	       );
+	    `VSpacing (1),
+	    `HSpacing( 40 ),	// force minimum width
+	    `Left (`Label (label)),
+	    `Table (`id (`partition),
+		`opt(`hstretch),
+			 // table header
+		`header (_("System"),
+			 // table header
+			 _("Partition"),
+			 // table header
+			 _("Architecture"),
+			 // table header
+			 _("Label")),
+		partition_list),
+	    `Left(`CheckBox(`id(`showall), `opt(`notify),
+		// check box
+		_("&Show All Partitions"), false)),
+	    `VSpacing (1)
+	),
+	`HSpacing (2)
+    );
 
 
     if (flavor == `update_dialog)
