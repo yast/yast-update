@@ -4,8 +4,6 @@
 
 ybin_SCRIPTS = \
 	update_users_groups	\
-	remove_junk		\
-	gnome-postinstall	\
-	gnome-preinstall
+	remove_junk
 
 EXTRA_DIST = $(ybin_SCRIPTS)
