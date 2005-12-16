@@ -3,6 +3,7 @@ Fri Dec 16 15:50:57 CET 2005 - jsrain@suse.cz
 
 - display list of partitions to update over whole dialog (#137776)
 - removed obsolete gnome-{pre|post}install scripts
+- 2.13.0
 
 -------------------------------------------------------------------
 Tue Nov 29 09:15:07 CET 2005 - visnov@suse.cz
