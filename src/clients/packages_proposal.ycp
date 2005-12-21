@@ -89,7 +89,7 @@
 	     // the proposal for the packages requires manual invervention
 	    ret = $[ "preformatted_proposal" : HTML::List (tmp),
 			/* warning text */
-		     "warning" : _("Cannot solve all conflicts, requires manual intervention"),
+		     "warning" : _("Cannot solve all conflicts. Manual intervention is required."),
 		     "warning_level" : `blocker ];
 	}
 	else if (size (warning) > 0)
