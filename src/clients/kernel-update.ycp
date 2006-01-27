@@ -186,7 +186,7 @@
     boolean ReallyExit () {
 	return Popup::YesNoHeadline (
 	    _("Warning"),
-	    _("Abort the Kernel Upgrade?")
+	    _("Abort the kernel upgrade?")
 	);
     }
 
