@@ -18,6 +18,11 @@ import "RootPart";
 
 include "update/rootpart.ycp";
 
+if (RootPart::Mounted ()) {
+    Update::Detach ();
+    RootPart::UnmountPartitions (false);
+}
+
 RootPart::Detect ();
 
 return RootPartitionDialog (`update_dialog);
