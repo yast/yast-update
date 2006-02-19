@@ -15,6 +15,7 @@ import "Wizard";
 import "Popup";
 import "Label";
 import "RootPart";
+import "Update";
 
 include "update/rootpart.ycp";
 
