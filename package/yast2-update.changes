@@ -3,6 +3,7 @@ Sun Feb 19 16:38:12 CET 2006 - jsrain@suse.de
 
 - fixed unmounting partitions when different root partition
   selected (#148109)
+- 2.13.1
 
 -------------------------------------------------------------------
 Fri Jan 27 09:20:57 CET 2006 - locilka@suse.cz
