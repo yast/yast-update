@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun Feb 19 21:13:26 CET 2006 - jsrain@suse.de
+
+- don't ask "Try Again" if setting password for encrypted
+  filesystem canceled (#144683)
+
+-------------------------------------------------------------------
 Sun Feb 19 16:38:12 CET 2006 - jsrain@suse.de
 
 - fixed unmounting partitions when different root partition
