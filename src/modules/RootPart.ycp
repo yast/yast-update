@@ -565,7 +565,7 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 		boolean crypt_ok = true;
 		string crypt_passwd = DlgUpdateCryptFs( device, fspath );
 
-		if (crypt_passwd == nil)
+		if (crypt_passwd == nil || crypt_passwd == "")
 		{
 		    crypt_ok = false;
 		    again = false;
