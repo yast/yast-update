@@ -3,6 +3,7 @@ Sun Feb 19 21:13:26 CET 2006 - jsrain@suse.de
 
 - don't ask "Try Again" if setting password for encrypted
   filesystem canceled (#144683)
+- 2.13.2
 
 -------------------------------------------------------------------
 Sun Feb 19 16:38:12 CET 2006 - jsrain@suse.de
