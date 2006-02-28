@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Mar  1 00:30:03 CET 2006 - jsrain@suse.de
+
+- allow to do update based on patterns (#153755)
+
+-------------------------------------------------------------------
 Sun Feb 19 21:13:26 CET 2006 - jsrain@suse.de
 
 - don't ask "Try Again" if setting password for encrypted
