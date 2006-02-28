@@ -55,6 +55,8 @@
 
     global string selected_selection = "";
 
+    global string selected_pattern = "";
+
     global boolean products_incompatible = false;
 
 
@@ -244,6 +246,21 @@ global void IgnoreProductCompatibility () {
 	return true;
     }
 
+    global list<string> GetBasePatterns ()
+    {
+        // get available base patterns
+        list<map<string,any> > patterns = Pkg::ResolvableProperties ("", `pattern, "");
+        patterns = filter (map<string,any> p, patterns, {
+            if (p["status"]:nil != `selected && p["status"]:nil != `available)
+                return false;
+            // if type != base
+            return true;
+        });
+	return maplist (map<string,any> p, patterns, {
+	   return p["name"]:"";
+	});
+    }
+
 
     /**
      * Get all available base selections sorted in reverse order
@@ -260,6 +277,12 @@ global void IgnoreProductCompatibility () {
 	return available_base_selections;
     }
 
+    global void ProposePattern ()
+    {
+	selected_pattern = "";
+	list<string> available_patterns = GetBasePatterns ();
+	selected_pattern = available_patterns[0]:""; // FIXME check installed patterns and selections
+    }
 
     /**
      * Propose a selection for the update and save it's name in
