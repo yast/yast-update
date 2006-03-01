@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Mar  1 18:50:55 CET 2006 - jsrain@suse.de
+
+- display correctly pattern names
+
+-------------------------------------------------------------------
 Wed Mar  1 00:30:03 CET 2006 - jsrain@suse.de
 
 - allow to do update based on patterns (#153755)

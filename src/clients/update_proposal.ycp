@@ -261,7 +261,9 @@ some applications may not run properly.")))
 	{
 	    if (Packages::using_patterns)
 	    {
-		tmp = add (tmp, sformat (_("Update based on %1"), Update::selected_pattern));
+		list<map<string,any> > patterns = Pkg::ResolvableProperties (Update::selected_pattern, `pattern, "");
+		string summary = patterns[0, "summary"]:Update::selected_pattern;
+		tmp = add (tmp, sformat (_("Update based on %1"), summary));
 	    }
 	    else
 	    {
