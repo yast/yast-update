@@ -39,10 +39,11 @@
 	list<string> patterns = Update::GetBasePatterns ();
 	foreach (string p, patterns, {
 	    boolean preselect = (p == Update::selected_pattern);
-	    // TODO get the summary
+	    list<map<string,any> > pats = Pkg::ResolvableProperties (p, `pattern, "");
+	    string summary = pats[0, "summary"]:p;
 	    baseconfsbox = add (baseconfsbox, `Left (`RadioButton (`id (p),
 								   `opt(`notify, `autoShortcut),
-								   p, // FIXME
+								   summary,
 								   preselect)));
 	});
 	base_configurations = patterns;
