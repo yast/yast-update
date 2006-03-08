@@ -36,17 +36,7 @@
 
     if (Packages::using_patterns)
     {
-	list<string> patterns = Update::GetBasePatterns ();
-	foreach (string p, patterns, {
-	    boolean preselect = (p == Update::selected_pattern);
-	    list<map<string,any> > pats = Pkg::ResolvableProperties (p, `pattern, "");
-	    string summary = pats[0, "summary"]:p;
-	    baseconfsbox = add (baseconfsbox, `Left (`RadioButton (`id (p),
-								   `opt(`notify, `autoShortcut),
-								   summary,
-								   preselect)));
-	});
-	base_configurations = patterns;
+	baseconfsbox = `PushButton (`id (`details), _("Select Patterns"));
     }
     else
     {
@@ -62,6 +52,7 @@
 								 selection_summary,
 								 preselect)));
 	});
+	baseconfsbox = `RadioButtonGroup(`id(`baseconf), baseconfsbox);
 	base_configurations = available_base_selections;
     }
 
@@ -101,8 +92,8 @@ Based on the Selection:
 						     `VSpacing(0.5),
 						     `HBox(
 							   `HSpacing(4),
-							   `RadioButtonGroup(`id(`baseconf), baseconfsbox)
-							   ),
+							   baseconfsbox
+							),
 						     `VSpacing(1.5),
 						     `Left(`RadioButton(`id(`notupgrade),`opt(`notify),
 									// radio button label for update of already installed packages only
@@ -167,6 +158,7 @@ packages during the update.</p>
     UI::ChangeWidget(`id(`delete), `Value, Update::deleteOldPackages);
 
     any ret = nil;
+    boolean details_pressed = false;
 
     while (true)
     {
@@ -185,6 +177,19 @@ packages during the update.</p>
 	    continue;
 	}
 
+	if (ret == `details)
+	{
+
+            symbol result = `again;
+            while ( result == `again )
+            {
+                result = (symbol) WFM::CallFunction ("inst_sw_select", [true, true]);
+            }
+	    if (ret == `next)
+		details_pressed = true;
+	    continue;
+	}
+
 	if (ret == `next && Pkg::RestoreState (true))
 	{
 	    boolean something_changed = false;
@@ -194,9 +199,6 @@ packages during the update.</p>
 
             if (Packages::using_patterns)
 	    {
-		if ((boolean) UI::QueryWidget (`id (`upgrade), `Value) &&
-		    Update::selected_pattern != UI::QueryWidget(`id(`baseconf), `CurrentButton))
-		    something_changed = true;
 	    }
 	    else
 	    {
@@ -230,10 +232,7 @@ packages during the update.</p>
 
 	if (Packages::using_patterns)
 	{
-	    string p1 = Update::selected_pattern;
-	    Update::selected_pattern = (string) UI::QueryWidget(`id(`baseconf), `CurrentButton);
-
-	    if (b1 != Update::onlyUpdateInstalled || p1 != Update::selected_pattern)
+	    if (b1 != Update::onlyUpdateInstalled || details_pressed)
 	    {
 		Update::manual_interaction = true;
 	    }
