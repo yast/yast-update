@@ -93,20 +93,23 @@
 	    Update::did_init1 = true;
 
 	    Pkg::PkgReset ();
-	    if (size (Pkg::ResolvableProperties ("", `pattern, "")) > 0
-		&& size (Pkg::GetSelections (`available, "base")) == 0)
+	    if (size (Pkg::ResolvableProperties ("", `pattern, "")) > 0)
 	    {
 		y2milestone ("No base selection found, but patterns found...");
 		Packages::using_patterns = true;
 	    }
+	    Packages::SelectProduct();
 
 	    if (!Update::did_init2)
 	    {
 		Update::did_init2 = true;
 		if (Packages::using_patterns)
-		    Update::ProposePattern ();
+		{
+		}
 		else
+		{
 		    Update::ProposeSelection ();
+		}
 	    }
 
 	    if (Update::onlyUpdateInstalled)			// just consider already installed packages
@@ -115,7 +118,6 @@
 	    }
 	    else if (Packages::using_patterns)
 	    {
-		Pkg::ResolvableInstall (Update::selected_pattern, `pattern);
 	    }
 	    else						// update selections too
 	    {
@@ -261,8 +263,15 @@ some applications may not run properly.")))
 	{
 	    if (Packages::using_patterns)
 	    {
-		list<map<string,any> > patterns = Pkg::ResolvableProperties (Update::selected_pattern, `pattern, "");
-		string summary = patterns[0, "summary"]:Update::selected_pattern;
+		list<map<string,any> > patterns = Pkg::ResolvableProperties ("", `pattern, "");
+		patterns = filter (map<string,any> p, patterns, {
+		    return p["status"]:nil == `selected && p["summary"]:p["name"]:"" != "";
+		});
+		list<string> names = maplist (map<string,any> p, patterns, {
+		    return p["summary"]:p["name"]:"";
+		});
+		string summary = mergestring (names, ", ");
+		// proposal string, %1 is a list of coma separated patterns
 		tmp = add (tmp, sformat (_("Update based on %1"), summary));
 	    }
 	    else

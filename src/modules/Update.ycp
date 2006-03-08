@@ -55,8 +55,6 @@
 
     global string selected_selection = "";
 
-    global string selected_pattern = "";
-
     global boolean products_incompatible = false;
 
 
@@ -275,13 +273,6 @@ global void IgnoreProductCompatibility () {
 	});
 	y2milestone ("available_base_selections %1", available_base_selections);
 	return available_base_selections;
-    }
-
-    global void ProposePattern ()
-    {
-	selected_pattern = "";
-	list<string> available_patterns = GetBasePatterns ();
-	selected_pattern = available_patterns[0]:""; // FIXME check installed patterns and selections
     }
 
     /**
