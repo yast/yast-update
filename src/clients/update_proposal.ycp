@@ -105,6 +105,7 @@
 		Update::did_init2 = true;
 		if (Packages::using_patterns)
 		{
+		    Update::SetDesktopPattern ();
 		}
 		else
 		{
