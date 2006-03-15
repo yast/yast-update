@@ -275,6 +275,24 @@ global void IgnoreProductCompatibility () {
 	return available_base_selections;
     }
 
+    string ReadInstalledDesktop() {
+	SCR::Execute (.target.bash, "/bin/mv /etc/sysconfig/windowmanager /etc/sysconfig/windowmanager.old");
+	SCR::Execute (.target.bash, "/bin/ln -s /mnt/etc/sysconfig/windowmanager /etc/sysconfig/windowmanager");
+	string ret = (string)SCR::Read (.sysconfig.windowmanager.DEFAULT_WM);
+	SCR::Execute (.target.bash, "/bin/rm /etc/sysconfig/windowmanager");
+	SCR::Execute (.target.bash, "/bin/mv /etc/sysconfig/windowmanager.old /etc/sysconfig/windowmanager");
+	return ret;
+    }
+
+    global void SetDesktopPattern() {
+	string desktop = ReadInstalledDesktop();
+	if (desktop == "kde" || desktop == "gnome")
+	{
+	    y2milestone ("Selecting pattern to install: %1", desktop);
+	    Pkg::ResolvableInstall (desktop, `pattern);
+	}
+    }
+
     /**
      * Propose a selection for the update and save it's name in
      * Update::selected_selection.
@@ -284,6 +302,25 @@ global void IgnoreProductCompatibility () {
 	selected_selection = "";
 
 	list available_selections = GetBaseSelections ();
+
+	// nulth try: teh default desktop
+
+	string desktop = ReadInstalledDesktop();
+	map wm2sel = $[
+	    "kde" : "default",
+	    "gnome" : "default-Gnome",
+	];
+	selected_selection = wm2sel[desktop]:"";
+
+	if (!contains (available_selections, selected_selection))
+	    selected_selection = "";
+
+	if (selected_selection != "")
+	{
+	    y2milestone ("using default desktop %1 to define selection: %2",
+		desktop, selected_selection);
+	    return;
+	}
 
 	// first try: installed one
 
