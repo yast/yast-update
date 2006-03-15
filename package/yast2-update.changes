@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 15 16:35:19 CET 2006 - jsrain@suse.de
+
+- load appropriate kernel module before mounting filesystems
+  (#157585)
+
+-------------------------------------------------------------------
 Thu Mar  9 21:34:59 CET 2006 - jsrain@suse.de
 
 - updated summary for pattern-based update (#155473)

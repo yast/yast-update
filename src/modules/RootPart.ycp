@@ -282,6 +282,7 @@ define string MountPartition (string mount_point, string device,
     if (mount_type != "")
 	mount_type = "-t " + mount_type;
 
+    SCR::Execute(.target.modprobe, mount_type, "" );
     boolean ret = (boolean) SCR::Execute (.target.mount,
 	[device, Installation::destdir + mount_point, Installation::mountlog],
 	mount_type );
@@ -1054,6 +1055,16 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	if ((p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
 	    contains (possible_root_fs, p_detect_fs))
 	{
+	    map<symbol,string> mt_map = $[
+		`ext2: "ext2",
+		`ext3: "ext3",
+		`reiser: "reiser",
+		`xfs: "xfs",
+		`jfs: "jfs",
+	    ];
+	    string mount_type = mt_map[p_detect_fs]:"";
+	    if (mount_type != "")
+		SCR::Execute(.target.modprobe, mount_type, "" );
 	    // mount (read-only) partition to Installation::destdir
 	    if ((boolean) SCR::Execute (.target.mount, [p_dev, Installation::destdir,
 							Installation::mountlog], "-o ro"))
