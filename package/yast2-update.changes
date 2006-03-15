@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 15 17:52:26 CET 2006 - fehr@suse.de
+
+- remove calls to Storage::ActivateHld(), they are obsolete and
+  could seriously mess up an update involving Software Raid,
+  LVM or EVMS
+
+-------------------------------------------------------------------
 Wed Mar 15 16:54:54 CET 2006 - jsrain@suse.de
 
 - more verbose logging (#133993)
