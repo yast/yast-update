@@ -139,11 +139,15 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
     define void AddToTargetMap ()
     {
 	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
+	y2milestone ("On disk target map: %1", target_map);
 	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
 	foreach (map e, tmp, {
+	    y2milestone ("Setting partition data: Device: %1, MountPoint: %2",
+		e[`device]:"", e[`mntpt]:"");
 	    target_map = Storage::SetPartitionData (target_map, e[`device]:"",
 						    "mount", e[`mntpt]:"");
 	});
+	y2milestone ("Setting target map: %1", target_map);
 	Storage::SetTargetMap (target_map);
     }
 

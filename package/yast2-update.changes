@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Mar 15 16:54:54 CET 2006 - jsrain@suse.de
+
+- more verbose logging (#133993)
+
+-------------------------------------------------------------------
 Wed Mar 15 16:35:19 CET 2006 - jsrain@suse.de
 
 - load appropriate kernel module before mounting filesystems
