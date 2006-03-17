@@ -377,7 +377,7 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 }
 
     /**
-     *
+     * Modified Update::GetProductName to use SuSERelease, #59724
      */
     global define boolean GetProductName ()
     {
