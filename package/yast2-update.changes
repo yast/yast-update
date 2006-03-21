@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar 21 13:55:00 CET 2006 - mvidner@suse.cz
+
+- Read version info correctly for pre-10.1 products,
+  fixing update with encrypted partitions (#153576).
+- 2.13.9
+
+-------------------------------------------------------------------
 Wed Mar 15 22:41:59 CET 2006 - jsrain@suse.de
 
 - select proper desktop during update (#156632)

@@ -11,9 +11,11 @@
 {
     module "Update";
 
+    import "Installation";
     import "Packages";
     import "ProductFeatures";
     import "Stage";
+    import "SuSERelease";
 
     // number of packages to install
     global integer packages_to_install = 0;
@@ -69,9 +71,6 @@
      *  They may contain:
      *    major (integer), e.g. "9"
      *    minor (integer), e.g. "1"
-     *
-     *  They are not initialized during the mounting of the filesystems so don't
-     *  be so foolish to used them in RootPart.ycp.
      */
 
     // Version of the targetsystem
@@ -190,27 +189,34 @@ global void IgnoreProductCompatibility () {
 
 
     /**
-     *
+     * Read product name and version for the old and new release.
+     * Fill installedVersion and updateVersion.
+     * @return success
      */
     global define boolean GetProductName ()
     {
 	installedVersion = $[];
 	updateVersion = $[];
 
-	/*
-	 *  Be careful: The maps returned by from Pkg::TargetProducts and
-	 *  Pkg::SourceProductData have different content.
-	 */
-
 	// get old product name
 
-	list old_products = Pkg::TargetProducts ();
-	map old_product = old_products[0]:$[];
-	y2milestone ("First installed product %1", old_product);
+	// cannot use Pkg::TargetProducts for pre-zypp products
+	// #153576
+	string old_name = SuSERelease::ReleaseInformation
+	    (Installation::destdir);
 
-	installedVersion["name"] = old_product["name"]:"?";
-	installedVersion["version"] = old_product["version"]:"?";
-	fill_version_map (installedVersion);
+	integer p = findlastof (old_name, " ");
+	if (p == nil)
+	{
+	    y2error ("release info <%1> is screwed", old_name);
+	    installedVersion = $[];
+	}
+	else
+	{
+	    installedVersion["name"] = substring (old_name, 0, p);
+	    installedVersion["version"] = substring (old_name, p + 1);
+	    fill_version_map (installedVersion);
+	}
 
 	// get new product name
 
