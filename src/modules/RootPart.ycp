@@ -77,30 +77,6 @@
     }
 
 
-    /*
-     *  Information about old and new product.
-     *
-     *  They do contain:
-     *    name (string), e.g. "SuSE Linux"
-     *    version (string), e.g. "9.1"
-     *    nameandversion (string), e.g. "SuSE Linux 9.1"
-     *
-     *  They may contain:
-     *    major (integer), e.g. "9"
-     *    minor (integer, e.g. "1"
-     *
-     *  These are (hopefully) the same as in the Update module but we can't
-     *  ask the package database what product is installed before mounting
-     *  /var.  Yes, life is hard.
-     */
-
-    // Version of the targetsystem
-    global map <string, any> installedVersion = $[];
-
-    // Version of the source medium
-    global map <string, any> updateVersion = $[];
-
-
     /**
      *  Link to SDB article concerning renaming of devices.
      */
@@ -377,70 +353,6 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 }
 
     /**
-     * Modified Update::GetProductName to use SuSERelease, #59724
-     */
-    global define boolean GetProductName ()
-    {
-	installedVersion = $[];
-	updateVersion = $[];
-
-	/*
-	 *  Be careful: The maps returned by from Pkg::TargetProducts and
-	 *  Pkg::SourceProductData have different content.
-	 */
-
-	// get old product name
-
-	string old_name = SuSERelease::ReleaseInformation
-	    (Installation::destdir);
-
-	integer p = findlastof (old_name, " ");
-	if (p == nil)
-	{
-	    y2error ("release info <%1> is screwed", old_name);
-	    installedVersion = $[];
-	}
-	else
-	{
-	    installedVersion["name"] = substring (old_name, 0, p);
-	    installedVersion["version"] = substring (old_name, p + 1);
-	    Update::fill_version_map (installedVersion);
-	}
-
-	// get new product name
-
-	integer num = size (Packages::theSources);
-	if (num <= 0)
-	{
-	    y2error ("No source");
-	    updateVersion["name"] = "?";
-	    updateVersion["version"] = "?";
-	    Update::fill_version_map (updateVersion);
-	    return false;
-	}
-
-	map new_product = Pkg::SourceProductData (Packages::theSources[num-1]:0);
-	y2milestone ("First source product %1", new_product);
-	if (new_product == nil)
-	{
-	    y2error ("Screwed source");
-	    updateVersion["name"] = "?";
-	    updateVersion["version"] = "?";
-	    Update::fill_version_map (updateVersion);
-	    return false;
-	}
-
-	updateVersion["name"] = new_product["productname"]:"?";
-	updateVersion["version"] = new_product["productversion"]:"?";
-	Update::fill_version_map (updateVersion);
-
-	y2milestone ("update from %1 to %2", installedVersion, updateVersion);
-
-	return true;
-    }
-
-
-    /**
      *
      */
     define list <map> TranslateFSTab (list <map> fstab)
@@ -450,9 +362,9 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    old_names = add (old_names, m["spec"]:"");
 	});
 
-	list <string> new_names = Storage::GetTranslatedDevices (installedVersion,
-								 updateVersion,
-								 old_names);
+	list <string> new_names = Storage::GetTranslatedDevices (
+	    Update::installedVersion, Update::updateVersion,
+	    old_names);
 
 	integer i = 0;
 	while (i < size (fstab))
@@ -904,7 +816,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    // typing passwords for encrypted partitions
 	    Keyboard::CheckKeyboardDuringUpdate (Installation::destdir);
 
-	    GetProductName ();
+	    Update::GetProductName ();
 
 	    read_fstab_and_cryptotab (fstab, crtab);
 
