@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 23 09:09:18 CET 2006 - lslezak@suse.cz
+
+- Display correct amounf of removed packages in the update
+  proposal (#154720)
+- 2.13.10
+
+-------------------------------------------------------------------
 Tue Mar 21 13:55:00 CET 2006 - mvidner@suse.cz
 
 - Read version info correctly for pre-10.1 products,

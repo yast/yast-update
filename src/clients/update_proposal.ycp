@@ -177,9 +177,10 @@ some applications may not run properly.")))
 	// recreate the update summary
 	list<string> installed = Pkg::GetPackages (`installed, true);
 	list<string> selected = Pkg::GetPackages (`selected, true);
-	integer modified = size (Pkg::FilterPackages (true, true, true, true));
-	y2milestone ("Selected: %1, Installed: %2, Modified: %3",
-	    size (selected), size (installed), modified);
+	integer removed_size = size(Pkg::GetPackages (`removed, true));
+	y2milestone ("Selected: %1, Installed: %2, Removed: %3", size (selected), size (installed), removed_size);
+
+	y2milestone("Removed: %1", Pkg::GetPackages (`removed, true));
 
 	map<string,boolean> installed_m = listmap (string p, installed, {
 	    return $[ p : true ];
@@ -187,10 +188,11 @@ some applications may not run properly.")))
 	Update::packages_to_update = size (filter (string p, selected, {
 	    return haskey (installed_m, p);
 	}));
-	Update::packages_to_install = size (selected)
-	    - Update::packages_to_update;
+	Update::packages_to_install = size (selected) - Update::packages_to_update;
+	Update::packages_to_remove = removed_size - Update::packages_to_update;
 
-	Update::packages_to_remove = modified - size (selected);
+	y2milestone("Update statistics: Updated: %1, Installed: %2, Removed: %3",
+	    Update::packages_to_update, Update::packages_to_install, Update::packages_to_remove);
     }
 
 
