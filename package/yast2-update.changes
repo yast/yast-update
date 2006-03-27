@@ -2,6 +2,7 @@
 Mon Mar 27 16:57:57 CEST 2006 - jsrain@suse.de
 
 - set correctlty swap partition info during update (#133993)
+- 2.13.11
 
 -------------------------------------------------------------------
 Thu Mar 23 09:09:18 CET 2006 - lslezak@suse.cz
