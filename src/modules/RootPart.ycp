@@ -123,6 +123,13 @@ about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhass
 	    target_map = Storage::SetPartitionData (target_map, e[`device]:"",
 						    "mount", e[`mntpt]:"");
 	});
+	tmp = filter (map e, activated, ``(e[`type]:"" == "swap"));
+	foreach (map e, tmp, {
+	    y2milestone ("Setting swap partition data: Device: %1",
+		e[`device]:"");
+	    target_map = Storage::SetPartitionData (target_map, e[`device]:"",
+						    "mount", "swap");
+	});
 	y2milestone ("Setting target map: %1", target_map);
 	Storage::SetTargetMap (target_map);
     }
