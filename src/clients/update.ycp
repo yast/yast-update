@@ -11,6 +11,12 @@
 {
     textdomain "update";
 
+    // somewhere, DirInstall is imported that wants Pkg in the constructor
+    import "PackageLock";
+    // check whether having the packager for ourselves
+    if (! PackageLock::Check ())
+	return `abort;
+
     import "Mode";
     import "Update";
     import "Wizard";
