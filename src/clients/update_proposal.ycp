@@ -268,7 +268,7 @@ some applications may not run properly.")))
 	    {
 		list<map<string,any> > patterns = Pkg::ResolvableProperties ("", `pattern, "");
 		patterns = filter (map<string,any> p, patterns, {
-		    return p["status"]:nil == `selected && p["summary"]:p["name"]:"" != "";
+		    return p["status"]:nil == `selected && p["user_visible"]:true && p["summary"]:p["name"]:"" != "";
 		});
 		// proposal string
 		tmp = add (tmp, _("Update Based on Patterns"));
