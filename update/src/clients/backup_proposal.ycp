@@ -1,0 +1,96 @@
+/**
+ * Module:	backup_proposal.ycp
+ *
+ * Author:	Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:	Let user choose backup during update.
+ */
+{
+    textdomain "update";
+
+    import "HTML";
+    import "Update";
+
+    string func  = (string) WFM::Args(0);
+    map    param = (map) WFM::Args(1);
+    map    ret   = $[];
+
+    if ( func == "MakeProposal" )
+    {
+	boolean force_reset      = param["force_reset"     ]:false;
+	boolean language_changed = param["language_changed"]:false;
+
+	// call some function that makes a proposal here:
+	//
+	// DummyMod::MakeProposal( force_reset );
+
+	// Fill return map
+
+	if (force_reset)
+	{
+	    Update::backup_modified = true;
+	    Update::backup_sysconfig = true;
+	    Update::remove_old_backups = false;
+	}
+
+	list<string> tmp = [];
+
+	if (Update::backup_modified || Update::backup_sysconfig)
+	{
+	    if (Update::backup_modified) {
+		// Proposal for backup during update
+		tmp = add (tmp, _("Create Backup of Modified Files"));
+	    }
+
+	    if (Update::backup_sysconfig) {
+		// Proposal for backup during update
+		tmp = add (tmp, _("Create Backup of /etc/sysconfig Directory"));
+	    }
+	}
+	else
+	{    // Proposal for backup during update
+	    tmp = add (tmp, _("Do Not Create Backups"));
+	}
+
+	if (Update::remove_old_backups) {
+	    // Proposal for backup during update
+	    tmp = add (tmp, _("Remove Backups from Previous Updates"));
+	}
+
+	ret = $[ "preformatted_proposal" :
+		 HTML::List (tmp)
+	];
+    }
+    else if ( func == "AskUser" )
+    {
+	boolean has_next = param["has_next"]:false;
+
+	// call some function that displays a user dialog
+	// or a sequence of dialogs here:
+	//
+	// sequence = DummyMod::AskUser( has_next );
+
+	symbol result = (symbol) WFM::CallFunction ("inst_backup", [true, has_next]);
+
+	// Fill return map
+
+	ret = $[ "workflow_sequence" : result ];
+    }
+    else if ( func == "Description" )
+    {
+	// Fill return map.
+	//
+	// Static values do just nicely here, no need to call a function.
+
+	ret =
+	    $[
+	      // this is a heading
+	      "rich_text_title"	:	_("Backup"),
+	      // this is a menu entry
+	      "menu_title"	:	_("&Backup"),
+	      "id"		:	"backup_stuff"
+	    ];
+    }
+
+    return ret;
+}

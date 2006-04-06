@@ -1,0 +1,544 @@
+/**
+ * Copyright 2005, Novell, Inc.  All rights reserved.
+ *
+ * File:	kernel-update.ycp
+ * Authors:	Lukas Ocilka <locilka@suse.cz>,
+ *		Andreas Gruenbacher <agruen@suse.de>
+ * Summary:	UI script for updating kernel
+ */
+
+/* FIXME:
+   - Add log window and popup window title.
+   - Show [FATAL] messages in error message popups.
+   - Don't show busy cursor after the script has finished.
+*/
+
+{
+    // GLOBAL IMPORTS AND VARIABLES //
+
+    import "SCR";
+    import "Report";
+    import "Popup";
+    import "FileUtils";
+    import "Label";
+
+    textdomain "kernel-update-tool";
+
+    /* full path to kernel-update-script */
+    string kernel_update_script = "/usr/sbin/kernel-update-tool";
+    string kernel_update_script_args = "";
+
+    /* this script can be interactive, running with UI */
+    boolean running_with_ui = true;
+
+    /* short sleep between checking the script output in miliseconds */
+    integer short_sleep_ms = 200;
+
+    /* sleep before closing the window after the upgrade finished, depends on if we have UI */
+    integer sleep_before_closing = 4000;
+
+    /**
+     * Function quotes the string with apostrophes
+     */
+    string Quote (string message) {
+	return
+	    "\"" +
+	    mergestring(
+		splitstring(message, "\""),
+		"\\\""
+	    ) +
+	    "\"";
+    }
+
+    /**
+     * Function starts
+     */
+    boolean StartUpdateScript () {
+	y2milestone("Running >>%1<<", kernel_update_script + " " +
+				      kernel_update_script_args);
+	boolean started = (boolean) SCR::Execute(.background.run_output_err,
+						 kernel_update_script + " " +
+						 kernel_update_script_args);
+	// to get the script initialized
+	sleep (500);
+	boolean is_running = (boolean) SCR::Read(.background.isrunning);
+
+	// script is not started or is not running
+	if (!started || !is_running) {
+	    list <string> errors = (list <string>) SCR::Read(.background.newout) +
+				   (list <string>) SCR::Read(.background.newerr);
+
+	    Report::Error(sformat("%1 failed:
+
+%2",
+				  kernel_update_script + " " +
+				  kernel_update_script_args,
+				  mergestring(errors, "\n")));
+	    return false;
+	}
+
+	return true;
+    }
+
+    /**
+     * Function opens up an error popup where all YCP script parameters are explained
+     */
+    void PrintScriptUsage () {
+	    Report::Error("Usage: kernel-update.ycp [--non-interactive] /path/to_the/new/kernel [/path/to/additional/package ...]");
+    }
+
+    /**
+     * Function checks parameters and creates the update command
+     */
+    boolean CheckParams () {
+	boolean found_packages = false;
+	list args = WFM::Args();
+
+	kernel_update_script_args = "--upgrade";
+	foreach (string param, (list <string>) args, {
+	    if (param == "--non-interactive") {
+		running_with_ui = false;
+	    } else {
+		if (!found_packages)
+		    kernel_update_script_args = kernel_update_script_args +
+			" " + Quote((string) param);
+		else
+		    kernel_update_script_args = kernel_update_script_args +
+			" --extra-rpm " + Quote((string) param);
+		found_packages = true;
+	    }
+	});
+
+	// no kernel-update-script parameter
+	if (!found_packages) {
+	    PrintScriptUsage();
+	    return false;
+	}
+
+	if (!FileUtils::Exists(kernel_update_script)) {
+	    Report::Error(sformat("%1 not found", kernel_update_script));
+	    return false;
+	}
+
+	kernel_update_script_args = kernel_update_script_args +
+	    " --parse-markers";
+	if (! running_with_ui) {
+	    y2milestone("Running in non-interactive mode...");
+	    kernel_update_script_args = kernel_update_script_args +
+	        " --non-interactive";
+	}
+
+	return true;
+    }
+
+    /**
+     * Function adds the text into the Log Window dialog
+     */
+    void AddProgressLine (string log_text) {
+	if (running_with_ui) {
+	    UI::ChangeWidget(`id("log_view"), `LastLine, log_text + "\n");
+	} else {
+	    y2debug("LOG: %1", log_text);
+	}
+    }
+
+    /**
+     * Function stores STDERR messages into the log
+     */
+    boolean HandleSTDERR (list <string> errlines) {
+	if (size(errlines) > 0) {
+	    y2error("STDERR: %1", errlines);
+	    foreach (string errline, errlines, {
+		AddProgressLine(errline);
+	    });
+	}
+
+	return true;
+    }
+
+    // Structure of possible dialog options: current_options["1"] = "Try again";
+    map <string, string> current_options = $[];
+
+    // Variables for the UI environment
+    string current_message	= "";
+    string default_option	= "";
+    string cancel_button_option	= "";
+
+    // When the active dialog doesn't contain the Log Window
+    list <string> log_these_messages = [];
+
+    // Function adds a message into the internal list
+    void LogThisMessage (string message) {
+	log_these_messages = add (log_these_messages, message);
+    }
+
+    // Function logs all messages and clears the list
+    void ProceedTheLogging () {
+	// add these log messages into the Log Window now
+	foreach (string message, log_these_messages, {
+	    AddProgressLine(message);
+	});
+
+	log_these_messages = [];
+    }
+
+    // Function asks whether we really want to exit
+    boolean ReallyExit () {
+	return Popup::YesNoHeadline (
+	    _("Warning"),
+	    _("Abort the kernel upgrade?")
+	);
+    }
+
+    /**
+     * Function sends a string to the script's stdin
+     *
+     * @params string stdin_message
+     */
+    boolean SendToTheScript (string send_this) {
+	if ((boolean) SCR::Read(.background.isrunning)) {
+	    SCR::Write(.background.stdin, send_this);
+	} else {
+	    y2error("Script is not running...");
+	}
+    }
+
+    // Returns a term of [Cancel] / [OK] buttons
+    term GetCancelOKButtons () {
+	return `HBox(
+	    `HStretch(),
+	    `HWeight(5,
+		`PushButton(`id(`cancel), Label::CancelButton())
+	    ),
+	    `HWeight(2,
+		`HSpacing()
+	    ),
+	    `HWeight(5,
+		`PushButton(`id(`ok),   Label::OKButton())
+	    ),
+	    `HStretch()
+	);
+    }
+
+    /**
+     * Function takes care of creating the EnterURL dialog.
+     * Handles user events.
+     *
+     * @return symbol `exit or `go_ahead
+     */
+    symbol HandleURLDialog () {
+	// if we don't have UI, exiting script
+	if (!running_with_ui) {
+	    y2error("*** We don't have UI, script should not ask user for anything at all! ***");
+	    return `exit;
+	}
+
+	UI::OpenDialog (
+	    `HBox (
+		`HSpacing (2),
+		`VBox (
+		    // wight at least 40 characters
+		    `HSpacing (40),
+		    `VSpacing (1),
+		    `Label(current_message),
+		    `TextEntry(
+			`id("url"),
+			_("Alternate Download Location")
+		    ),
+		    GetCancelOKButtons(),
+		    `VSpacing (1)
+		),
+		`HSpacing (2)
+	    )
+	);
+
+	UI::SetFocus(`id("url"));
+
+	boolean cont_loop = true;
+	while (cont_loop) {
+	    any ret = UI::UserInput();
+
+	    // User pressed [Cancel] button
+	    if (ret == `cancel) {
+		y2warning("User cancelled the URL... sending the blank line");
+		//LogThisMessage("User cancelled the URL popup");
+		SendToTheScript("\n");
+		cont_loop = false;
+	    // User pressed [OK] button
+	    } else if (ret == `ok) {
+		string url = (string) UI::QueryWidget(`id("url"), `Value);
+		// User have filled something up
+		if (url != nil && url != "") {
+		    y2milestone("User entered URL: %1", url);
+		    //LogThisMessage(sformat("User entered URL %1", url));
+		    SendToTheScript(url + "\n");
+		    cont_loop = false;
+		// Nothing filled up
+		} else {
+		    y2milestone("User entered blank URL");
+		    //LogThisMessage("User entered a blank URL");
+		    SendToTheScript("\n");
+		    cont_loop = false;
+		}
+	    // Is anything wrong?
+	    } else {
+		y2milestone("Unknown return: %1", ret);
+	    }
+	}
+
+	UI::CloseDialog();
+
+	return `go_ahead;
+    }
+
+    /**
+     * Functions opens up a dialog of options and waits for user to select one and press the [OK] button
+     * or to press the [Cancel] button.
+     *
+     * @param	map <string, string> user_options $[ "option number" : "option text" ]
+     * @param	string default_option (default option number)
+     * @param	string cancel_button_option (Cancel button linked to option number...)
+     * @return	symbol `exit or `go_ahead
+     */
+    symbol HandleOptionsDialog (map <string, string> user_options, string default_option, string cancel_button_option) {
+	// if we don't have UI, exiting script
+	if (!running_with_ui) {
+	    y2error("*** We don't have UI, script should not ask user for anything at all! ***");
+	    return `exit;
+	}
+
+	term options_term = `VBox(`VSpacing(1), `Label(current_message), `VSpacing(1));
+
+	foreach (string option_number, string option_name, user_options, {
+	    options_term = add(
+		options_term,
+		`Left(`RadioButton(`id(option_number), option_name, (default_option == option_number)))
+	    );
+	});
+
+	options_term = add (options_term, `VSpacing(1));
+	options_term = add (options_term, GetCancelOKButtons());
+	options_term = add (options_term, `VSpacing (1));
+
+	UI::OpenDialog(
+	    `RadioButtonGroup (
+		`id("options_dialog"),
+		options_term
+	    )
+	);
+	UI::SetFocus(`id(`ok));
+
+	symbol status = `cont;
+	while (status == `cont) {
+	    any ret = UI::UserInput();
+	    if (ret == `cancel) {
+		if (ReallyExit()) {
+		    y2warning("User cancelled the options, sending %1 to the script", cancel_button_option);
+		    //LogThisMessage("User cancelled the options popup");
+		    SendToTheScript(cancel_button_option + "\n");
+		    status = `go_ahead;
+		} else continue;
+	    } else if (ret == `ok) {
+		string selected = (string) UI::QueryWidget(`id("options_dialog"), `CurrentButton);
+		if (selected != nil && regexpmatch(selected, "^[0123456789]+$")) {
+		    y2milestone("User selected: %1 - %2", selected, user_options[selected]:"");
+		    //LogThisMessage(sformat("User selected %1 - %2", selected, user_options[selected]:""));
+		    SendToTheScript(selected + "\n");
+		    status = `go_ahead;
+		} else {
+		    y2error("Something is wrong, the first option should have been selected, at least...");
+		}
+	    } else {
+		y2milestone("Unknown return: %1", ret);
+	    }
+	}
+
+	UI::CloseDialog();
+
+	return status;
+    }
+
+    /**
+     * Function takes care of the Standard Input
+     *
+     * @param list <string> outlines to parse
+     * @boolean if the script should continue
+     */
+    boolean HandleSTDOUT (list <string> outlines) {
+	if (size(outlines) > 0) {
+	    boolean handle_user_options_at_the_end = false;
+	    boolean handle_user_url_at_the_end     = false;
+	    symbol ret = nil;
+
+	    foreach (string outline, outlines, {
+		// dropping blank lines out
+		if (outline == "") continue;
+
+		if (regexpmatch(outline, "^\\[PROGRESS\\] *")) {
+		    AddProgressLine(regexpsub(outline, "^\\[PROGRESS\\] *(.*)", "\\1"));
+		} else if (regexpmatch(outline, "^\\[MESSAGE\\] *")) {
+		    string message = regexpsub(outline, "^\\[MESSAGE\\] *(.*)", "\\1");
+		    AddProgressLine(message);
+		    current_message = message;
+		} else if (regexpmatch(outline, "^\\[OPTION [0123456789]+\\] *")) {
+		    string option_number = regexpsub(outline, "^\\[OPTION ([0123456789]+)\\].*", "\\1");
+		    string option_name   = regexpsub(outline, "^\\[OPTION [0123456789]+\\] *(.*)", "\\1");
+		    AddProgressLine(option_number + " - " + option_name);
+		    current_options[option_number] = option_name;
+		    // default option is allways the first one
+		    if (default_option == "") default_option = option_number;
+		} else if (regexpmatch(outline, "^\\[OPTION [0123456789]: .*+\\] *")) {
+		    string option_number = regexpsub(outline, "^\\[OPTION ([0123456789]+): .*\\].*", "\\1");
+		    string option_name   = regexpsub(outline, "^\\[OPTION [0123456789]+: .*\\] *(.*)", "\\1");
+		    AddProgressLine(option_number + " - " + option_name);
+		    // this is the Cancel/Abort option (linked with the [Cancel] button)
+		    cancel_button_option = option_number;
+		} else if (regexpmatch(outline, "^\\[READ OPTION\\]")) {
+		    //AddProgressLine(_("Waiting for user to select option"));
+		    handle_user_options_at_the_end = true;
+		} else if (regexpmatch(outline, "^\\[READ URL\\]")) {
+		    //AddProgressLine(_("Waiting for user to enter URL"));
+		    handle_user_url_at_the_end = true;
+		} else {
+		    AddProgressLine(outline);
+		    y2error("STDOUT: %1", outline);
+		}
+	    });
+
+	    // used-decision needed - select one of options
+	    if (handle_user_options_at_the_end) {
+		ret = HandleOptionsDialog(current_options, default_option, cancel_button_option);
+		current_options      = $[];
+		default_option       = "";
+		current_message      = "";
+		cancel_button_option = "";
+	    }
+
+	    // user-entry needed - URL
+	    if (handle_user_url_at_the_end) {
+		ret = HandleURLDialog();
+		current_message = "";
+	    }
+
+	    // All other popup windows are closed now, empty your cache of log-messages
+	    ProceedTheLogging();
+
+	    // false means - no next loop, just exit
+	    if (ret == `exit) {
+		y2milestone("exiting");
+		return false;
+	    }
+	}
+
+	return true;
+    }
+
+    /**
+     * Function takes care of the script stdout and stderr
+     */
+    void HandleUpdateScript () {
+	boolean next_loop = true;
+	any ret = nil;
+
+	y2milestone("Handling update script...");
+	while (
+	    // While the script is running or there is still something to be parsed (stdout / stderr)
+	    (
+		(boolean) SCR::Read(.background.isrunning)
+		|| (integer) SCR::Read(.background.newlines) > 0
+		|| (integer) SCR::Read(.background.newlines_err) > 0
+	    )
+	    // and it hasn't been aborted or finished
+	    && next_loop
+	)  {
+	    if (next_loop)
+		next_loop = HandleSTDERR((list <string>) SCR::Read(.background.newerr));
+	    if (next_loop)
+		next_loop = HandleSTDOUT((list <string>) SCR::Read(.background.newout));
+
+	    // checking for user input
+	    if (next_loop)
+		ret = UI::PollInput();
+	    if (ret == `cancel) {
+		if (ReallyExit()) {
+		    y2milestone("User decided to quit...");
+		    next_loop = false;
+		}
+	    }
+	    sleep (short_sleep_ms);
+	}
+
+	sleep (short_sleep_ms);
+	// kill the script if it is still running
+	// user must have decided to quit or there becomes an error in script
+	if ((boolean) SCR::Read(.background.isrunning)) {
+	    y2warning("Killing the background script");
+	    SCR::Execute(.background.kill);
+	}
+
+	if (ret != `cancel) {
+	    // keep the log window open a little while after the kernel is upgraded
+	    // if it runs with UI
+	    if (running_with_ui) {
+		AddProgressLine("Script finished.");
+		sleep (sleep_before_closing);
+	    }
+	    // FIXME: Should also skip sleeping when the user choses to cancel the upgrade.
+	}
+    }
+
+    /**
+     * Function opens up a Log Window
+     */
+    void CreateUI () {
+	// no UI, nothing to open
+	if (!running_with_ui) return;
+
+	UI::OpenDialog(
+	    // enable this line to get the 640x480 or 80x20 window
+	    //`opt(`decorated,`defaultsize),
+	    `VBox (
+		`VSpacing (2),
+		// Weight at least 75 characters
+		`HSpacing (75),
+		`HBox (
+		    `HSpacing (2),
+		    // Base Log Window
+		    `LogView (
+			`id ("log_view"),
+			_("Kernel Update Status Log"),
+			// show at least 16 lines, store 1024 in memory
+			16, 1024
+		    ),
+		    `HSpacing (2)
+		),
+		`VSpacing (2)
+	    )
+	);
+    }
+
+    /**
+     * Function closes the Log Window
+     */
+    void CloseUI () {
+	UI::CloseDialog();
+    }
+
+    // MAIN FUNCTION //
+
+    void Main () {
+	y2milestone("---< Starting kernel-update-script >---");
+
+	if (!CheckParams ()) return;
+
+	CreateUI();
+	if (!StartUpdateScript ()) return;
+
+	HandleUpdateScript();
+	CloseUI();
+
+	y2milestone("---< Finishing kernel-update-script >---");
+    }
+
+    Main();
+}

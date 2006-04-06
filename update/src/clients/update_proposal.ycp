@@ -1,0 +1,340 @@
+/**
+ * Module:	update_proposal.ycp
+ *
+ * Author:	Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:	Let user choose update settings.
+ */
+{
+    textdomain "update";
+
+    import "HTML";
+    import "Update";
+    import "Packages";
+    import "PackageCallbacks";
+    import "SpaceCalculation";
+
+    import "Installation";
+    import "Kernel";
+    import "Popup";
+
+
+    string func = (string) WFM::Args(0);
+    map param = (map) WFM::Args(1);
+    map <string, any> ret = $[];
+
+    define void SelectKernelPackages () {
+	list <list> provides = Pkg::PkgQueryProvides ("kernel");
+	y2milestone ("provides: %1", provides);
+
+	list <list> kernels = filter (list l, provides, {
+	    return l[1]:`NONE == `BOTH || l[1]:`NONE == l[2]:`NONE;
+	});
+
+	if (size (kernels) != 1)
+	    y2error ("not exactly one package provides tag kernel");
+
+	string selected_kernel = kernels[0,0]:"none";
+	list<string> recom_kernel = Kernel::ComputePackages ();
+	y2milestone ("Selected kernel: %1, recommended kernel: %2",
+	    selected_kernel, recom_kernel);
+	if (! contains (recom_kernel, selected_kernel))
+	{
+	    list<string> to_delete
+		= Kernel::ComputePackagesForBase (selected_kernel, false);
+	    foreach (string p, to_delete, {
+		Pkg::PkgDelete (p);
+	    });
+	}
+	list<string> kernel_packs = Kernel::ComputePackages ();
+	boolean kernel_refresh_needed = false;
+	foreach (string p, kernel_packs, {
+	    if (! Pkg::IsProvided (p))
+	    {
+		kernel_refresh_needed = true;
+		y2milestone ("Package %1 is not installed - forcing kernel update", p);
+	    }
+	});
+	if (kernel_refresh_needed)
+	{
+	    foreach (string p, kernel_packs, {
+		Pkg::PkgInstall (p);
+	    });
+	}
+    }
+
+    define void init_stuff ()
+    {
+	// initialize package manager
+	if (true)
+	{
+	    UI::OpenDialog (`opt(`decorated),
+			    // intermediate popup while initializing internal packagemanagement
+			    `Label(_("Reading package information. One moment please...")));
+
+	    Packages::Init (true);
+
+	    UI::CloseDialog();
+	}
+
+	// initialize target
+	if (true)
+	{
+	    PackageCallbacks::SetConvertDBCallbacks ();
+
+	    Pkg::TargetInit (Installation::destdir, false);
+
+	    Update::GetProductName ();
+	}
+
+	// connect target with package manager
+	if (!Update::did_init1)
+	{
+	    Update::did_init1 = true;
+
+	    Pkg::PkgReset ();
+	    if (size (Pkg::ResolvableProperties ("", `pattern, "")) > 0)
+	    {
+		y2milestone ("No base selection found, but patterns found...");
+		Packages::using_patterns = true;
+	    }
+	    Packages::SelectProduct();
+
+	    if (!Update::did_init2)
+	    {
+		Update::did_init2 = true;
+		if (Packages::using_patterns)
+		{
+		    Update::SetDesktopPattern ();
+		}
+		else
+		{
+		    Update::ProposeSelection ();
+		}
+	    }
+
+	    if (Update::onlyUpdateInstalled)			// just consider already installed packages
+	    {
+		Pkg::SetSelection ("");				// -> don't select any additional selections
+	    }
+	    else if (Packages::using_patterns)
+	    {
+	    }
+	    else						// update selections too
+	    {
+		Pkg::SetSelection (Update::selected_selection);	// -> set the base selection (minimal, default, ....)
+
+		if (!Update::manual_interaction)
+		{
+		    // now compare installed (old) selections against available (new) selections
+		    //  and set all selections which are installed (old) and available (new)
+		    //  as 'to be installed' -> UI will show "to be updated" for these selections
+
+		    list<string> available_addons = Pkg::GetSelections (`available, "");
+		    list<string> installed_addons = Pkg::GetSelections (`installed, "");
+
+		    foreach (string installed, installed_addons,
+		    {
+			if (contains (available_addons, installed))	// we have a newer selection for an installed one
+			{
+			    Pkg::SetSelection (installed);		// update this selection too (selection solving included)
+			}
+		    });
+		}
+	    }
+
+	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
+	    Pkg::PkgFreshen();
+	    map<symbol, integer> update_sum
+		= Pkg::PkgUpdateAll (Update::deleteOldPackages);
+	    y2milestone ("Update summary: %1", update_sum);
+	    Update::unknown_packages = update_sum[`ProblemListSze]:0;
+
+	    SelectKernelPackages ();
+
+	    if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
+		Update::solve_errors = 0;
+	    else
+		 Update::solve_errors = Pkg::PkgSolveErrors ();
+	}
+	// check product compatibility
+	if (! (Update::ProductsCompatible () || Update::products_incompatible))
+	{
+	    if (Popup::ContinueCancel (
+// continue-cancel popup
+_("The installed product is not compatible with the product
+on the installation media. If you try to update using the
+current installation media, the system may not start or
+some applications may not run properly.")))
+	    {
+		Update::IgnoreProductCompatibility ();
+	    }
+	    else
+	    {
+		Update::products_incompatible = true;
+	    }
+	}
+	// recreate the update summary
+	list<string> installed = Pkg::GetPackages (`installed, true);
+	list<string> selected = Pkg::GetPackages (`selected, true);
+	integer removed_size = size(Pkg::GetPackages (`removed, true));
+	y2milestone ("Selected: %1, Installed: %2, Removed: %3", size (selected), size (installed), removed_size);
+
+	y2milestone("Removed: %1", Pkg::GetPackages (`removed, true));
+
+	map<string,boolean> installed_m = listmap (string p, installed, {
+	    return $[ p : true ];
+	});
+	Update::packages_to_update = size (filter (string p, selected, {
+	    return haskey (installed_m, p);
+	}));
+	Update::packages_to_install = size (selected) - Update::packages_to_update;
+	Update::packages_to_remove = removed_size - Update::packages_to_update;
+
+	y2milestone("Update statistics: Updated: %1, Installed: %2, Removed: %3",
+	    Update::packages_to_update, Update::packages_to_install, Update::packages_to_remove);
+    }
+
+
+    if ( func == "MakeProposal" )
+    {
+	boolean force_reset      = param["force_reset"     ]:false;
+	boolean language_changed = param["language_changed"]:false;
+
+	// call some function that makes a proposal here:
+	//
+	// DummyMod::MakeProposal( force_reset );
+
+	if (force_reset)
+	{
+	    Update::Reset ();
+
+	    Update::did_init1 = false;
+	}
+
+
+	// Fill return map
+
+	init_stuff ();
+
+	if (Update::products_incompatible)
+	{
+	    return $[
+		// error message in proposal
+		"warning" : _("The installed product is not compatible with the product on the installatin media."),
+		"warning_level" : `fatal,
+		"raw_proposal" : [],
+	    ];
+	}
+
+	if (true)
+	{
+	    list available_base_selections = Update::GetBaseSelections ();
+	    if ((! Packages::using_patterns) && size (available_base_selections) == 0)
+	    {
+		y2error ("No base selections available");
+		// Can't find any software data, probably a installation media error
+		// error message
+		return $[ "warning" : _("Cannot read package data from installation media. Media error?"),
+			  "warning_level" : `blocker,
+			  "raw_proposal" : [] ];
+	    }
+	}
+
+	if (Update::disallow_upgrade)
+	{
+	    if (false)		// FIXME
+	    {
+		// proposal error
+		return $[ "warning" : _("Updating to another version is not supported from the running system."),
+			  "warning_level" : `fatal,
+			  "raw_proposal" : [] ];
+	    }
+	}
+
+	list<string> tmp = [];
+
+	// summary text (%1 is package selection)
+	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion["nameandversion"]:"?"));
+
+	if (Update::onlyUpdateInstalled)
+	{
+	    // Proposal for backup during update
+	    tmp = add (tmp, _("Only Update Installed Packages"));
+	}
+	else
+	{
+	    if (Packages::using_patterns)
+	    {
+		list<map<string,any> > patterns = Pkg::ResolvableProperties ("", `pattern, "");
+		patterns = filter (map<string,any> p, patterns, {
+		    return p["status"]:nil == `selected && p["user_visible"]:true && p["summary"]:p["name"]:"" != "";
+		});
+		// proposal string
+		tmp = add (tmp, _("Update Based on Patterns"));
+		foreach (map<string,any> p, patterns, {
+		    tmp = add (tmp, "+  " + p["summary"]:p["name"]:"");
+		});
+	    }
+	    else
+	    {
+		map selection_data = Pkg::SelectionData (Update::selected_selection);
+		string selection_summary = selection_data["summary"]:"error";
+
+		// Proposal for selection during update
+		tmp = add (tmp, sformat (_("Update Based on Selection \"%1\""),
+				     selection_summary));
+	    }
+	}
+
+	// recalculate the disk space usage data
+	SpaceCalculation::GetPartitionInfo();
+
+	if (Update::deleteOldPackages)
+	{
+	    // Proposal for backup during update
+	    tmp = add (tmp, _("Delete Old Packages"));
+	}
+
+	ret = $[ "preformatted_proposal" :
+		 HTML::List (tmp)
+	];
+    }
+    else if ( func == "AskUser" )
+    {
+	boolean has_next = param["has_next"]:false;
+
+	// call some function that displays a user dialog
+	// or a sequence of dialogs here:
+	//
+	// sequence = DummyMod::AskUser( has_next );
+
+	symbol result = (symbol) WFM::CallFunction ("inst_update", [true, has_next]);
+
+	if (result == `next)
+	{
+	    Update::did_init1 = false;
+	}
+
+	// Fill return map
+
+	ret = $[ "workflow_sequence" : result ];
+    }
+    else if ( func == "Description" )
+    {
+	// Fill return map.
+	//
+	// Static values do just nicely here, no need to call a function.
+
+	ret =
+	    $[
+	      // this is a heading
+	      "rich_text_title"	:	_("Update Options"),
+	      // this is a menu entry
+	      "menu_title"	:	_("&Update Options"),
+	      "id"		:	"update_stuff"
+	    ];
+    }
+
+    return ret;
+}

@@ -1,0 +1,229 @@
+/**
+ * Module:	include/installation/rootpart.ycp
+ *
+ * Authors:	Stefan Schubert <schubi@suse.de>
+ *		Arvin Schnell <arvin@suse.de>
+ *              Jiri Srain <jsrain@suse.cz>
+ *
+ * Purpose:	Select root partition for update or booting.
+ *		RootPart::rootPartitions must be filled before
+ *		calling this module.
+ */
+{
+textdomain "update";
+
+import "Wizard";
+import "Popup";
+import "Label";
+import "RootPart";
+import "GetInstArgs";
+
+
+list<term> make_partition_list (boolean withall) {
+	list<term> part_list = [];
+	foreach (string p, map i, RootPart::rootPartitions, {
+	    if (i[`valid]:false || withall)
+	    {
+		string s = i[`name]:"error";
+		if (s == "unknown") s = _("Unknown");
+
+		string a = i[`arch]:"error";
+		if (a == "unknown") a = _("Unknown");
+
+		string l = i[`label]:"";
+
+		part_list = add (part_list, `item (`id (p), s, p, a, l));
+	    }
+	});
+	return part_list;
+}
+
+// This dialog comes in three different flavors: `update_dialog,
+// `update_popup and `boot_popup, `update_dialog_proposal
+symbol RootPartitionDialog (symbol flavor) {
+
+    list<term> partition_list = make_partition_list (
+	RootPart::showAllPartitions);
+
+
+    string title = "";
+    string label = "";
+    string help_text = "";
+
+    if (flavor == `boot_popup)
+    {
+	// label for selection of root partition (for boot)
+	label = _("Partition or System to Boot:");
+
+	// help text for root partition dialog (for boot)
+	help_text = _("<p>
+Select the partition or system to boot.
+</p>
+");
+    }
+    else
+    {
+	// label for selection of root partition (for update)
+	label = _("Partition or System to Update:");
+
+	// help text for root partition dialog (for update)
+	help_text = _("<p>
+Select the partition or system to update.
+</p>
+");
+
+	if (flavor == `update_dialog || flavor == `update_dialog_proposal)
+	{
+	    // headline for dialog "Select for update"
+	    title = _("Select for Update");
+	}
+    }
+
+    // help text for root partition dialog (general part)
+    help_text = help_text + _("<p>
+<b>Show All Partitions</b> expands the list to a
+general overview of your system's partitions.
+</p>
+");
+
+    term contents = `HBox (
+	`HSpacing (2),
+	`VBox (
+	    `VSpacing (1),
+	    `HSpacing( 40 ),	// force minimum width
+	    `Left (`Label (label)),
+	    `Table (`id (`partition),
+		`opt(`hstretch),
+			 // table header
+		`header (_("System"),
+			 // table header
+			 _("Partition"),
+			 // table header
+			 _("Architecture"),
+			 // table header
+			 _("Label")),
+		partition_list),
+	    `Left(`CheckBox(`id(`showall), `opt(`notify),
+		// check box
+		_("&Show All Partitions"), false)),
+	    `VSpacing (1)
+	),
+	`HSpacing (2)
+    );
+
+
+    if (flavor == `update_dialog)
+    {
+	Wizard::SetContents (title, contents, help_text, true, true);
+    }
+    else if (flavor == `update_dialog_proposal)
+    {
+	Wizard::CreateDialog ();
+	Wizard::SetContentsButtons (title, contents, help_text,
+	    Label::BackButton (), Label::AcceptButton ());
+    }
+    else
+    {
+	term buttons = `PushButton (`id(`next), `opt(`default), Label::OKButton());
+
+	if (flavor == `boot_popup)
+	{
+	    buttons = `HBox (
+			     // pushbutton to (rightaway) boot the system selected above
+			     `HWeight( 1, `PushButton(`id(`next), `opt(`default), _("&Boot")) ),
+			     `HSpacing( 1 ),
+			     `HWeight( 1, `PushButton(`id(`cancel), Label::CancelButton() ) )
+			     );
+	}
+
+	term full = `HBox (
+			   `VSpacing( 16 ),		// force dialog height
+			   `VBox(
+				 `HSpacing( 30 ),	// force help text width
+				 `RichText( help_text )
+				 ),
+			   `HSpacing( 3 ),
+			   `VBox(
+				 `VSpacing( 1 ),
+				 contents,
+				 buttons
+				 ),
+			   `HSpacing( 3 )
+			   );
+
+	UI::OpenDialog (full);
+    }
+
+
+    if (size (RootPart::selectedRootPartition) > 0)
+	UI::ChangeWidget (`id(`partition), `CurrentItem, RootPart::selectedRootPartition);
+
+    UI::ChangeWidget(`id(`showall), `Value, RootPart::showAllPartitions);
+
+
+    any ret = nil;
+
+    while (true)
+    {
+	if (flavor == `update_dialog || flavor == `update_dialog_proposal)
+	    ret = Wizard::UserInput ();
+	else
+	    ret = UI::UserInput ();
+
+	if (ret == `abort && Popup::ConfirmAbort (`painless))
+	    break;
+
+	if (ret == `showall)
+	{
+	    string tmp = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
+	    partition_list = make_partition_list ((boolean) UI::QueryWidget (`id(`showall), `Value));
+	    UI::ChangeWidget (`id(`partition), `Items, partition_list);
+	    if (tmp != nil)
+		UI::ChangeWidget (`id(`partition), `CurrentItem, tmp);
+	    continue;
+	}
+	if ((flavor == `update_dialog || flavor == `update_popup
+	    || flavor == `update_dialog_proposal)
+	    && ret == `next)
+	{
+	    string selected = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
+	    map freshman = RootPart::rootPartitions[selected]:$[];
+	    boolean cont = true;
+	    y2milestone ("Selected root partition: %1 %2",
+		selected, freshman);
+	    if (freshman[`name]:"unknown" == "unknown")
+	    {
+		cont = Popup::ContinueCancel (
+// continue-cancel popup
+_("No installed system that can be upgraded with this product was found
+on the selected partition."));
+	    }
+	    else if (freshman[`arch]:"" != RootPart::GetDistroArch ())
+	    {
+		cont = Popup::ContinueCancel (
+// continue-cancel popup
+_("The architecture of the system installed in the selected partition
+is different than the one of this product."));
+
+	    }
+	    if (! cont)
+		ret = nil;
+	}
+
+	if (ret == `cancel || ret == `back || ret == `next)
+	    break;
+    }
+
+    if (ret == `next)
+    {
+	RootPart::selectedRootPartition = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
+	RootPart::showAllPartitions = (boolean) UI::QueryWidget (`id(`showall), `Value);
+    }
+
+    if (flavor != `update_dialog)
+	UI::CloseDialog ();
+
+    return (symbol)ret;
+}
+
+} // EOF

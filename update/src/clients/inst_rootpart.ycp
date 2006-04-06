@@ -1,0 +1,29 @@
+/**
+ * Module:	inst_rootpart.ycp
+ *
+ * Authors:	Stefan Schubert <schubi@suse.de>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:	Select root partition for update or booting.
+ *		RootPart::rootPartitions must be filled before
+ *		calling this module.
+ */
+{
+textdomain "update";
+
+import "Wizard";
+import "Popup";
+import "Label";
+import "RootPart";
+
+include "update/rootpart.ycp";
+
+
+// This dialog comes in three different flavors: `update_dialog,
+// `update_popup and `boot_popup
+symbol flavor = (symbol) WFM::Args (2);
+
+return RootPartitionDialog (flavor);
+
+
+}
