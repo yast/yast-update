@@ -144,13 +144,13 @@
 	    }
 
 	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
-	    Pkg::PkgFreshen();
 	    map<symbol, integer> update_sum
 		= Pkg::PkgUpdateAll (Update::deleteOldPackages);
 	    y2milestone ("Update summary: %1", update_sum);
 	    Update::unknown_packages = update_sum[`ProblemListSze]:0;
 
 	    SelectKernelPackages ();
+	    Pkg::PkgFreshen();
 
 	    if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
 		Update::solve_errors = 0;
