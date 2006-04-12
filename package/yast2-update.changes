@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Apr 12 19:29:18 CEST 2006 - jsrain@suse.de
+
+- mount /sys before update (#165502)
+
+-------------------------------------------------------------------
 Wed Apr 12 12:50:06 CEST 2006 - locilka@suse.cz
 
 - Fixing number of packages marked to be `removed during the update
