@@ -188,7 +188,7 @@ some applications may not run properly.")))
 	    return haskey (installed_m, p);
 	}));
 	Update::packages_to_install = size (selected) - Update::packages_to_update;
-	Update::packages_to_remove = removed_size - Update::packages_to_update;
+	Update::packages_to_remove = removed_size;
 
 	y2milestone("Update statistics: Updated: %1, Installed: %2, Removed: %3",
 	    Update::packages_to_update, Update::packages_to_install, Update::packages_to_remove);

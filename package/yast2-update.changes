@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr 12 12:50:06 CEST 2006 - locilka@suse.cz
+
+- Fixing number of packages marked to be `removed during the update
+  (#162963).
+- 2.13.17
+
+-------------------------------------------------------------------
 Wed Apr 12 11:51:44 CEST 2006 - schubi@suse.de
 
 - removed Pkg::PkgFreshen();
