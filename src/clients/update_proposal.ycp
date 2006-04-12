@@ -150,7 +150,6 @@
 	    Update::unknown_packages = update_sum[`ProblemListSze]:0;
 
 	    SelectKernelPackages ();
-	    Pkg::PkgFreshen();
 
 	    if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
 		Update::solve_errors = 0;
