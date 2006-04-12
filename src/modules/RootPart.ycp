@@ -563,6 +563,13 @@ define boolean IsMounted (string mountpoint) {
 	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
 			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
 
+	// mount sysfs first
+	string ret = MountPartition ("/sys", "sysfs", "sysfs");
+
+	if (ret == nil)
+	    AddMountedPartition($[`type : "mount", `device : "sysfs", `mntpt : "/sys"]);
+
+
 	boolean success = true;
 
 	boolean raidMounted = false;
