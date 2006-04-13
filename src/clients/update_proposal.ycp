@@ -38,14 +38,6 @@
 	list<string> recom_kernel = Kernel::ComputePackages ();
 	y2milestone ("Selected kernel: %1, recommended kernel: %2",
 	    selected_kernel, recom_kernel);
-	if (! contains (recom_kernel, selected_kernel))
-	{
-	    list<string> to_delete
-		= Kernel::ComputePackagesForBase (selected_kernel, false);
-	    foreach (string p, to_delete, {
-		Pkg::PkgDelete (p);
-	    });
-	}
 	list<string> kernel_packs = Kernel::ComputePackages ();
 	boolean kernel_refresh_needed = false;
 	foreach (string p, kernel_packs, {

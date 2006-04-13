@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Apr 13 20:24:33 CEST 2006 - jsrain@suse.de
+
+- do not remove old kernel - solver handles it (#165823)
+
+-------------------------------------------------------------------
 Thu Apr 13 10:58:44 CEST 2006 - locilka@suse.cz
 
 - New counting of packages for the update proposal (#162963).
