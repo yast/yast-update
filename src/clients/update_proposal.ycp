@@ -173,22 +173,35 @@ some applications may not run properly.")))
 		Update::products_incompatible = true;
 	    }
 	}
+	// Pkg::GetPackages()
+	//   `installed all installed packages
+	//   `selected returns all selected but not yet installed packages
+	//   `available returns all available packages (from the installation source)
+	//   `removed all packages selected for removal
+
 	// recreate the update summary
 	list<string> installed = Pkg::GetPackages (`installed, true);
-	list<string> selected = Pkg::GetPackages (`selected, true);
-	integer removed_size = size(Pkg::GetPackages (`removed, true));
-	y2milestone ("Selected: %1, Installed: %2, Removed: %3", size (selected), size (installed), removed_size);
-
-	y2milestone("Removed: %1", Pkg::GetPackages (`removed, true));
+	list<string> selected  = Pkg::GetPackages (`selected, true);
+	list<string> removed   = Pkg::GetPackages (`removed, true);
+	integer cnt_installed  = size (installed);
+	integer cnt_selected   = size (selected);
+	integer cnt_removed    = size (removed);
+	y2milestone ("Selected: %1, Installed: %2, Removed: %3", cnt_selected, cnt_installed, cnt_removed);
+	y2milestone("Removed: %1", removed);
 
 	map<string,boolean> installed_m = listmap (string p, installed, {
 	    return $[ p : true ];
 	});
+	// packages that are both 'installed' && 'selected'
 	Update::packages_to_update = size (filter (string p, selected, {
 	    return haskey (installed_m, p);
 	}));
-	Update::packages_to_install = size (selected) - Update::packages_to_update;
-	Update::packages_to_remove = removed_size;
+	// packages that are 'selected' but not 'installed'
+	Update::packages_to_install = cnt_selected - Update::packages_to_update;
+	// packages that are 'removed' but not 'selected again'
+	Update::packages_to_remove = size (filter (string p, removed, {
+	    return ! haskey (installed_m, p);
+	}));
 
 	y2milestone("Update statistics: Updated: %1, Installed: %2, Removed: %3",
 	    Update::packages_to_update, Update::packages_to_install, Update::packages_to_remove);

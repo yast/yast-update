@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr 13 10:58:44 CEST 2006 - locilka@suse.cz
+
+- New counting of packages for the update proposal (#162963).
+- 2.13.19
+
+-------------------------------------------------------------------
 Wed Apr 12 19:29:18 CEST 2006 - jsrain@suse.de
 
 - mount /sys before update (#165502)
