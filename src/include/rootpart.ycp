@@ -17,6 +17,8 @@ import "Popup";
 import "Label";
 import "RootPart";
 import "GetInstArgs";
+import "Report";
+import "Update";
 
 
 list<term> make_partition_list (boolean withall) {
@@ -209,15 +211,28 @@ is different than the one of this product."));
 	    if (! cont)
 		ret = nil;
 	}
+	if (ret == `next)
+	{
+	    RootPart::selectedRootPartition = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
+	    RootPart::showAllPartitions = (boolean) UI::QueryWidget (`id(`showall), `Value);
 
+	    if (flavor == `update_dialog)
+	    {
+		RootPart::targetOk = RootPart::mount_target ();
+
+		if (!RootPart::targetOk)
+		{
+		    // error report
+		    Report::Error (_("Failed to mount target system"));
+		    Update::Detach ();
+		    RootPart::UnmountPartitions (false);
+		    continue;
+		}
+	    }
+	    break;
+	}
 	if (ret == `cancel || ret == `back || ret == `next)
 	    break;
-    }
-
-    if (ret == `next)
-    {
-	RootPart::selectedRootPartition = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
-	RootPart::showAllPartitions = (boolean) UI::QueryWidget (`id(`showall), `Value);
     }
 
     if (flavor != `update_dialog)
