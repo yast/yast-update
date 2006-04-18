@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Apr 18 18:01:43 CEST 2006 - jsrain@suse.de
+
+- mount target system in root partition selection dialog (#167240)
+
+-------------------------------------------------------------------
 Fri Apr 14 20:22:38 CEST 2006 - jsrain@suse.de
 
 - prevent from returning to root partition selection dialog (#165832)
