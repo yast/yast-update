@@ -184,15 +184,20 @@ some applications may not run properly.")))
 	map<string,boolean> installed_m = listmap (string p, installed, {
 	    return $[ p : true ];
 	});
+	map<string,boolean> selected_m = listmap (string p, selected, {
+	    return $[ p : true ];
+	});
+
 	// packages that are both 'installed' && 'selected'
 	Update::packages_to_update = size (filter (string p, selected, {
 	    return haskey (installed_m, p);
 	}));
 	// packages that are 'selected' but not 'installed'
 	Update::packages_to_install = cnt_selected - Update::packages_to_update;
+
 	// packages that are 'removed' but not 'selected again'
 	Update::packages_to_remove = size (filter (string p, removed, {
-	    return ! haskey (installed_m, p);
+	    return ! haskey (selected_m, p);
 	}));
 
 	y2milestone("Update statistics: Updated: %1, Installed: %2, Removed: %3",

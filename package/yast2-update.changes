@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr 20 14:47:17 CEST 2006 - lslezak@suse.cz
+
+- fixed counting of removed packages (#162963)
+- 2.13.23
+
+-------------------------------------------------------------------
 Tue Apr 18 18:01:43 CEST 2006 - jsrain@suse.de
 
 - mount target system in root partition selection dialog (#167240)
