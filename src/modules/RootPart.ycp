@@ -989,7 +989,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    map<symbol,string> mt_map = $[
 		`ext2: "ext2",
 		`ext3: "ext3",
-		`reiser: "reiser",
+		`reiser: "reiserfs",
 		`xfs: "xfs",
 		`jfs: "jfs",
 	    ];
