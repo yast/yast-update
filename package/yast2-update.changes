@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 21 11:06:15 CEST 2006 - locilka@suse.cz
+
+- calling modprobe with the right parameter (without -t) (#167976)
+- 2.13.24
+
+-------------------------------------------------------------------
 Thu Apr 20 14:47:17 CEST 2006 - lslezak@suse.cz
 
 - fixed counting of removed packages (#162963)

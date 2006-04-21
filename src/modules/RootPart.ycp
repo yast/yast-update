@@ -262,12 +262,17 @@ define string MountPartition (string mount_point, string device,
     string mount_type)
 {
     if (mount_type == "")
+	// e.g. -> "reiserfs"
 	mount_type = FileSystems::GetMountString (
 	    Storage::DetectFs (device), "");
+
+    // #167976, was broken with "-t ", modprobe before adding it
+    y2milestone("Calling 'modprobe %1'", mount_type);
+    SCR::Execute(.target.modprobe, mount_type, "" );
+
     if (mount_type != "")
 	mount_type = "-t " + mount_type;
 
-    SCR::Execute(.target.modprobe, mount_type, "" );
     boolean ret = (boolean) SCR::Execute (.target.mount,
 	[device, Installation::destdir + mount_point, Installation::mountlog],
 	mount_type );
