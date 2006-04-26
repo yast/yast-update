@@ -1,0 +1,1160 @@
+/**
+ * Module:	RootPart.ycp
+ *
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:	Responsible for searching of root partitions and
+ *		mounting of target partitions.
+ *
+ * $Id$
+ */
+{
+    module "RootPart";
+
+    textdomain "update";
+
+    import "Directory";
+    import "Mode";
+    import "Keyboard";
+    import "Linuxrc";
+    import "Storage";
+    import "Popup";
+    import "ModuleLoading";
+    import "FileSystems";
+    import "Update";
+    import "Packages";
+    import "SuSERelease";
+
+    include "partitioning/partition_defines.ycp";
+    include "partitioning/custom_part_helptexts.ycp";
+    include "partitioning/custom_part_dialogs.ycp";
+
+
+    // Selected root partition for the update or boot.
+    global string selectedRootPartition = "";
+
+    // Map of all root partitions (key) and information map (value).
+    // The information map contains the keys `valid, `name and `arch.
+    global map<string,map> rootPartitions = $[];
+
+    // Number of valid root partitions.
+    global integer numberOfValidRootPartitions = 0;
+
+    // Show all partitions (not only root partitions) in the dialog.
+    global boolean showAllPartitions = false;
+
+    // Did we search for root partitions
+    global boolean didSearchForRootPartitions = false;
+
+    // We successfully mounted the target partitions
+    global boolean targetOk = false;
+
+    // Did we try to mount the target partitions?
+    global boolean did_try_mount_partitions = false;
+
+
+    /**
+     * List of mounted partitions, activated swap partitions and loop devices.
+     * Amongst other things used for reversing action if mode is changed from
+     * update to new installation or if root partition for update is changed.
+     * The order of the list if of paramount importance.
+     *
+     * Each item is list [string value, string type [, string device]] where:
+     *
+     * Keys/values are:
+     *
+     *   `type     The type, one of "mount", "swap" or "loop".
+     *
+     *   `device   The device.
+     *
+     *   `mntpt    The mount point, only for `type = "mount".  Does not
+     *             include Installation::destdir.
+     */
+    list <map <symbol, string> > activated = [];
+
+    global boolean Mounted () {
+	return size (activated) > 0;
+    }
+
+
+    /**
+     *  Link to SDB article concerning renaming of devices.
+     */
+    string sdb = sformat (_("See the SBD article at %1 for details
+about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhassel_update_not_possible.html");
+
+
+    /**
+     * Get the key what of the selected root partition.
+     */
+    global define string GetInfoOfSelected (symbol what)
+    {
+	map i = rootPartitions[selectedRootPartition]:$[];
+        // Unkown for unknown system
+	return i[what]:_("Unknown");
+    }
+
+
+    /**
+     * Set the selected root partition to some valid one. Only
+     * make sense if the number of valid root partition is one.
+     */
+    global define void SetSelectedToValid ()
+    {
+	selectedRootPartition = "";
+	foreach (string p, map i, rootPartitions, {
+	    if (i[`valid]:false && selectedRootPartition == "")
+		selectedRootPartition = p;
+	});
+    }
+
+
+    /**
+     *
+     */
+    define void AddToTargetMap ()
+    {
+	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
+	y2milestone ("On disk target map: %1", target_map);
+	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
+	foreach (map e, tmp, {
+	    y2milestone ("Setting partition data: Device: %1, MountPoint: %2",
+		e[`device]:"", e[`mntpt]:"");
+	    target_map = Storage::SetPartitionData (target_map, e[`device]:"",
+						    "mount", e[`mntpt]:"");
+	});
+	tmp = filter (map e, activated, ``(e[`type]:"" == "swap"));
+	foreach (map e, tmp, {
+	    y2milestone ("Setting swap partition data: Device: %1",
+		e[`device]:"");
+	    target_map = Storage::SetPartitionData (target_map, e[`device]:"",
+						    "mount", "swap");
+	});
+	y2milestone ("Setting target map: %1", target_map);
+	Storage::SetTargetMap (target_map);
+    }
+
+
+    /**
+     *
+     */
+    define void RemoveFromTargetMap ()
+    {
+	map <string, map> target_map = Storage::GetTargetMap ();
+	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
+	foreach (map e, tmp, {
+	    target_map = Storage::SetPartitionData (target_map, e[`device]:"",
+						    "mount", "");
+	});
+	Storage::SetTargetMap (target_map);
+    }
+
+    /**
+     * Unmount all mounted partitions, deactivate swaps, detach loopback
+     * devices. Uses list activated to make actions in reverse order.
+     * @param keeep_in_target Do not remove mounts from targetmap
+     * @return void
+     */
+    global define void UnmountPartitions (boolean keep_in_target)
+    {
+	y2milestone ("UnmountPartitions: %1", keep_in_target);
+
+	did_try_mount_partitions = false;
+
+	foreach (map info, activated, {
+	    y2milestone ("Unmounting %1", info);
+	    string type = info[`type]:"";
+
+	    if (type != "")
+	    {
+		if (type == "mount")
+		{
+		    string file = Installation::destdir + info[`mntpt]:"";
+		    if (! (boolean)SCR::Execute (.target.umount, file))
+		    {
+			// error report, %1 is device (eg. /dev/hda1)
+			Report::Error (sformat (_("Cannot unmount partition %1.
+
+It is currently in use. If the partition stays mounted,
+the data may be lost. Unmount the partition manually
+or restart your computer.
+"), file));
+		    }
+		}
+		else if (type == "swap")
+		{
+		    string device = info[`device]:"";
+		    // FIXME? is it safe?
+		    if (SCR::Execute (.target.bash, "/sbin/swapoff " + device) != 0)
+		    {
+			y2error("Cannot deactivate swap %1", device);
+		    }
+		}
+		else if (type == "loop")
+		{
+		    string device = info[`device]:"";
+		    // FIXME? is it safe?
+		    if (WFM::Execute(.local.bash, "losetup -d " + device) != 0)
+		    {
+			y2error("Cannot deactivate loopback device %1", device);
+		    }
+		}
+	    }
+	});
+
+	// now remove the mount points of the mounted partitions
+	// in the target map of the storage module
+        if (!keep_in_target)
+	    RemoveFromTargetMap ();
+
+
+	// clear activated list
+	activated = [];
+    }
+
+
+    /**
+     * Add information about mounted partition to internal list.
+     * @param partinfo partinfo has to be list with exactly two strings,
+     * see description of list "activated"
+     * @return void
+     */
+    define void AddMountedPartition (map <symbol, string> partinfo)
+    {
+	activated = prepend (activated, partinfo);
+	y2debug ("adding %1 yields %2", partinfo, activated);
+    }
+
+
+    /**
+     * Check the filesystem of a partition.
+     */
+    define void FSCKPartition (string partition)
+    {
+	if (!Mode::test ())
+	{
+	    symbol detected_fs = Storage::DetectFs (partition);
+	    if (detected_fs == `ext2)
+	    {
+		// label, %1 is partition
+		string out = sformat (_("Checking partition %1"), partition);
+		UI::OpenDialog (`opt(`decorated ), `Label(out));
+
+		// FIXME why is the sleep here?
+		sleep (1000);
+
+		y2milestone ("command: /sbin/e2fsck -y %1", partition);
+		SCR::Execute (.target.bash, "/sbin/e2fsck -y " + partition);
+
+		UI::CloseDialog ();
+	    }
+	}
+    }
+
+/**
+ * Mount partition on specified mount point
+ * @param mount_point string mount point to monut the partition at
+ * @param device string device to mount
+ * @param mount_type string filesystem type to be specified while mounting
+ * @return string nil on success, error description on fail
+ */
+define string MountPartition (string mount_point, string device,
+    string mount_type)
+{
+    if (mount_type == "")
+	// e.g. -> "reiserfs"
+	mount_type = FileSystems::GetMountString (
+	    Storage::DetectFs (device), "");
+
+    // #167976, was broken with "-t ", modprobe before adding it
+    y2milestone("Calling 'modprobe %1'", mount_type);
+    SCR::Execute(.target.modprobe, mount_type, "" );
+
+    if (mount_type != "")
+	mount_type = "-t " + mount_type;
+
+    boolean ret = (boolean) SCR::Execute (.target.mount,
+	[device, Installation::destdir + mount_point, Installation::mountlog],
+	mount_type );
+    if (ret)
+	return nil;
+    else
+	return (string)SCR::Read (.target.string, Installation::mountlog);
+}
+
+
+
+/**
+ * Check filesystem on a partition and mount the partition on specified mount
+ *  point
+ * @param mount_point string mount point to monut the partition at
+ * @param device string device to mount
+ * @param mount_type string filesystem type to be specified while mounting
+ * @return string nil on success, error description on fail
+ */
+define string FsckAndMount (string mount_point, string device,
+    string mount_type)
+{
+    FSCKPartition (device);
+
+    string ret = MountPartition (mount_point, device, mount_type);
+
+    if (ret == nil)
+	AddMountedPartition($[`type : "mount", `device : device, `mntpt : mount_point]);
+
+    y2milestone ("mounting (%1, %2, %3) yield %4", Installation::destdir +
+	mount_point, device, mount_type, ret);
+
+    return ret;
+}
+
+
+    /**
+     *  Check that the root filesystem in fstab has the correct device.
+     */
+    define boolean check_root_device (string partition, list <map> fstab,
+				      string& found_partition)
+    {
+	list <map> tmp = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
+
+	if (size (tmp) != 1)
+	{
+	    y2error ("not exactly one root partition found in fstab");
+	    found_partition = "none";
+	    return false;
+	}
+
+	map root = tmp[0]:$[];
+
+	if (!Storage::DeviceRealDisk (root["spec"]:""))
+	{
+	    // There's nothing I can check.  Anyway, it's not mounted per device
+	    // name so it can't be wrong, in theory.
+	    return true;
+	}
+
+	if (root["spec"]:"" != partition)
+	{
+	    y2error ("root partition in fstab has wrong device");
+	    found_partition = root["spec"]:"";
+	    return false;
+	}
+
+	return true;
+    }
+
+/**
+ * Find a monut poing in fstab
+ * @param fstab a list of fstab entries
+ * @param mountpoint string a mount point to find
+ * @return string the found partition
+ */
+define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
+    if (substring (mountpoint, size (mountpoint) - 1, 1) == "/")
+	mountpoint = substring (mountpoint, 0, size (mountpoint) - 1);
+
+    list <map> tmp = filter (map entry, fstab, {
+	return entry["file"]:"" == mountpoint
+	    || entry["file"]:"" == mountpoint + "/";
+    });
+
+    if (size (tmp) == 0)
+	return nil;
+
+    return tmp[0,"spec"]:"";
+}
+
+    /**
+     *
+     */
+    define list <map> TranslateFSTab (list <map> fstab)
+    {
+	list <string> old_names = [];
+	foreach (map m, fstab, {
+	    old_names = add (old_names, m["spec"]:"");
+	});
+
+	list <string> new_names = Storage::GetTranslatedDevices (
+	    Update::installedVersion, Update::updateVersion,
+	    old_names);
+
+	integer i = 0;
+	while (i < size (fstab))
+	{
+	    string spec = fstab[i,"spec"]:"";
+	    fstab[i,"spec"] = new_names[i]:spec;
+	    i = i + 1;
+	};
+
+	return fstab;
+    }
+
+
+    /**
+     *
+     */
+    define boolean read_fstab_and_cryptotab (list <map>& fstab, list <map>& crtab)
+    {
+	integer default_scr = WFM::SCRGetDefault ();
+	integer new_scr = nil;
+	if (Stage::initial ())
+	{
+	    SCR::RegisterAgent (.target.etc.fstab, `ag_anyagent(
+		  `Description (
+		      (`File(Installation::destdir+"/etc/fstab")),
+		      "#\n",                    // Comment
+		      false,                    // read-only
+		      (`List (
+		        `Tuple (
+		          `spec (`String("^\t ")),
+		          `Separator ("\t "),
+		          `file (`String("^\t ")),
+		          `Separator ("\t "),
+		          `vfstype (`String("^\t ")),
+		          `Separator ("\t "),
+		          `mntops (`String("^ \t\n")),
+		          `Optional(`Whitespace()),
+		          `Optional(`freq (`Number())),
+		          `Optional(`Whitespace()),
+		          `Optional(`passno (`Number()))
+		        ),
+		        "\n"
+		      ))
+		    )
+		));
+	    SCR::RegisterAgent (.target.etc.cryptotab, `ag_anyagent(
+		  `Description (
+		      (`File(Installation::destdir+"/etc/cryptotab")),
+		      "#\n",			// Comment
+		      false,			// read-only
+		      (`List (
+			`Tuple (
+			  `loop (`String("^\t ")),
+			  `Separator ("\t "),
+			  `file (`String("^\t ")),
+			  `Separator ("\t "),
+			  `mount (`String("^\t ")),
+		          `Separator ("\t "),
+			  `vfstype (`String("^\t ")),
+			  `Separator ("\t "),
+			  `opt1 (`String("^\t ")),
+			  `Separator ("\t "),
+			  `opt2 (`String("^ \t\n"))
+			),
+			"\n"
+		      ))
+		    )
+		));
+	    fstab = (list<map>) SCR::Read (.target.etc.fstab);
+	    crtab = (list<map>) SCR::Read (.target.etc.cryptotab);
+	    SCR::UnregisterAgent (.target.etc.fstab);
+	    SCR::UnregisterAgent (.target.etc.cryptotab);
+	}
+	else
+	{
+	    fstab = (list<map>) SCR::Read (.etc.fstab);
+	    crtab = (list<map>) SCR::Read (.etc.cryptotab);
+	}
+
+
+	if (SCR::Read (.target.size, Installation::destdir + "/etc/raidtab") > 0)
+	{
+	    SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/raidtab /etc");
+	}
+
+	return true;
+    }
+
+
+    /**
+     *
+     */
+    define boolean PrepareCryptoTab (list <map> crtab, list <map>& fstab)
+    {
+	integer crypt_nb = 0;
+
+	foreach (map mounts, crtab, {
+
+	    string vfstype = mounts["vfstype"]:"";
+	    string mntops  = mounts["opt2"]:"";
+	    string loop    = mounts["loop"]:"";
+	    string fspath  = mounts["mount"]:"";
+	    string device  = mounts["file"]:"";
+
+	    y2milestone ("vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5",
+			 vfstype, mntops, loop, fspath, device);
+
+	    if (!issubstring (mntops, "noauto"))
+	    {
+	      boolean again = true;
+	      while (again)
+	      {
+		boolean crypt_ok = true;
+		string crypt_passwd = DlgUpdateCryptFs( device, fspath );
+
+		if (crypt_passwd == nil || crypt_passwd == "")
+		{
+		    crypt_ok = false;
+		    again = false;
+		}
+
+		y2milestone ("crypt pwd ok:%1", crypt_ok);
+
+		if (crypt_ok)
+		{
+		    map setloop = $[ "encryption"    : "twofish",
+				     "passwd"        : crypt_passwd,
+				     "loop_dev"      : loop,
+				     "partitionName" : device ];
+
+		    crypt_ok = Storage::PerformLosetup( setloop, false );
+		    y2milestone ("crypt ok: %1", crypt_ok);
+		    if( crypt_ok )
+			loop = setloop["loop_dev"]:"";
+		    else
+		    {
+			// yes-no popup
+			again = Popup::YesNo (_("Incorrect password. Try again?"));
+		    }
+		}
+
+		if (crypt_ok)
+		{
+		    map add_fs = $[ "file" : fspath,
+				    "mntops" : mntops,
+				    "spec" : loop,
+				    "freq" : 0,
+				    "passno" : 0,
+				    "vfstype": vfstype ];
+		    fstab = prepend (fstab, add_fs);
+		    AddMountedPartition ($[`type : "loop", `device : device]);
+		    again = false;
+		}
+	      }
+	    }
+
+	});
+
+	return true;
+    }
+
+
+/**
+ * Check if specified mount point is mounted
+ * @param mountpoint the mount point to be checked
+ * @return boolean true if it is mounted
+ */
+define boolean IsMounted (string mountpoint) {
+    if (substring (mountpoint, size (mountpoint) - 1, 1) == "/")
+	mountpoint = substring (mountpoint, 0, size (mountpoint) - 1);
+
+    boolean ret = true;
+    foreach (map e, activated, {
+	if (e[`type]:"" == "mount"
+	    && (e[`mntpt]:"" == mountpoint
+		|| e[`mntpt]:"" == mountpoint + "/"))
+	{
+	    ret = true;
+	}
+    });
+    return ret;
+}
+
+    /**
+     *
+     */
+    define boolean MountFSTab (list <map> fstab, string& message)
+    {
+	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
+			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
+
+	// mount sysfs first
+	string ret = MountPartition ("/sys", "sysfs", "sysfs");
+
+	if (ret == nil)
+	    AddMountedPartition($[`type : "mount", `device : "sysfs", `mntpt : "/sys"]);
+
+
+	boolean success = true;
+
+	boolean raidMounted = false;
+
+	foreach (map mounts, fstab, {
+
+	    string vfstype = mounts["vfstype"]:"";
+	    string mntops  = mounts["mntops"]:"";
+	    string spec    = mounts["spec"]:"";
+	    string fspath  = mounts["file"]:"";
+
+	    if (contains (allowed_fs, vfstype)
+		&& fspath != "/" && (fspath != "/var" || ! IsMounted("/var"))
+		&& !issubstring (mntops,"noauto"))
+	    {
+		y2milestone ("mounting %1 to %2", spec, fspath);
+
+		if ( !Mode::test () )
+		{
+		    // Checking for raid systems
+		    if ( issubstring( spec,"/dev/md")
+			 && !raidMounted )
+		    {
+			y2milestone( "Raidarray for partition %1 on device %2 found",
+				     fspath, spec );
+			string command = "/sbin/raidstart --all --configfile " +
+			    Installation::destdir + "/etc/raidtab";
+
+			integer ret_from_shell = (integer) SCR::Execute (.target.bash, command);
+			if ( ret_from_shell != 0 )
+			{
+			    y2milestone ("raidstart failed ( does no matter ): %1", command );
+			}
+			else
+			{
+			    y2milestone ("raidstart OK: %1", command );
+			    raidMounted = true;
+			}
+		    }
+
+		    string mount_type = "";
+		    if (vfstype == "proc")
+		    {
+			mount_type = vfstype;
+		    }
+
+		    string mount_err = "";
+		    while (mount_err != nil)
+		    {
+			mount_err = FsckAndMount (fspath, spec, mount_type);
+			if (mount_err != nil)
+			{
+			    y2error("mounting %1 (type %2) on %3 failed", spec,
+				mount_type, Installation::destdir + fspath);
+			    UI::OpenDialog (`VBox (
+				`Label (sformat (
+				    // label in a popup, %1 is device (eg. /dev/hda1), %2 is output of the 'mount' command
+				    _("The partition %1 could not be mounted.
+
+%2
+
+If you are sure that the partition is not necessary for the
+update (it is not any system partition), click Continue.
+To check or fix the mount options, click Specify Mount Options.
+To abort update, click Cancel."),
+				    spec, mount_err)
+				),
+				`VSpacing (1),
+				`HBox (
+				    `PushButton (`id (`cont), Label::ContinueButton ()),
+				    // push button
+				    `PushButton (`id (`cmd), _("&Specify Mount Options")),
+				    `PushButton (`id (`cancel), Label::CancelButton ())
+				)
+			    ));
+			    symbol act = (symbol)UI::UserInput ();
+			    UI::CloseDialog ();
+			    if (act == `cancel)
+			    {
+				mount_err = nil;
+				success = false;
+			    }
+			    else if (act == `cont)
+			    {
+				mount_err = nil;
+			    }
+			    else if (act == `cmd)
+			    {
+				UI::OpenDialog (`VBox (
+				    // popup heading
+				    `Heading (_("Mount Options")),
+				    `VSpacing (0.6),
+				    // text entry label
+				    `TextEntry (`id (`mp), _("&Mount Point"), fspath),
+				    `VSpacing (0.4),
+				    // tex entry label
+				    `TextEntry (`id (`device), _("&Device"), spec),
+				    `VSpacing (0.4),
+				    // text entry label
+				    `TextEntry (`id (`fs), _("&File System\n(empty for autodetection)"), mount_type),
+				    `VSpacing (1),
+				    `HBox (
+
+					`PushButton (`id (`ok), Label::OKButton ()),
+					`PushButton (`id (`cancel), Label::CancelButton ())
+				    )
+				));
+				act = (symbol)UI::UserInput ();
+				if (act == `ok)
+				{
+				    fspath = (string)UI::QueryWidget (`id (`mp), `Value);
+				    spec = (string)UI::QueryWidget (`id (`device), `Value);
+				    mount_type = (string)UI::QueryWidget (`id (`fs), `Value);
+				}
+				UI::CloseDialog ();
+			    }
+/*
+			    message = sformat (_("The partition %1 could not be mounted.\n
+Check the log file %2.
+"), spec, Directory::logdir + "/y2log");
+			    success = false;
+			    ret_bool = true;*/
+			}
+		    }
+		}
+	    }  // allowed_fs
+	    else if (vfstype == "swap" && fspath == "swap" )
+	    {
+		y2milestone("mounting %1 to %2", spec, fspath);
+
+		if ( !Mode::test () )
+		{
+		    string command = "/sbin/swapon ";
+		    if ( spec != "" )
+		    {
+			// swap-partition
+			command = command + spec;
+
+			// run /sbin/swapon
+			integer ret_from_shell = (integer) SCR::Execute (.target.bash, command);
+			if ( ret_from_shell != 0 )
+			{
+			    y2error("swapon failed: %1", command );
+			}
+			else
+			{
+			    AddMountedPartition ($[`type : "swap", `device : spec]);
+			}
+		    }
+		}
+	    }
+	});
+
+	return success;
+    }
+
+/**
+ * Mount /var partition
+ * @param device string device holding the /var subtree
+ * @return string nil on success, error description on fail
+ */
+string MountVarPartition (string device) {
+    string mount_err = FsckAndMount ("/var", device, "");
+    string err_message = nil;
+    if (mount_err != nil)
+    {
+	y2error ("failed to mount /var");
+	err_message = sformat (
+	    // error message
+	    _("The /var partition %1 could not be mounted.\n"),
+	    device) + "\n" + mount_err + "\n\n" + sdb;
+    }
+    return err_message;
+}
+
+/**
+ * Check if /var partition is needed, mount it if it is
+ * @param fstab a list of fstab entries
+ * @param root_device_current string current root device
+ * @return string nil on success, error description on fail
+ */
+define string MountVarIfRequired (list <map> fstab, string root_device_current)
+{
+	string var_device_fstab = FindPartitionInFstab (fstab, "/var");
+	if (var_device_fstab == nil)
+	    return nil;
+
+	if (!Storage::DeviceRealDisk (var_device_fstab))
+	    return MountVarPartition (var_device_fstab);
+
+	list <map> tmp1 = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
+	string root_device_fstab = tmp1[0,"spec"]:"";
+
+	map root_info = Storage::GetDiskPartition (root_device_fstab);
+	map var_info = Storage::GetDiskPartition (var_device_fstab);
+
+	if (root_info["disk"]:"" == var_info["disk"]:"")
+	{
+	    map tmp2 = Storage::GetDiskPartition (root_device_current);
+	    string var_partition_current = Storage::GetDeviceName (tmp2["disk"]:"", var_info["nr"]:0);
+
+	    return MountVarPartition (var_partition_current);
+	}
+
+	list <string> realdisks = [];
+	foreach (string s, map m, (map <string, map>) Storage::GetOndiskTarget (), {
+	    if (Storage::DeviceRealDisk (s))
+		realdisks = add (realdisks, s);
+	});
+
+	if (size (realdisks) != 2)
+	{
+	    y2error ("don't know how to handle more than two disks at this point");
+		// error message
+	    return _("Unable to mount /var partition with this disk configuration.\n") + sdb;
+	}
+
+	string other_disk = realdisks[ realdisks[0]:"" == root_info["disk"]:"" ? 1 : 0 ]:"";
+	string var_partition_current = Storage::GetDeviceName (other_disk, var_info["nr"]:0);
+
+	return MountVarPartition (var_partition_current);
+}
+
+
+    /**
+     * Mounting root-partition; reading fstab and mounting read partitions
+     */
+    global define boolean MountPartitions (string root_device_current)
+    {
+	y2milestone ("mount partitions: %1", root_device_current);
+
+	if (did_try_mount_partitions)
+	    return true;
+
+	did_try_mount_partitions = true;
+
+	boolean success = true;
+
+	// popup message, %1 will be replace with the name of the logfile
+	string message =  sformat (_("Partitions could not be mounted.\n
+Check the log file %1."), Directory::logdir + "/y2log");
+	y2milestone ("selected partition: %1", root_device_current);
+
+	boolean ret_bool = true;
+
+	list <map> fstab = [];
+	list <map> crtab = [];
+
+	// Mount selected root partition to Installation::destdir
+	if ( !Mode::test () )
+	{
+	    ret_bool = nil == FsckAndMount ("/", root_device_current, "");
+	}
+
+	if ( ret_bool )
+	{
+	    // read the keyboard settings now, so that it used when
+	    // typing passwords for encrypted partitions
+	    Keyboard::CheckKeyboardDuringUpdate (Installation::destdir);
+
+	    Update::GetProductName ();
+
+	    read_fstab_and_cryptotab (fstab, crtab);
+
+	    y2milestone ("fstab: %1", fstab);
+	    y2milestone ("crtab: %1", crtab);
+
+	    fstab = TranslateFSTab (fstab);
+	    crtab = TranslateFSTab (crtab);
+
+	    y2milestone ("fstab: %1", fstab);
+	    y2milestone ("crtab: %1", crtab);
+
+	    if (size (fstab) == 0)
+	    {
+		y2error ("no or empty fstab found!");
+		// error message
+		message = _("No fstab found.");
+		success = false;
+	    }
+	    else
+	    {
+		string tmp_msg = MountVarIfRequired (fstab, root_device_current);
+		if (tmp_msg != nil)
+		{
+		    y2error ("failed to mount /var!");
+		    message = tmp_msg;
+		    success = false;
+		}
+		else
+		{
+		    fstab = TranslateFSTab (fstab);
+		    crtab = TranslateFSTab (crtab);
+
+		    y2milestone ("fstab: %1", fstab);
+		    y2milestone ("crtab: %1", crtab);
+
+		    string tmp = "";
+
+		    if (!check_root_device (root_device_current, fstab, tmp))
+		    {
+			y2error ("fstab has wrong root device!");
+			// message part 1
+			message = _("The root partition in /etc/fstab has an invalid root device.\n") +
+			// message part 2
+			    sformat (_("It is currently mounted as %1 but listed as %2.\n"),
+				     root_device_current, tmp) + sdb;
+			success = false;
+		    }
+		    else
+		    {
+			y2milestone ("cryptotab %1", crtab);
+
+			PrepareCryptoTab (crtab, fstab);
+
+			y2milestone ("fstab %1", fstab);
+
+			if (!MountFSTab (fstab, message))
+			    success = false;
+		    }
+		}
+	    }
+	}
+	else
+	{
+	    y2error("Could not mount root '%1' to '%2'", root_device_current,
+		    Installation::destdir);
+	    success = false;
+	}
+
+	y2milestone ("MountPartition (%1) = %2", root_device_current, success);
+	y2milestone ("activated %1", activated);
+
+	if (!success)
+	{
+	    Popup::Message(message);
+
+	    // some mount failed, unmount all mounted fs
+	    UnmountPartitions(false);
+	    did_try_mount_partitions = true;
+	}
+	else
+	{
+	    // enter the mount points of the newly mounted partitions
+	    // in the target map of the storage module
+	    AddToTargetMap ();
+	}
+
+	return success;
+    }
+
+
+    global define boolean SetFormatPartitions (list<map> fstabpart)
+    {
+        map <string, map> target_map = Storage::GetTargetMap ();
+
+	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
+
+	foreach (map e, tmp, {
+
+	    string mntpt = e[`mntpt]:"";
+	    string part = e[`device]:"";
+
+	    map p = select(filter(map pp, fstabpart, ``(pp["mount"]:"" == mntpt)), 0 , $[]);
+	    boolean format_partition = false;
+	    if (haskey(p, "format"))
+	    {
+		format_partition = p["format"]:false;
+	    }
+	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
+	    target_map = Storage::SetPartitionData (target_map, part, "format", format_partition);
+	    target_map = Storage::SetPartitionData (target_map, part, "delete", false);
+	    target_map = Storage::SetPartitionData (target_map, part, "create", false);
+	});
+
+        Storage::SetTargetMap (target_map);
+        return true;
+    }
+
+
+    /**
+     * Get architecture of an elf file.
+     */
+    define string GetArchOfELF (string filename)
+    {
+	map bash_out = (map) SCR::Execute (.target.bash_output, Directory::ybindir +
+					   "/elf-arch " + filename);
+	if (bash_out["exit"]:1 != 0)
+	    return "unknown";
+	return deletechars (bash_out["stdout"]:"unknown", "\n");
+    }
+
+
+    /**
+     * Check a root partition and return map with infomations (see
+     * variable rootPartitions).
+     */
+    define map CheckPartition (map partition)
+    {
+	map freshman = $[`valid : false, `name : "unknown", `arch : "unknown", `label: partition["label"]:"" ];
+
+	string p_dev = partition["device"]:"error";
+	integer p_fsid = partition["fsid"]:0;
+	symbol p_type = partition["type"]:`primary;
+	symbol p_detect_fs = partition["detected_fs"]:`unknown;
+
+	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
+
+	if ((p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
+	    contains (possible_root_fs, p_detect_fs))
+	{
+	    map<symbol,string> mt_map = $[
+		`ext2: "ext2",
+		`ext3: "ext3",
+		`reiser: "reiserfs",
+		`xfs: "xfs",
+		`jfs: "jfs",
+	    ];
+	    string mount_type = mt_map[p_detect_fs]:"";
+	    if (mount_type != "")
+		SCR::Execute(.target.modprobe, mount_type, "" );
+	    // mount (read-only) partition to Installation::destdir
+	    if ((boolean) SCR::Execute (.target.mount, [p_dev, Installation::destdir,
+							Installation::mountlog], "-o ro"))
+	    {
+		// Is this a root partition, does /etc/fstab exists?
+		if (SCR::Read (.target.size, Installation::destdir + "/etc/fstab") > 0)
+		{
+		    y2milestone ("found fstab on %1", partition);
+
+		    // Get installed release name
+		    string release = SuSERelease::ReleaseInformation
+			(Installation::destdir);
+                    y2debug("release: %1", release );
+		    if (release == "?") {
+			// label for an unknown installed system
+			release = _("Unknown");
+		    }
+		    freshman[`name] = release;
+
+		    // Right architecture?
+		    freshman[`arch] = GetArchOfELF (Installation::destdir + "/bin/bash");
+		    if (freshman[`arch]:"unknown" == GetArchOfELF ("/bin/bash"))
+		    {
+			freshman[`valid] = true;
+		    }
+		    else
+		    {
+			y2milestone ("Architecture for partition %1 is %2, upgrading %3", p_dev, freshman[`arch]:"unknown", GetArchOfELF ("/bin/bash"));
+		    }
+		}
+
+		// unmount partition
+		SCR::Execute (.target.umount, Installation::destdir);
+	    }
+	}
+
+	y2milestone ("%1 %2", partition, freshman);
+
+	return freshman;
+    }
+
+
+    /**
+     * Find all valid root partitions and place the result in rootPartitions.
+     * The partitions are mounted and unmounted again (to Installation::destdir).
+     * Loads a bunch of kernel modules.
+     * @return void
+     */
+    global define void FindRootPartitions ()
+    {
+	if (didSearchForRootPartitions)
+	    return;
+
+	ModuleLoading::Load ("reiserfs", "", "Linux", "Reiser FS", Linuxrc::manual (), true);
+	ModuleLoading::Load ("jfs", "", "Linux", "JFS", Linuxrc::manual (), true);
+	ModuleLoading::Load ("xfs", "", "Linux", "XFS", Linuxrc::manual (), true);
+	ModuleLoading::Load ("ext3", "", "Linux", "Ext3", Linuxrc::manual (), true);
+	ModuleLoading::Load ("raid0", "", "Linux", "Raid 0", Linuxrc::manual (), true);
+	ModuleLoading::Load ("raid1", "", "Linux", "Raid 1", Linuxrc::manual (), true);
+	ModuleLoading::Load ("raid5", "", "Linux", "Raid 5", Linuxrc::manual (), true);
+	ModuleLoading::Load ("multipath", "", "Linux", "Multipath", Linuxrc::manual (), true);
+	ModuleLoading::Load ("dm-mod", "", "Linux", "DM", Linuxrc::manual (), true);
+	SCR::Execute (.target.bash, "/sbin/devmap_mknod.sh");
+	ModuleLoading::Load ("dm-snapshot", "", "Linux", "DM", Linuxrc::manual (), true);
+
+	if (Mode::test ())
+	{
+	    Storage::SetTargetMap ((map<string,map>) SCR::Read (.target.yast2, "test_target_map.ycp"));
+	}
+
+	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
+	y2milestone ("target_map: %1", target_map);
+//	target_map = (map <string, map>) Storage::GetTargetMap ();
+//	y2milestone ("target_map: %1", target_map);
+
+	rootPartitions = $[];
+	numberOfValidRootPartitions = 0;
+
+	foreach (string device, map description, target_map, {
+	    foreach (map partition, description["partitions"]:[], {
+
+		// some partitions don't make sense at all
+		if (partition["detected_fs"]:`unknown != `swap &&
+		    partition["type"]:`primary != `extended)
+		{
+		    map freshman = $[];
+
+		    if (Mode::test ())
+			freshman = $[`valid : true, `name : "SuSE Linux 4.2", `arch : "i286", `label: "Label" ];
+		    else
+			freshman = CheckPartition (partition);
+
+		    rootPartitions = add (rootPartitions, partition["device"]:"error", freshman);
+
+		    if (freshman[`valid]:false)
+			numberOfValidRootPartitions = numberOfValidRootPartitions + 1;
+		}
+	    });
+	});
+
+	didSearchForRootPartitions = true;
+
+	y2milestone ("rootPartitions: %1", rootPartitions);
+    }
+
+global string GetDistroArch () {
+    return GetArchOfELF ("/bin/bash");
+}
+
+    global boolean mount_target ()
+    {
+        UI::OpenDialog (`opt(`decorated ),
+                        // intermediate popup while mounting partitions
+                        `Label(_("Mounting partitions. One moment please...")));
+
+        boolean tmp = RootPart::MountPartitions (RootPart::selectedRootPartition);
+        sleep (500);
+
+        UI::CloseDialog ();
+
+        return tmp;
+    }
+
+global void Detect () {
+    if (!didSearchForRootPartitions)
+    {
+        UI::OpenDialog (`opt(`decorated ),
+                        // label
+                        `Label(_("Evaluating root partition. One moment please...")));
+
+        FindRootPartitions ();
+
+        UI::CloseDialog ();
+
+        selectedRootPartition = "";
+	y2milestone ("Detected root partitions: %1", rootPartitions);
+    }
+}
+
+global void Propose (boolean force_reset) {
+    y2milestone ("Proposing root partition");
+    Detect ();
+    if (force_reset)
+    {
+        selectedRootPartition = "";
+    }
+
+    if (numberOfValidRootPartitions == 0
+        && selectedRootPartition == "")
+    {
+        targetOk = false;
+    }
+    else
+    {
+        if (selectedRootPartition == "")
+        {
+            SetSelectedToValid ();
+        }
+    }
+}
+
+}

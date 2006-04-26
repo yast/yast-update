@@ -1,0 +1,147 @@
+/**
+ * Module:	packages_proposal.ycp
+ *
+ * Author:	Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:	Let user choose packages during update.
+ */
+{
+    textdomain "update";
+
+    import "HTML";
+    import "Packages";
+    import "SpaceCalculation";
+
+    import "Update";
+
+
+    string func  = (string) WFM::Args(0);
+    map    param = (map) WFM::Args(1);
+    map    ret   = $[];
+
+
+    define symbol call_packageselector ()
+    {
+	if (Update::unknown_packages > 0) // FIXME
+	{
+	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector),
+								  `opt(`updateMode)));
+	}
+	else
+	{
+	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
+	}
+
+	Pkg::SaveState();
+
+	symbol ret = (symbol) UI::RunPkgSelection (`id(`selector));
+	if (ret == `accept)
+	{
+	    Pkg::ClearSaveState();
+
+	    // FIXME: IT'S A MESS
+	    Update::solve_errors = 0;
+	    Update::unknown_packages = 0;
+	    Packages::base_selection_modified = true;
+	}
+	else
+	{
+	    Pkg::RestoreState(true);
+	}
+
+	UI::CloseDialog();
+
+	return ret;
+    }
+
+
+    if ( func == "MakeProposal" )
+    {
+	boolean force_reset      = param["force_reset"     ]:false;
+	boolean language_changed = param["language_changed"]:false;
+
+	// call some function that makes a proposal here:
+	//
+	// DummyMod::MakeProposal( force_reset );
+
+	// Fill return map
+
+//	SpaceCalculation::ShowPartitionWarning ();
+	list<string> warning = SpaceCalculation::GetPartitionWarning ();
+
+	list<string> tmp = [];
+
+	// proposal for packages during update, %1 is count of packages
+	tmp = add (tmp, sformat (_("Packages to Update: %1"),
+	    Update::packages_to_update));
+	// proposal for packages during update, %1 is count of packages
+	tmp = add (tmp, sformat (_("New Packages to Install: %1"),
+	    Update::packages_to_install));
+	// proposal for packages during update, %1 is count of packages
+	tmp = add (tmp, sformat (_("Packages to Remove: %1"),
+	    Update::packages_to_remove));
+	// part of summary, %1 is size of packages (in MB or GB)
+	tmp = add (tmp, sformat (_("Total Size of Packages to Update: %1"),
+	    Packages::CountSizeToBeInstalled ()));
+
+	if (Update::solve_errors > 0)
+	{
+	     // the proposal for the packages requires manual invervention
+	    ret = $[ "preformatted_proposal" : HTML::List (tmp),
+			/* warning text */
+		     "warning" : _("Cannot solve all conflicts. Manual intervention is required."),
+		     "warning_level" : `blocker ];
+	}
+	else if (size (warning) > 0)
+	{
+	     // the proposal for the packages requires manual intervention
+	    ret = $[ "preformatted_proposal" : HTML::List (tmp),
+		     "warning" : mergestring (warning, "<br>"),
+		     "warning_level" : `warning ];
+	}
+	else
+	{
+	    ret = $[ "preformatted_proposal" : HTML::List (tmp) ];
+	}
+    }
+    else if ( func == "AskUser" )
+    {
+	boolean has_next = param["has_next"]:false;
+
+	// call some function that displays a user dialog
+	// or a sequence of dialogs here:
+	//
+	// sequence = DummyMod::AskUser( has_next );
+
+	symbol result = call_packageselector ();
+
+	// FIXME: IT'S A MESS
+	/*
+	if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
+	    Update::solve_errors = 0;
+	else
+	    Update::solve_errors = Pkg::PkgSolveErrors ();
+	*/
+
+	// Fill return map
+
+	ret = $[ "workflow_sequence" : result ];
+    }
+    else if ( func == "Description" )
+    {
+	// Fill return map.
+	//
+	// Static values do just nicely here, no need to call a function.
+
+	ret =
+	    $[
+	      // this is a heading
+	      "rich_text_title"	:	_("Packages"),
+	      // this is a menu entry
+	      "menu_title"	:	_("&Packages"),
+	      "id"		:	"packages_stuff"
+	    ];
+    }
+
+    return ret;
+}
