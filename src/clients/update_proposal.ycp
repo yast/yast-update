@@ -110,6 +110,7 @@
 
 	    if (Update::onlyUpdateInstalled)			// just consider already installed packages
 	    {
+		Pkg::PkgReset();
 		Pkg::SetSelection ("");				// -> don't select any additional selections
 	    }
 	    else if (Packages::using_patterns)
@@ -117,6 +118,7 @@
 	    }
 	    else						// update selections too
 	    {
+		Pkg::PkgReset();
 		Pkg::SetSelection (Update::selected_selection);	// -> set the base selection (minimal, default, ....)
 
 		if (!Update::manual_interaction)
