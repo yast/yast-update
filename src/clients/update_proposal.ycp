@@ -84,7 +84,6 @@
 	{
 	    Update::did_init1 = true;
 
-	    Pkg::PkgReset ();
 	    if (size (Pkg::ResolvableProperties ("", `pattern, "")) > 0)
 	    {
 		y2milestone ("No base selection found, but patterns found...");
@@ -94,14 +93,18 @@
 
 	    if (!Update::did_init2)
 	    {
+		Pkg::PkgReset ();
 		Update::did_init2 = true;
-		if (Packages::using_patterns)
+		if (! Update::onlyUpdateInstalled)
 		{
-		    Update::SetDesktopPattern ();
-		}
-		else
-		{
-		    Update::ProposeSelection ();
+		    if (Packages::using_patterns)
+		    {
+			Update::SetDesktopPattern ();
+		    }
+		    else
+		    {
+			Update::ProposeSelection ();
+		    }
 		}
 	    }
 

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Apr 26 18:42:55 CEST 2006 - jsrain@suse.de
+
+- fixed update proposal with patterns (#168297)
+
+-------------------------------------------------------------------
 Fri Apr 21 11:06:15 CEST 2006 - locilka@suse.cz
 
 - calling modprobe with the right parameter (without -t) (#167976)
