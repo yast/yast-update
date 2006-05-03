@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed May  3 14:18:50 CEST 2006 - jsrain@suse.cz
+
+- fixed selecting product during update (#172164)
+
+-------------------------------------------------------------------
 Wed Apr 26 18:42:55 CEST 2006 - jsrain@suse.de
 
 - fixed update proposal with patterns (#168297)
