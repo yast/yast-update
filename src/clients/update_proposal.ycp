@@ -89,7 +89,6 @@
 		y2milestone ("No base selection found, but patterns found...");
 		Packages::using_patterns = true;
 	    }
-	    Packages::SelectProduct();
 
 	    if (!Update::did_init2)
 	    {
@@ -140,6 +139,7 @@
 		}
 	    }
 
+	    Packages::SelectProduct();
 	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
 	    map<symbol, integer> update_sum
 		= Pkg::PkgUpdateAll (Update::deleteOldPackages);
