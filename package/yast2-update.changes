@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu May 11 08:46:37 CEST 2006 - jsrain@suse.cz
+
+- preselect patterns specified in the content file (#168297)
+
+-------------------------------------------------------------------
 Wed May  3 14:18:50 CEST 2006 - jsrain@suse.cz
 
 - fixed selecting product during update (#172164)
