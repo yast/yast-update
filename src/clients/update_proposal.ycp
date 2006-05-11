@@ -17,6 +17,8 @@
     import "Installation";
     import "Kernel";
     import "Popup";
+    import "ProductFeatures";
+    import "Product";
 
 
     string func = (string) WFM::Args(0);
@@ -114,6 +116,15 @@
 	    }
 	    else if (Packages::using_patterns)
 	    {
+		if (! ProductFeatures::GetBooleanFeature ("software",
+		    "only_update_installed"))
+		{
+		    foreach (string pat, Product::patterns, {
+			y2milestone("Pre-select pattern %1", pat);
+			Pkg::ResolvableInstall( pat, `pattern );
+		    });
+		}
+
 	    }
 	    else						// update selections too
 	    {
