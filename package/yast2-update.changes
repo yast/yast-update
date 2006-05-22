@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 22 12:22:35 CEST 2006 - jsrain@suse.cz
+
+- do not delete unmaintained packages if not wanted by user
+  (#176788)
+
+-------------------------------------------------------------------
 Thu May 11 08:46:37 CEST 2006 - jsrain@suse.cz
 
 - preselect patterns specified in the content file (#168297)
