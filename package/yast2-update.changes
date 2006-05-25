@@ -2,6 +2,7 @@
 Thu May 25 13:15:54 CEST 2006 - jsrain@suse.cz
 
 - fixed keeping locked packages during upgrade (#177469)
+- 2.13.29
 
 -------------------------------------------------------------------
 Mon May 22 12:22:35 CEST 2006 - jsrain@suse.cz
