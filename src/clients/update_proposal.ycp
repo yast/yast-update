@@ -92,12 +92,9 @@
 		Packages::using_patterns = true;
 	    }
 
-	    if (!Update::did_init2)
+	    Pkg::PkgApplReset ();
+	    if (! Update::onlyUpdateInstalled)
 	    {
-		Pkg::PkgReset ();
-		Update::did_init2 = true;
-		if (! Update::onlyUpdateInstalled)
-		{
 		    if (Packages::using_patterns)
 		    {
 			Update::SetDesktopPattern ();
@@ -106,10 +103,8 @@
 		    {
 			Update::ProposeSelection ();
 		    }
-		}
 	    }
 
-	    Pkg::PkgApplReset ();
 	    if (Update::onlyUpdateInstalled)			// just consider already installed packages
 	    {
 		Pkg::SetSelection ("");				// -> don't select any additional selections
