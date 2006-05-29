@@ -92,7 +92,15 @@
 		Packages::using_patterns = true;
 	    }
 
+	    list<string> restore = [];
+	    list<map<string,any> > selected = Pkg::ResolvableProperties ("", `product, "");
+	    foreach (map<string,any> s, selected, {
+	        restore = add (restore, s["name"]:"");
+	    });
 	    Pkg::PkgApplReset ();
+	    foreach (string res, restore, {
+	        Pkg::ResolvableInstall (res, `product);
+	    });
 	    if (! Update::onlyUpdateInstalled)
 	    {
 		    if (Packages::using_patterns)
@@ -273,8 +281,9 @@ some applications may not run properly.")))
 
 	list<string> tmp = [];
 
+	tmp = Update::SelectedProducts ();
 	// summary text (%1 is package selection)
-	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion["nameandversion"]:"?"));
+//	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion["nameandversion"]:"?"));
 
 	if (Update::onlyUpdateInstalled)
 	{
