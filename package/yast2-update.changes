@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jun  7 09:27:17 CEST 2006 - jsrain@suse.cz
+
+- updated HTTP link to support portal (#180900)
+
+-------------------------------------------------------------------
 Mon May 29 12:50:46 CEST 2006 - jsrain@suse.cz
 
 - display all products to update in proposal (#170233)

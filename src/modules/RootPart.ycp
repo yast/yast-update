@@ -81,7 +81,8 @@
      *  Link to SDB article concerning renaming of devices.
      */
     string sdb = sformat (_("See the SBD article at %1 for details
-about how to solve this problem."), "http://portal.suse.com/sdb/en/2003/03/fhassel_update_not_possible.html");
+about how to solve this problem."),
+"http://support.novell.com/techcenter/sdb/en/2003/03/fhassel_update_not_possible.html");
 
 
     /**
