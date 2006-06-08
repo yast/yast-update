@@ -235,7 +235,7 @@ some applications may not run properly.")))
 	if (force_reset)
 	{
 	    Update::Reset ();
-
+	    Packages::Reset ([`product]);
 	    Update::did_init1 = false;
 	}
 

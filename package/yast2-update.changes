@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jun  8 12:48:39 CEST 2006 - jsrain@suse.cz
+
+- fixed "Reset to Default" function for SW selection (#177469)
+
+-------------------------------------------------------------------
 Wed Jun  7 09:27:17 CEST 2006 - jsrain@suse.cz
 
 - updated HTTP link to support portal (#180900)
