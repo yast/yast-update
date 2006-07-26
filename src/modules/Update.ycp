@@ -125,7 +125,10 @@ global boolean ProductsCompatible () {
 	    // assuming that multiple products on installation media
 	    // are compatible and compatibility is transitive
 	    list<map<string,string> > inst = (list<map<string,string> >)
-		Pkg::TargetProducts ();
+		Pkg::ResolvableProperties ("", `product, "");
+	    inst = filter (map<string,any> p, inst, {
+		return p["status"]:nil == `installed;
+	    });
 	    list<string> inst_names = maplist (map<string,string> p, inst, {
 		return p["name"]:"";
 	    });
@@ -210,7 +213,8 @@ global void IgnoreProductCompatibility () {
 
 	// get old product name
 
-	// cannot use Pkg::TargetProducts for pre-zypp products
+	// cannot use product information from package manager
+	// for pre-zypp products
 	// #153576
 	string old_name = SuSERelease::ReleaseInformation
 	    (Installation::destdir);

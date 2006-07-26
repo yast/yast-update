@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jul 26 10:01:18 CEST 2006 - jsrain@suse.cz
+
+- avoid using deprecated Pkg builtin TargetProducts
+
+-------------------------------------------------------------------
 Thu Jun  8 12:48:39 CEST 2006 - jsrain@suse.cz
 
 - fixed "Reset to Default" function for SW selection (#177469)
