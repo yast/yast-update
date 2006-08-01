@@ -124,12 +124,12 @@ global boolean ProductsCompatible () {
 	    // media is same as one of the installed products
 	    // assuming that multiple products on installation media
 	    // are compatible and compatibility is transitive
-	    list<map<string,string> > inst = (list<map<string,string> >)
+	    list<map<string,any> > inst =
 		Pkg::ResolvableProperties ("", `product, "");
 	    inst = filter (map<string,any> p, inst, {
 		return p["status"]:nil == `installed;
 	    });
-	    list<string> inst_names = maplist (map<string,string> p, inst, {
+	    list<string> inst_names = maplist (map<string,any> p, inst, {
 		return p["name"]:"";
 	    });
 	    list<string> to_install = maplist (integer src,
