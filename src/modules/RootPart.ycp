@@ -457,12 +457,6 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    crtab = (list<map>) SCR::Read (.etc.cryptotab);
 	}
 
-
-	if (SCR::Read (.target.size, Installation::destdir + "/etc/raidtab") > 0)
-	{
-	    SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/raidtab /etc");
-	}
-
 	return true;
     }
 
