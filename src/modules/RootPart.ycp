@@ -595,27 +595,6 @@ define boolean IsMounted (string mountpoint) {
 
 		if ( !Mode::test () )
 		{
-		    // Checking for raid systems
-		    if ( issubstring( spec,"/dev/md")
-			 && !raidMounted )
-		    {
-			y2milestone( "Raidarray for partition %1 on device %2 found",
-				     fspath, spec );
-			string command = "/sbin/raidstart --all --configfile " +
-			    Installation::destdir + "/etc/raidtab";
-
-			integer ret_from_shell = (integer) SCR::Execute (.target.bash, command);
-			if ( ret_from_shell != 0 )
-			{
-			    y2milestone ("raidstart failed ( does no matter ): %1", command );
-			}
-			else
-			{
-			    y2milestone ("raidstart OK: %1", command );
-			    raidMounted = true;
-			}
-		    }
-
 		    string mount_type = "";
 		    if (vfstype == "proc")
 		    {
