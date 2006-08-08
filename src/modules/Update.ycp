@@ -190,7 +190,7 @@ global void IgnoreProductCompatibility () {
 	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
 
 	list <string> tmp0 = splitstring (data["version"]:"", " -");
-	list <string> tmp1 = splitstring (tmp[0]:"", ".");
+	list <string> tmp1 = splitstring (tmp0[0]:"", ".");
 
 	integer tmp2 = tointeger (tmp1[0]:"-1");
 	if (tmp2 >= 0)
@@ -220,6 +220,11 @@ global void IgnoreProductCompatibility () {
 	string old_name = SuSERelease::ReleaseInformation
 	    (Installation::destdir);
 
+	integer p1 = find (old_name, "Beta");
+	while (p1 > 1 && substring (old_name, p1 - 1, 1) == " ")
+	    p1 = p1 - 1;
+	old_name = substring (old_name, 0, p1);
+
 	integer p = findlastof (old_name, " ");
 	if (p == nil)
 	{
@@ -232,6 +237,7 @@ global void IgnoreProductCompatibility () {
 	    installedVersion["version"] = substring (old_name, p + 1);
 	    fill_version_map (installedVersion);
 	}
+y2internal ("IV: %1", installedVersion);
 
 	// get new product name
 
