@@ -3,6 +3,7 @@ Tue Aug  8 14:19:47 CEST 2006 - jsrain@suse.cz
 
 - cut off beta version from version read from target system during
   update (#157904)
+- 2.13.33
 
 -------------------------------------------------------------------
 Tue Aug  1 10:41:23 CEST 2006 - jsrain@suse.cz
