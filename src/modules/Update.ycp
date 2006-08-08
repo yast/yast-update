@@ -189,7 +189,8 @@ global void IgnoreProductCompatibility () {
     {
 	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
 
-	list <string> tmp1 = splitstring (data["version"]:"", ".");
+	list <string> tmp0 = splitstring (data["version"]:"", " -");
+	list <string> tmp1 = splitstring (tmp[0]:"", ".");
 
 	integer tmp2 = tointeger (tmp1[0]:"-1");
 	if (tmp2 >= 0)
