@@ -237,7 +237,6 @@ global void IgnoreProductCompatibility () {
 	    installedVersion["version"] = substring (old_name, p + 1);
 	    fill_version_map (installedVersion);
 	}
-y2internal ("IV: %1", installedVersion);
 
 	// get new product name
 

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Aug  9 09:30:08 CEST 2006 - jsrain@suse.cz
+
+- select system patterns also on update (#192002)
+
+-------------------------------------------------------------------
 Tue Aug  8 14:19:47 CEST 2006 - jsrain@suse.cz
 
 - cut off beta version from version read from target system during
