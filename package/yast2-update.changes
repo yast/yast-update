@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 11 10:07:03 CEST 2006 - jsrain@suse.cz
+
+- fixed mounting /var partition during update if root is on md,
+  but /var is not (#154915)
+
+-------------------------------------------------------------------
 Wed Aug  9 09:30:08 CEST 2006 - jsrain@suse.cz
 
 - select system patterns also on update (#192002)
