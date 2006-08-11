@@ -741,6 +741,8 @@ define string MountVarIfRequired (list <map> fstab, string root_device_current)
 
 	list <map> tmp1 = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
 	string root_device_fstab = tmp1[0,"spec"]:"";
+	if (!Storage::DeviceRealDisk (root_device_fstab))
+	    return MountVarPartition (var_device_fstab);
 
 	map root_info = Storage::GetDiskPartition (root_device_fstab);
 	map var_info = Storage::GetDiskPartition (var_device_fstab);
@@ -840,12 +842,13 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		}
 		else
 		{
+/* Removed, as fstab and crtab have been translated above
 		    fstab = TranslateFSTab (fstab);
 		    crtab = TranslateFSTab (crtab);
 
 		    y2milestone ("fstab: %1", fstab);
 		    y2milestone ("crtab: %1", crtab);
-
+*/
 		    string tmp = "";
 
 		    if (!check_root_device (root_device_current, fstab, tmp))
