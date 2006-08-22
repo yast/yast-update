@@ -139,7 +139,7 @@ global boolean ProductsCompatible () {
 		return prod_info["name"]:"";
 	    });
 	    y2milestone ("Installed products: %1", inst_names);
-	    y2milestone ("Products on installatino media: %1", to_install);
+	    y2milestone ("Products on installation media: %1", to_install);
 
 	    string equal_product = find (string i, inst_names, {
 		string found = find (string u, to_install, {
@@ -219,11 +219,12 @@ global void IgnoreProductCompatibility () {
 	// #153576
 	string old_name = SuSERelease::ReleaseInformation
 	    (Installation::destdir);
+	y2milestone("SuSERelease::ReleaseInformation: %1", old_name);
 
-	integer p1 = find (old_name, "Beta");
-	while (p1 > 1 && substring (old_name, p1 - 1, 1) == " ")
-	    p1 = p1 - 1;
-	old_name = substring (old_name, 0, p1);
+	// Remove 'Beta...' from product release
+	if (regexpmatch (old_name, "Beta")) {
+	    old_name = regexpsub (old_name, "^(.*)[ \t]+Beta.*$", "\\1");
+	}
 
 	integer p = findlastof (old_name, " ");
 	if (p == nil)

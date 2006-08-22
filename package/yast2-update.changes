@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug 22 15:22:55 CEST 2006 - locilka@suse.cz
+
+- Deprecated builtins replaced with new ones
+- 2.13.34
+
+-------------------------------------------------------------------
 Fri Aug 11 10:07:03 CEST 2006 - jsrain@suse.cz
 
 - fixed mounting /var partition during update if root is on md,

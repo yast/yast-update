@@ -906,19 +906,29 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
     global define boolean SetFormatPartitions (list<map> fstabpart)
     {
+	// All storage devices
         map <string, map> target_map = Storage::GetTargetMap ();
 
-	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
+	// all activated
+	list <map> tmp = filter (map e, activated, {
+	    return e[`type]:"" == "mount";
+	});
 
 	foreach (map e, tmp, {
-
 	    string mntpt = e[`mntpt]:"";
-	    string part = e[`device]:"";
+	    string part  = e[`device]:"";
 
-	    map p = select(filter(map pp, fstabpart, ``(pp["mount"]:"" == mntpt)), 0 , $[]);
+	    map p = $[];
+	    foreach (map pp, fstabpart, {
+		// mountpoint matches
+		if (pp["mount"]:"" == mntpt) {
+		    p = pp;
+		    break;
+		}
+	    });
+
 	    boolean format_partition = false;
-	    if (haskey(p, "format"))
-	    {
+	    if (p["format"]:nil != nil) {
 		format_partition = p["format"]:false;
 	    }
 	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
