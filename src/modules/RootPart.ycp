@@ -29,6 +29,8 @@
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_dialogs.ycp";
 
+    // all supported filesystems
+    global list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
 
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
@@ -91,8 +93,26 @@ about how to solve this problem."),
     global define string GetInfoOfSelected (symbol what)
     {
 	map i = rootPartitions[selectedRootPartition]:$[];
-        // Unkown for unknown system
-	return i[what]:_("Unknown");
+
+	if (what == `name) {
+	    // Name is known
+	    if (i[what]:"" != "") {
+		return i[what]:"";
+
+	    // Linux partition, but no root FS found
+	    } else if (contains (possible_root_fs, i[`fs]:`nil)) {
+		// label - name of sustem to update
+		return _("Unknown Linux System");
+
+	    // Non-Linux
+	    } else {
+		// label - name of sustem to update
+		return _("Non-Linux System");
+	    }
+	} else {
+	    // label - name of sustem to update
+	    return i[what]:_("Unknown");
+	}
     }
 
 
@@ -961,16 +981,22 @@ Check the log file %1."), Directory::logdir + "/y2log");
      */
     define map CheckPartition (map partition)
     {
-	map freshman = $[`valid : false, `name : "unknown", `arch : "unknown", `label: partition["label"]:"" ];
+	map freshman = $[
+	    `valid : false,
+	    `name : "unknown",
+	    `arch : "unknown",
+	    `label: partition["label"]:"",
+	    `fs : partition["detected_fs"]:`unknown,
+	    `fstype : partition["fstype"]:"unknown",
+	];
 
 	string p_dev = partition["device"]:"error";
 	integer p_fsid = partition["fsid"]:0;
 	symbol p_type = partition["type"]:`primary;
 	symbol p_detect_fs = partition["detected_fs"]:`unknown;
 
-	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
-
 	if ((p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
+	    // possible root FS
 	    contains (possible_root_fs, p_detect_fs))
 	{
 	    map<symbol,string> mt_map = $[
