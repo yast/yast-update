@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug 29 08:40:50 CEST 2006 - locilka@suse.cz
+
+- Better wording for table of partition names to be selected for
+  update, added File System column. (#166478)
+- 2.13.35
+
+-------------------------------------------------------------------
 Tue Aug 22 15:22:55 CEST 2006 - locilka@suse.cz
 
 - Deprecated builtins replaced with new ones
