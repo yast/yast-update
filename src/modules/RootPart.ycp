@@ -53,6 +53,8 @@
 
     // Did we try to mount the target partitions?
     global boolean did_try_mount_partitions = false;
+    
+    list <string> already_checked_jfs_partitions = [];
 
 
     /**
@@ -273,6 +275,58 @@ or restart your computer.
     }
 
 /**
+ * Function checks the device and returns whether it is OK or not.
+ * The read-only FS check is performed for jfs only and only one for
+ * one device.
+ *
+ * @param string mount_type "jfs", "ext2" or "reiser"
+ * @param string device, such as /dev/hda3 or /dev/sda8
+ * @param string error_message (a reference to string)
+ * @return boolean if successfull or if user forces it
+ */
+define boolean RunFSCKonJFS (string mount_type, string device, string & error_message) {
+    // #176292, run fsck before jfs is mounted
+    if (mount_type == "jfs" && device != "") {
+
+	if (contains (already_checked_jfs_partitions, device)) {
+	    y2milestone ("Device %1 has been already checked...", device);
+	    return true;
+	}
+
+	UI::OpenDialog (`Label (sformat (_("Checking file system on %1..."), device)));
+
+	y2milestone ("Running fsck on %1", device);
+	// -n == Check read only, make no changes to the file system.
+	map cmd = (map) SCR::Execute (.target.bash_output, sformat ("fsck.jfs -n %1", device));
+	
+	UI::CloseDialog();
+	
+	// failed
+	if (cmd["exit"]:nil != 0) {
+	    y2error ("Result: %1", cmd);
+	    error_message = tostring(cmd["stderr"]:nil);
+
+	    return Popup::ContinueCancel (sformat (
+		// popup question (continue/cancel dialog)
+		// %1 is a device name such as /dev/hda5
+		_("The file system check of device %1 has failed.
+
+Would you like to continue in mounting the device?"),
+		device
+	    ));
+	// succeeded
+	} else {
+	    // add device into the list of already checked partitions (with exit status 0);
+	    already_checked_jfs_partitions = add (already_checked_jfs_partitions, device);
+	    y2milestone ("Result: %1", cmd);
+	    return true;
+	}
+    }
+    
+    return true;
+}
+
+/**
  * Mount partition on specified mount point
  * @param mount_point string mount point to monut the partition at
  * @param device string device to mount
@@ -290,6 +344,11 @@ define string MountPartition (string mount_point, string device,
     // #167976, was broken with "-t ", modprobe before adding it
     y2milestone("Calling 'modprobe %1'", mount_type);
     SCR::Execute(.target.modprobe, mount_type, "" );
+
+    string error_message = nil;
+    if (! RunFSCKonJFS (mount_type, device, error_message)) {
+	return error_message;
+    }
 
     if (mount_type != "")
 	mount_type = "-t " + mount_type;
@@ -1007,6 +1066,15 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		`jfs: "jfs",
 	    ];
 	    string mount_type = mt_map[p_detect_fs]:"";
+
+	    string error_message = nil;
+	    if (! RunFSCKonJFS (mount_type, p_dev, error_message)) {
+		freshman[`valid] = false;
+		// popup error, %1 is a device name /dev/hda5
+		Report::Error (sformat (_("File system check of the device %1 has failed."), p_dev));
+		return freshman;
+	    }
+
 	    if (mount_type != "")
 		SCR::Execute(.target.modprobe, mount_type, "" );
 	    // mount (read-only) partition to Installation::destdir
