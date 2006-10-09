@@ -124,9 +124,12 @@ global boolean ProductsCompatible () {
 	    // media is same as one of the installed products
 	    // assuming that multiple products on installation media
 	    // are compatible and compatibility is transitive
-	    list<map<string,string> > inst = (list<map<string,string> >)
-		Pkg::TargetProducts ();
-	    list<string> inst_names = maplist (map<string,string> p, inst, {
+	    list<map<string,any> > inst =
+		Pkg::ResolvableProperties ("", `product, "");
+	    inst = filter (map<string,any> p, inst, {
+		return p["status"]:nil == `installed;
+	    });
+	    list<string> inst_names = maplist (map<string,any> p, inst, {
 		return p["name"]:"";
 	    });
 	    list<string> to_install = maplist (integer src,
@@ -136,7 +139,7 @@ global boolean ProductsCompatible () {
 		return prod_info["name"]:"";
 	    });
 	    y2milestone ("Installed products: %1", inst_names);
-	    y2milestone ("Products on installatino media: %1", to_install);
+	    y2milestone ("Products on installation media: %1", to_install);
 
 	    string equal_product = find (string i, inst_names, {
 		string found = find (string u, to_install, {
@@ -186,7 +189,8 @@ global void IgnoreProductCompatibility () {
     {
 	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
 
-	list <string> tmp1 = splitstring (data["version"]:"", ".");
+	list <string> tmp0 = splitstring (data["version"]:"", " -");
+	list <string> tmp1 = splitstring (tmp0[0]:"", ".");
 
 	integer tmp2 = tointeger (tmp1[0]:"-1");
 	if (tmp2 >= 0)
@@ -210,10 +214,17 @@ global void IgnoreProductCompatibility () {
 
 	// get old product name
 
-	// cannot use Pkg::TargetProducts for pre-zypp products
+	// cannot use product information from package manager
+	// for pre-zypp products
 	// #153576
 	string old_name = SuSERelease::ReleaseInformation
 	    (Installation::destdir);
+	y2milestone("SuSERelease::ReleaseInformation: %1", old_name);
+
+	// Remove 'Beta...' from product release
+	if (regexpmatch (old_name, "Beta")) {
+	    old_name = regexpsub (old_name, "^(.*)[ \t]+Beta.*$", "\\1");
+	}
 
 	integer p = findlastof (old_name, " ");
 	if (p == nil)
