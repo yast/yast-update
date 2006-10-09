@@ -29,6 +29,8 @@
     include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_dialogs.ycp";
 
+    // all supported filesystems
+    global list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
 
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
@@ -51,6 +53,8 @@
 
     // Did we try to mount the target partitions?
     global boolean did_try_mount_partitions = false;
+    
+    list <string> already_checked_jfs_partitions = [];
 
 
     /**
@@ -91,8 +95,26 @@ about how to solve this problem."),
     global define string GetInfoOfSelected (symbol what)
     {
 	map i = rootPartitions[selectedRootPartition]:$[];
-        // Unkown for unknown system
-	return i[what]:_("Unknown");
+
+	if (what == `name) {
+	    // Name is known
+	    if (i[what]:"" != "") {
+		return i[what]:"";
+
+	    // Linux partition, but no root FS found
+	    } else if (contains (possible_root_fs, i[`fs]:`nil)) {
+		// label - name of sustem to update
+		return _("Unknown Linux System");
+
+	    // Non-Linux
+	    } else {
+		// label - name of sustem to update
+		return _("Non-Linux System");
+	    }
+	} else {
+	    // label - name of sustem to update
+	    return i[what]:_("Unknown");
+	}
     }
 
 
@@ -253,6 +275,58 @@ or restart your computer.
     }
 
 /**
+ * Function checks the device and returns whether it is OK or not.
+ * The read-only FS check is performed for jfs only and only one for
+ * one device.
+ *
+ * @param string mount_type "jfs", "ext2" or "reiser"
+ * @param string device, such as /dev/hda3 or /dev/sda8
+ * @param string error_message (a reference to string)
+ * @return boolean if successfull or if user forces it
+ */
+define boolean RunFSCKonJFS (string mount_type, string device, string & error_message) {
+    // #176292, run fsck before jfs is mounted
+    if (mount_type == "jfs" && device != "") {
+
+	if (contains (already_checked_jfs_partitions, device)) {
+	    y2milestone ("Device %1 has been already checked...", device);
+	    return true;
+	}
+
+	UI::OpenDialog (`Label (sformat (_("Checking file system on %1..."), device)));
+
+	y2milestone ("Running fsck on %1", device);
+	// -n == Check read only, make no changes to the file system.
+	map cmd = (map) SCR::Execute (.target.bash_output, sformat ("fsck.jfs -n %1", device));
+	
+	UI::CloseDialog();
+	
+	// failed
+	if (cmd["exit"]:nil != 0) {
+	    y2error ("Result: %1", cmd);
+	    error_message = tostring(cmd["stderr"]:nil);
+
+	    return Popup::ContinueCancel (sformat (
+		// popup question (continue/cancel dialog)
+		// %1 is a device name such as /dev/hda5
+		_("The file system check of device %1 has failed.
+
+Would you like to continue in mounting the device?"),
+		device
+	    ));
+	// succeeded
+	} else {
+	    // add device into the list of already checked partitions (with exit status 0);
+	    already_checked_jfs_partitions = add (already_checked_jfs_partitions, device);
+	    y2milestone ("Result: %1", cmd);
+	    return true;
+	}
+    }
+    
+    return true;
+}
+
+/**
  * Mount partition on specified mount point
  * @param mount_point string mount point to monut the partition at
  * @param device string device to mount
@@ -270,6 +344,11 @@ define string MountPartition (string mount_point, string device,
     // #167976, was broken with "-t ", modprobe before adding it
     y2milestone("Calling 'modprobe %1'", mount_type);
     SCR::Execute(.target.modprobe, mount_type, "" );
+
+    string error_message = nil;
+    if (! RunFSCKonJFS (mount_type, device, error_message)) {
+	return error_message;
+    }
 
     if (mount_type != "")
 	mount_type = "-t " + mount_type;
@@ -457,12 +536,6 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    crtab = (list<map>) SCR::Read (.etc.cryptotab);
 	}
 
-
-	if (SCR::Read (.target.size, Installation::destdir + "/etc/raidtab") > 0)
-	{
-	    SCR::Execute (.target.bash, "/bin/cp " + Installation::destdir + "/etc/raidtab /etc");
-	}
-
 	return true;
     }
 
@@ -595,27 +668,6 @@ define boolean IsMounted (string mountpoint) {
 
 		if ( !Mode::test () )
 		{
-		    // Checking for raid systems
-		    if ( issubstring( spec,"/dev/md")
-			 && !raidMounted )
-		    {
-			y2milestone( "Raidarray for partition %1 on device %2 found",
-				     fspath, spec );
-			string command = "/sbin/raidstart --all --configfile " +
-			    Installation::destdir + "/etc/raidtab";
-
-			integer ret_from_shell = (integer) SCR::Execute (.target.bash, command);
-			if ( ret_from_shell != 0 )
-			{
-			    y2milestone ("raidstart failed ( does no matter ): %1", command );
-			}
-			else
-			{
-			    y2milestone ("raidstart OK: %1", command );
-			    raidMounted = true;
-			}
-		    }
-
 		    string mount_type = "";
 		    if (vfstype == "proc")
 		    {
@@ -768,6 +820,8 @@ define string MountVarIfRequired (list <map> fstab, string root_device_current)
 
 	list <map> tmp1 = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
 	string root_device_fstab = tmp1[0,"spec"]:"";
+	if (!Storage::DeviceRealDisk (root_device_fstab))
+	    return MountVarPartition (var_device_fstab);
 
 	map root_info = Storage::GetDiskPartition (root_device_fstab);
 	map var_info = Storage::GetDiskPartition (var_device_fstab);
@@ -867,12 +921,13 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		}
 		else
 		{
+/* Removed, as fstab and crtab have been translated above
 		    fstab = TranslateFSTab (fstab);
 		    crtab = TranslateFSTab (crtab);
 
 		    y2milestone ("fstab: %1", fstab);
 		    y2milestone ("crtab: %1", crtab);
-
+*/
 		    string tmp = "";
 
 		    if (!check_root_device (root_device_current, fstab, tmp))
@@ -930,19 +985,29 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
     global define boolean SetFormatPartitions (list<map> fstabpart)
     {
+	// All storage devices
         map <string, map> target_map = Storage::GetTargetMap ();
 
-	list <map> tmp = filter (map e, activated, ``(e[`type]:"" == "mount"));
+	// all activated
+	list <map> tmp = filter (map e, activated, {
+	    return e[`type]:"" == "mount";
+	});
 
 	foreach (map e, tmp, {
-
 	    string mntpt = e[`mntpt]:"";
-	    string part = e[`device]:"";
+	    string part  = e[`device]:"";
 
-	    map p = select(filter(map pp, fstabpart, ``(pp["mount"]:"" == mntpt)), 0 , $[]);
+	    map p = $[];
+	    foreach (map pp, fstabpart, {
+		// mountpoint matches
+		if (pp["mount"]:"" == mntpt) {
+		    p = pp;
+		    break;
+		}
+	    });
+
 	    boolean format_partition = false;
-	    if (haskey(p, "format"))
-	    {
+	    if (p["format"]:nil != nil) {
 		format_partition = p["format"]:false;
 	    }
 	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
@@ -975,16 +1040,22 @@ Check the log file %1."), Directory::logdir + "/y2log");
      */
     define map CheckPartition (map partition)
     {
-	map freshman = $[`valid : false, `name : "unknown", `arch : "unknown", `label: partition["label"]:"" ];
+	map freshman = $[
+	    `valid : false,
+	    `name : "unknown",
+	    `arch : "unknown",
+	    `label: partition["label"]:"",
+	    `fs : partition["detected_fs"]:`unknown,
+	    `fstype : partition["fstype"]:"unknown",
+	];
 
 	string p_dev = partition["device"]:"error";
 	integer p_fsid = partition["fsid"]:0;
 	symbol p_type = partition["type"]:`primary;
 	symbol p_detect_fs = partition["detected_fs"]:`unknown;
 
-	list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
-
 	if ((p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
+	    // possible root FS
 	    contains (possible_root_fs, p_detect_fs))
 	{
 	    map<symbol,string> mt_map = $[
@@ -995,6 +1066,15 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		`jfs: "jfs",
 	    ];
 	    string mount_type = mt_map[p_detect_fs]:"";
+
+	    string error_message = nil;
+	    if (! RunFSCKonJFS (mount_type, p_dev, error_message)) {
+		freshman[`valid] = false;
+		// popup error, %1 is a device name /dev/hda5
+		Report::Error (sformat (_("File system check of the device %1 has failed."), p_dev));
+		return freshman;
+	    }
+
 	    if (mount_type != "")
 		SCR::Execute(.target.modprobe, mount_type, "" );
 	    // mount (read-only) partition to Installation::destdir

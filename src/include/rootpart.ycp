@@ -20,21 +20,77 @@ import "GetInstArgs";
 import "Report";
 import "Update";
 
+// Returns boolean whether partition can be
+// a Linux 'root' file system
+boolean CanBeLinuxRootFS (symbol partition_fs) {
+    if (partition_fs == nil) {
+	y2error("partition_fs not defined!");
+	return false;
+    }
 
-list<term> make_partition_list (boolean withall) {
+    // possible_root_fs contains list of supported FSs
+    return contains (RootPart::possible_root_fs, partition_fs);
+}
+
+list <term> make_partition_list (boolean withall) {
 	list<term> part_list = [];
-	foreach (string p, map i, RootPart::rootPartitions, {
+	foreach (string partition, map i, RootPart::rootPartitions, {
+	    // see https://bugzilla.novell.com/attachment.cgi?id=96783&action=view
+
 	    if (i[`valid]:false || withall)
 	    {
-		string s = i[`name]:"error";
-		if (s == "unknown") s = _("Unknown");
+		// `ext2, `jfs, ...
+		symbol part_fs = (symbol) i[`fs]:nil;
+		string part_fs_name = tostring (part_fs);
+		if (part_fs_name != nil && regexpmatch (part_fs_name, "^`(.*)$")) {
+		    part_fs_name = regexpsub (part_fs_name, "^`(.*)$", "\\1");
+		}
 
-		string a = i[`arch]:"error";
-		if (a == "unknown") a = _("Unknown");
+		string system = i[`name]:"error";
+		// unknown system
+		if (system == "unknown") {
+		    if (part_fs != nil) {
+			if (CanBeLinuxRootFS (part_fs)) {
+			    // Table item (unknown system)
+			    system = _("Unknown Linux");
+			} else {
+			    // Table item (unknown system)
+			    system = _("Unknown or Non-Linux");
+			}
+		    } else {
+			// Table item (unknown system [neither openSUSE 11.1 nor SLES 14 nor ...])
+			if (system == "unknown") system = _("Unknown");
+		    }
+		}
 
-		string l = i[`label]:"";
+		string arch = i[`arch]:"error";
+		// Table item (unknown architecture)
+		if (arch == "unknown") arch = _("Unknown");
 
-		part_list = add (part_list, `item (`id (p), s, p, a, l));
+		// fist, use the name of file system (with short name for Linux)
+		// then the file system short name
+		// then "Unknown"
+		string fs = "";
+
+		// is a linux fs, can be a root fs, has a fs name
+		if (part_fs != nil && i[`fstype]:nil != nil && CanBeLinuxRootFS (part_fs) && part_fs_name != nil) {
+		    fs = sformat(
+			_("%1 (%2)"),
+			i[`fstype]:"", part_fs_name
+		    );
+		} else {
+		    fs = i[`fstype]:i[`fs]:"";
+		}
+		// Table item (unknown file system)
+		if (fs == "") fs = _("Unknown");
+		
+		string label = i[`label]:"";
+
+		part_list = add (part_list,
+		    `item (`id (partition),
+			system, partition, arch, fs, label
+		    )
+		);
 	    }
 	});
 	return part_list;
@@ -97,13 +153,17 @@ general overview of your system's partitions.
 	    `Table (`id (`partition),
 		`opt(`hstretch),
 			 // table header
-		`header (_("System"),
-			 // table header
-			 _("Partition"),
-			 // table header
-			 _("Architecture"),
-			 // table header
-			 _("Label")),
+		`header (
+		    _("System"),
+		    // table header item
+		    _("Partition"),
+		    // table header item
+		    _("Architecture"),
+		    // table header item
+		    _("File System"),
+		    // table header item
+		    _("Label")
+		),
 		partition_list),
 	    `Left(`CheckBox(`id(`showall), `opt(`notify),
 		// check box
