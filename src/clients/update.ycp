@@ -20,10 +20,6 @@
     import "Mode";
     import "Update";
     import "Wizard";
-    import "Directory";
-    import "Report";
-    import "Kernel";
-    import "GetInstArgs";
     import "ProductControl";
 
     // set normal mode and update

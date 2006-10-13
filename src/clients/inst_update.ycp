@@ -8,14 +8,13 @@
  * Displays software selection screen of previous installed software-groups.
  * Show checkboxes for software categories. Let the user select his software.
  * if he want to UPGRADE his system.
+ *
+ * $Id:$
  */
 
 {
     textdomain "update";
 
-    import "Mode";
-    import "Installation";
-    import "Language";
     import "Wizard";
     import "Popup";
     import "RootPart";

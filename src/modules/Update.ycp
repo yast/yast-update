@@ -189,8 +189,15 @@ global void IgnoreProductCompatibility () {
     {
 	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
 
-	list <string> tmp0 = splitstring (data["version"]:"", " -");
-	list <string> tmp1 = splitstring (tmp0[0]:"", ".");
+	list <string> tmp0 = [];
+	if (regexpmatch (data["version"]:"", " -")) {
+	    splitstring (data["version"]:"", " -");
+	}
+
+	list <string> tmp1 = [];
+	if (regexpmatch (tmp0[0]:"", "\.")) {
+	    splitstring (tmp0[0]:"", ".");
+	}
 
 	integer tmp2 = tointeger (tmp1[0]:"-1");
 	if (tmp2 >= 0)
@@ -255,9 +262,9 @@ global void IgnoreProductCompatibility () {
 	y2milestone ("First source product %1", new_product);
 	if (new_product == nil)
 	{
-	    y2error ("Screwed source");
 	    updateVersion["name"] = "?";
 	    updateVersion["version"] = "?";
+	    y2error("Cannot find out source details: %1", updateVersion);
 	    fill_version_map (updateVersion);
 	    return false;
 	}
@@ -303,11 +310,11 @@ global void IgnoreProductCompatibility () {
     }
 
     string ReadInstalledDesktop() {
-	SCR::Execute (.target.bash, "/bin/mv /etc/sysconfig/windowmanager /etc/sysconfig/windowmanager.old");
+	SCR::Execute (.target.bash, "/bin/mv -f /etc/sysconfig/windowmanager /etc/sysconfig/windowmanager.old");
 	SCR::Execute (.target.bash, "/bin/ln -s /mnt/etc/sysconfig/windowmanager /etc/sysconfig/windowmanager");
 	string ret = (string)SCR::Read (.sysconfig.windowmanager.DEFAULT_WM);
-	SCR::Execute (.target.bash, "/bin/rm /etc/sysconfig/windowmanager");
-	SCR::Execute (.target.bash, "/bin/mv /etc/sysconfig/windowmanager.old /etc/sysconfig/windowmanager");
+	SCR::Execute (.target.bash, "/bin/rm -f /etc/sysconfig/windowmanager");
+	SCR::Execute (.target.bash, "/bin/mv -f /etc/sysconfig/windowmanager.old /etc/sysconfig/windowmanager");
 	return ret;
     }
 

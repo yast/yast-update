@@ -5,6 +5,8 @@
  * Authors:	Lukas Ocilka <locilka@suse.cz>,
  *		Andreas Gruenbacher <agruen@suse.de>
  * Summary:	UI script for updating kernel
+ *
+ * $Id:$
  */
 
 /* FIXME:
@@ -16,7 +18,6 @@
 {
     // GLOBAL IMPORTS AND VARIABLES //
 
-    import "SCR";
     import "Report";
     import "Popup";
     import "FileUtils";

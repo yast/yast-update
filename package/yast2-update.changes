@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 13 12:38:16 CEST 2006 - locilka@suse.cz
+
+- Fixed handling of errors in log during update.
+- Skipping modprobe for sysfs and proc (both #211916)
+- 2.13.37
+
+-------------------------------------------------------------------
 Tue Sep 26 12:26:16 CEST 2006 - locilka@suse.cz
 
 - Run read-only fsck.jfs before mounting jfs partition (#176292).
