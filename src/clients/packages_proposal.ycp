@@ -4,6 +4,8 @@
  * Author:	Arvin Schnell <arvin@suse.de>
  *
  * Purpose:	Let user choose packages during update.
+ *
+ * $Id:$
  */
 {
     textdomain "update";
