@@ -7,17 +7,12 @@
  * Purpose:	Select root partition for update or booting.
  *		RootPart::rootPartitions must be filled before
  *		calling this module.
+ * $Id:$
  */
 {
 textdomain "update";
 
-import "Wizard";
-import "Popup";
-import "Label";
-import "RootPart";
-
 include "update/rootpart.ycp";
-
 
 // This dialog comes in three different flavors: `update_dialog,
 // `update_popup and `boot_popup

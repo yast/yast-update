@@ -5,14 +5,14 @@
  *		Arvin Schnell <arvin@suse.de>
  *
  * Purpose:	Ask the user for backups during the update.
+ *
+ * $Id:$
  */
 
 {
     textdomain "update";
 
-    import "Arch";
     import "Mode";
-    import "Installation";
     import "Update";
     import "SpaceCalculation";
     import "Wizard";
