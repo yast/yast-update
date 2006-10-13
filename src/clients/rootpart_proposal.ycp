@@ -4,11 +4,12 @@
  * Author:	Arvin Schnell <arvin@suse.de>
  *
  * Purpose:	Let user choose root partition during update.
+ *
+ * $Id:$
  */
 {
     textdomain "update";
 
-    import "HTML";
     import "Mode";
     import "Linuxrc";
     import "Update";

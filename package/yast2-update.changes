@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 13 12:38:16 CEST 2006 - locilka@suse.cz
+
+- Fixed handling of errors in log during update.
+- Skipping modprobe for sysfs and proc (both #211916)
+- 2.14.1
+
+-------------------------------------------------------------------
 Mon Oct  9 17:06:38 CEST 2006 - locilka@suse.cz
 
 - Merged SLES10 SP1 branch to openSUSE 10.2.

@@ -22,8 +22,8 @@
     import "ModuleLoading";
     import "FileSystems";
     import "Update";
-    import "Packages";
     import "SuSERelease";
+    import "FileUtils";
 
     include "partitioning/partition_defines.ycp";
     include "partitioning/custom_part_helptexts.ycp";
@@ -263,9 +263,6 @@ or restart your computer.
 		string out = sformat (_("Checking partition %1"), partition);
 		UI::OpenDialog (`opt(`decorated ), `Label(out));
 
-		// FIXME why is the sleep here?
-		sleep (1000);
-
 		y2milestone ("command: /sbin/e2fsck -y %1", partition);
 		SCR::Execute (.target.bash, "/sbin/e2fsck -y " + partition);
 
@@ -341,9 +338,16 @@ define string MountPartition (string mount_point, string device,
 	mount_type = FileSystems::GetMountString (
 	    Storage::DetectFs (device), "");
 
-    // #167976, was broken with "-t ", modprobe before adding it
-    y2milestone("Calling 'modprobe %1'", mount_type);
-    SCR::Execute(.target.modprobe, mount_type, "" );
+    list <string> non_modular_fs = [ "proc", "sysfs" ];
+
+    // #211916, sysfs, proc are not modular
+    if (! contains (non_modular_fs, mount_type)) {
+	// #167976, was broken with "-t ", modprobe before adding it
+	y2milestone("Calling 'modprobe %1'", mount_type);
+	SCR::Execute(.target.modprobe, mount_type, "" );
+    } else {
+	y2milestone("FS type %1 is not modular, skipping modprobe...", mount_type);
+    }
 
     string error_message = nil;
     if (! RunFSCKonJFS (mount_type, device, error_message)) {
@@ -469,19 +473,17 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	return fstab;
     }
 
-
     /**
-     *
+     * Register a new fstab agent and read the configuration
+     * from Installation::destdir
      */
-    define boolean read_fstab_and_cryptotab (list <map>& fstab, list <map>& crtab)
-    {
-	integer default_scr = WFM::SCRGetDefault ();
-	integer new_scr = nil;
-	if (Stage::initial ())
-	{
-	    SCR::RegisterAgent (.target.etc.fstab, `ag_anyagent(
+    void readFsTab (list <map> & fstab) {
+	    string fstab_file = Installation::destdir + "/etc/fstab";
+
+	    if (FileUtils::Exists (fstab_file)) {
+		SCR::RegisterAgent (.target.etc.fstab, `ag_anyagent(
 		  `Description (
-		      (`File(Installation::destdir+"/etc/fstab")),
+		      (`File(fstab_file)),
 		      "#\n",                    // Comment
 		      false,                    // read-only
 		      (`List (
@@ -502,9 +504,26 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 		      ))
 		    )
 		));
-	    SCR::RegisterAgent (.target.etc.cryptotab, `ag_anyagent(
+
+		fstab = (list<map>) SCR::Read (.target.etc.fstab);
+		
+		SCR::UnregisterAgent (.target.etc.fstab);
+	    } else {
+		y2error ("No such file %1. Not using fstab.", fstab_file);
+	    }
+    }
+    
+    /**
+     * Register a new cryptotab agent and read the configuration
+     * from Installation::destdir
+     */
+    void readCryptoTab (list <map> & crtab) {
+	    string crtab_file = Installation::destdir + "/etc/cryptotab";
+
+	    if (FileUtils::Exists (crtab_file)) {
+		SCR::RegisterAgent (.target.etc.cryptotab, `ag_anyagent(
 		  `Description (
-		      (`File(Installation::destdir+"/etc/cryptotab")),
+		      (`File(crtab_file)),
 		      "#\n",			// Comment
 		      false,			// read-only
 		      (`List (
@@ -525,10 +544,26 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 		      ))
 		    )
 		));
-	    fstab = (list<map>) SCR::Read (.target.etc.fstab);
-	    crtab = (list<map>) SCR::Read (.target.etc.cryptotab);
-	    SCR::UnregisterAgent (.target.etc.fstab);
-	    SCR::UnregisterAgent (.target.etc.cryptotab);
+		
+		crtab = (list<map>) SCR::Read (.target.etc.cryptotab);
+		
+		SCR::UnregisterAgent (.target.etc.cryptotab);
+	    } else {
+		y2warning ("No such file %1. Not using cryptotab.", crtab_file);
+	    }
+    }
+
+    /**
+     *
+     */
+    define boolean read_fstab_and_cryptotab (list <map>& fstab, list <map>& crtab)
+    {
+	integer default_scr = WFM::SCRGetDefault ();
+	integer new_scr = nil;
+	if (Stage::initial ())
+	{
+	    readFsTab (fstab);
+	    readCryptoTab (crtab);
 	}
 	else
 	{
