@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Oct 26 13:37:30 CEST 2006 - locilka@suse.cz
+
+- Adding "major" and "minor" keys into the update map including
+  information From and To which system it is going to update.
+  (#153576)
+- 2.13.38
+
+-------------------------------------------------------------------
 Fri Oct 13 12:38:16 CEST 2006 - locilka@suse.cz
 
 - Fixed handling of errors in log during update.

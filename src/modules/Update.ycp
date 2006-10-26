@@ -231,6 +231,9 @@ global void IgnoreProductCompatibility () {
 	// Remove 'Beta...' from product release
 	if (regexpmatch (old_name, "Beta")) {
 	    old_name = regexpsub (old_name, "^(.*)[ \t]+Beta.*$", "\\1");
+	// Remove 'Alpha...' from product release
+	} else if (regexpmatch (old_name, "Alpha")) {
+	    old_name = regexpsub (old_name, "^(.*)[ \t]+Alpha.*$", "\\1");
 	}
 
 	integer p = findlastof (old_name, " ");
@@ -272,6 +275,40 @@ global void IgnoreProductCompatibility () {
 	updateVersion["name"] = new_product["productname"]:"?";
 	updateVersion["version"] = new_product["productversion"]:"?";
 	fill_version_map (updateVersion);
+
+	// "minor" and "major" version keys
+	// bug #153576, "version" == "9" or "10.1" or ...
+	string inst_ver = installedVersion["version"]:"";
+	if (inst_ver != "" && inst_ver != nil) {
+	    // SLE, SLD, OES...
+	    if (regexpmatch (inst_ver, "^[0123456789]+$")) {
+		installedVersion["major"] = tointeger (inst_ver);
+	    // openSUSE
+	    } else if (regexpmatch (inst_ver, "^[0123456789]+\.[012456789]$")) {
+		installedVersion["major"] = tointeger (regexpsub (inst_ver, "^([0123456789]+)\.[012456789]$", "\\1"));
+		installedVersion["minor"] = tointeger (regexpsub (inst_ver, "^[0123456789]+\.([012456789])$", "\\1"));
+	    } else {
+		y2error("Cannot find out major/minor from %1", inst_ver);
+	    }
+	} else {
+	    y2error("Cannot find out version: %1", installedVersion);
+	}
+
+	string new_ver = updateVersion["version"]:"";
+	if (new_ver != "" && new_ver != nil) {
+	    // SLE, SLD, OES...
+	    if (regexpmatch (new_ver, "^[0123456789]+$")) {
+		updateVersion["major"] = tointeger (new_ver);
+	    // openSUSE
+	    } else if (regexpmatch (new_ver, "^[0123456789]+\.[012456789]$")) {
+		updateVersion["major"] = tointeger (regexpsub (new_ver, "^([0123456789]+)\.[012456789]$", "\\1"));
+		updateVersion["minor"] = tointeger (regexpsub (new_ver, "^[0123456789]+\.([012456789])$", "\\1"));
+	    } else {
+		y2error("Cannot find out major/minor from %1", new_ver);
+	    }
+	} else {
+	    y2error("Cannot find out version: %1", updateVersion);
+	}
 
 	y2milestone ("update from %1 to %2", installedVersion, updateVersion);
 
