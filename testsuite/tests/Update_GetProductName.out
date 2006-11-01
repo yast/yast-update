@@ -1,0 +1,43 @@
+Dump	This test should actually log "Skipping detection of new system" && "true" because it fails to initialize installation source
+Dump	------------------------------------------------------------
+Log	Skipping detection of new system
+Return	true
+Dump	SUSE LINUX 10.1 (X86-64)
+Dump	VERSION = 10.1
+Dump	
+Dump	$["major":10, "minor":1, "name":"SUSE LINUX", "nameandversion":"SUSE LINUX 10.1", "version":"10.1"]
+Dump	------------------------------------------------------------
+Log	Skipping detection of new system
+Return	true
+Dump	openSUSE 10.2 (i586) Beta1
+Dump	VERSION = 10.2
+Dump	
+Dump	$["major":10, "minor":2, "name":"openSUSE", "nameandversion":"openSUSE 10.2", "version":"10.2"]
+Dump	------------------------------------------------------------
+Log	Skipping detection of new system
+Return	true
+Dump	SuSE Linux 9.3 (i586)
+Dump	VERSION = 9.3
+Dump	
+Dump	$["major":9, "minor":3, "name":"SuSE Linux", "nameandversion":"SuSE Linux 9.3", "version":"9.3"]
+Dump	------------------------------------------------------------
+Log	Skipping detection of new system
+Return	true
+Dump	SUSE Linux Enterprise 10 (i586)
+Dump	VERSION = 10
+Dump	
+Dump	$["major":10, "name":"SUSE Linux Enterprise", "nameandversion":"SUSE Linux Enterprise 10", "version":"10"]
+Dump	------------------------------------------------------------
+Log	Skipping detection of new system
+Return	true
+Dump	SUSE LINUX Enterprise Server 9 (ia64)
+Dump	VERSION = 9
+Dump	PATCHLEVEL = 3
+Dump	$["major":9, "name":"SUSE LINUX Enterprise Server", "nameandversion":"SUSE LINUX Enterprise Server 9", "version":"9"]
+Dump	------------------------------------------------------------
+Log	Skipping detection of new system
+Return	true
+Dump	SUSE Linux Enterprise 11 (X86-64) Aplha4
+Dump	VERSION = 11
+Dump	
+Dump	$["major":11, "name":"SUSE Linux Enterprise", "nameandversion":"SUSE Linux Enterprise 11", "version":"11"]
