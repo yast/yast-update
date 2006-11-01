@@ -1,0 +1,49 @@
+{
+
+    //testedfiles: Update.ycp
+
+    include "testsuite.ycp";
+
+    map READ = $[
+	"target" : $[
+	    "size" : 0,
+	],
+    ];
+
+    list <string> prd_strings = [
+	"SUSE LINUX 10.1 (X86-64)\nVERSION = 10.1\n",
+	"openSUSE 10.2 (i586) Beta1\nVERSION = 10.2\n",
+	"SuSE Linux 9.3 (i586)\nVERSION = 9.3\n",
+	"SUSE Linux Enterprise 10 (i586)\nVERSION = 10\n",
+	"SUSE LINUX Enterprise Server 9 (ia64)\nVERSION = 9\nPATCHLEVEL = 3",
+	"SUSE Linux Enterprise 11 (X86-64) Aplha4\nVERSION = 11\n",
+    ];
+
+    map WRITE = $[];
+
+    map EXEC = $[
+	"target" : $[
+	    "bash_output" : $["exit" : 0, "stdout" : "", "stderr" : ""],
+	],
+    ];
+
+    TESTSUITE_INIT ([READ, WRITE, EXEC], nil);
+
+    import "Update";
+    import "Mode";
+
+    Mode::SetTest("testsuite");
+
+    DUMP ("This test should actually log \"Skipping detection of new system\" && \"true\" because it fails to initialize installation source");
+
+    // this tests only the old system
+    // not the new system because it would need to initialize sources
+    foreach (string prd_string, prd_strings, {
+	READ["target","string"] = prd_string;
+	DUMP ("------------------------------------------------------------");
+	TEST (``(Update::GetProductName()), [READ, WRITE, EXEC], nil);
+	DUMP (prd_string);
+	DUMP (Update::installedVersion);
+    });
+
+}
