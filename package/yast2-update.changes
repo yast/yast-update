@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Nov  1 17:05:35 CET 2006 - locilka@suse.cz
+
+- Fixed regexp to distinguish "major" and "minor" version that
+  should have fixed bug #153576. Minor version "3" could have been
+  ignored (bug #217013).
+- Adding testsuite for Update::GetProductName() function (#153576).
+- 2.13.39
+
+-------------------------------------------------------------------
 Thu Oct 26 13:37:30 CEST 2006 - locilka@suse.cz
 
 - Adding "major" and "minor" keys into the update map including

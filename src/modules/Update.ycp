@@ -16,6 +16,7 @@
     import "ProductFeatures";
     import "Stage";
     import "SuSERelease";
+    import "Mode";
 
     // number of packages to install
     global integer packages_to_install = 0;
@@ -249,6 +250,29 @@ global void IgnoreProductCompatibility () {
 	    fill_version_map (installedVersion);
 	}
 
+	// "minor" and "major" version keys
+	// bug #153576, "version" == "9" or "10.1" or ...
+	string inst_ver = installedVersion["version"]:"";
+	if (inst_ver != "" && inst_ver != nil) {
+	    // SLE, SLD, OES...
+	    if (regexpmatch (inst_ver, "^[0123456789]+$")) {
+		installedVersion["major"] = tointeger (inst_ver);
+	    // openSUSE
+	    } else if (regexpmatch (inst_ver, "^[0123456789]+\.[0123456789]+$")) {
+		installedVersion["major"] = tointeger (regexpsub (inst_ver, "^([0123456789]+)\.[0123456789]+$", "\\1"));
+		installedVersion["minor"] = tointeger (regexpsub (inst_ver, "^[0123456789]+\.([0123456789]+)$", "\\1"));
+	    } else {
+		y2error("Cannot find out major/minor from >%1<", inst_ver);
+	    }
+	} else {
+	    y2error("Cannot find out version: %1", installedVersion);
+	}
+	
+	if (Mode::test()) {
+	    y2error ("Skipping detection of new system");
+	    return true;
+	}
+
 	// get new product name
 
 	integer num = size (Packages::theSources);
@@ -276,33 +300,15 @@ global void IgnoreProductCompatibility () {
 	updateVersion["version"] = new_product["productversion"]:"?";
 	fill_version_map (updateVersion);
 
-	// "minor" and "major" version keys
-	// bug #153576, "version" == "9" or "10.1" or ...
-	string inst_ver = installedVersion["version"]:"";
-	if (inst_ver != "" && inst_ver != nil) {
-	    // SLE, SLD, OES...
-	    if (regexpmatch (inst_ver, "^[0123456789]+$")) {
-		installedVersion["major"] = tointeger (inst_ver);
-	    // openSUSE
-	    } else if (regexpmatch (inst_ver, "^[0123456789]+\.[012456789]$")) {
-		installedVersion["major"] = tointeger (regexpsub (inst_ver, "^([0123456789]+)\.[012456789]$", "\\1"));
-		installedVersion["minor"] = tointeger (regexpsub (inst_ver, "^[0123456789]+\.([012456789])$", "\\1"));
-	    } else {
-		y2error("Cannot find out major/minor from %1", inst_ver);
-	    }
-	} else {
-	    y2error("Cannot find out version: %1", installedVersion);
-	}
-
 	string new_ver = updateVersion["version"]:"";
 	if (new_ver != "" && new_ver != nil) {
 	    // SLE, SLD, OES...
 	    if (regexpmatch (new_ver, "^[0123456789]+$")) {
 		updateVersion["major"] = tointeger (new_ver);
 	    // openSUSE
-	    } else if (regexpmatch (new_ver, "^[0123456789]+\.[012456789]$")) {
-		updateVersion["major"] = tointeger (regexpsub (new_ver, "^([0123456789]+)\.[012456789]$", "\\1"));
-		updateVersion["minor"] = tointeger (regexpsub (new_ver, "^[0123456789]+\.([012456789])$", "\\1"));
+	    } else if (regexpmatch (new_ver, "^[0123456789]+\.[0123456789]$")) {
+		updateVersion["major"] = tointeger (regexpsub (new_ver, "^([0123456789]+)\.[0123456789]$", "\\1"));
+		updateVersion["minor"] = tointeger (regexpsub (new_ver, "^[0123456789]+\.([0123456789])$", "\\1"));
 	    } else {
 		y2error("Cannot find out major/minor from %1", new_ver);
 	    }
