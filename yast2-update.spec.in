@@ -1,5 +1,7 @@
-@HEADER-COMMENT@
-
+# There should be normally (a)HEADER-COMMENT(a) but...
+#
+# Alert: use 'root' for build to pass the testsuite
+#        because of ZYPP creating directories during testsuite
 
 @HEADER@
 BuildRequires:	yast2-mouse yast2-packager yast2-xml yast2-bootloader docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files yast2 yast2-devtools yast2-testsuite
