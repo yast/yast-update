@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov  3 09:20:27 CET 2006 - locilka@suse.cz
+
+- Building package as root because of problematic handling of ZYPP
+  in testsuite (see yast2-update.spec.in).
+- 2.14.4
+
+-------------------------------------------------------------------
 Wed Nov  1 16:54:14 CET 2006 - locilka@suse.cz
 
 - Fixed regexp to distinguish "major" and "minor" version that
