@@ -29,6 +29,9 @@
 
     TESTSUITE_INIT ([READ, WRITE, EXEC], nil);
 
+    // Fix the failing testsuite as 'non-root'
+    Pkg::TargetInitialize ("/tmp");
+
     import "Update";
     import "Mode";
 
