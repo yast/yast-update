@@ -139,16 +139,27 @@ global boolean ProductsCompatible () {
 		map<string,string> prod_info = Pkg::SourceProduct (src);
 		return prod_info["name"]:"";
 	    });
+	    // filter out empty products
+	    to_install = filter (string o_p, to_install, { return o_p != ""; });
+
 	    y2milestone ("Installed products: %1", inst_names);
 	    y2milestone ("Products on installation media: %1", to_install);
 
-	    string equal_product = find (string i, inst_names, {
-		string found = find (string u, to_install, {
-		    return u == i;
+	    // at least one product name found
+	    if (size (to_install) > 0) {
+		string equal_product = find (string i, inst_names, {
+		    string found = find (string u, to_install, {
+			return u == i;
+		    });
+		    return found != nil;
 		});
-		return found != nil;
-	    });
-	    _products_compatible = equal_product != nil;
+		_products_compatible = equal_product != nil;
+	    // no product name found
+	    // bugzilla #218720, valid without testing according to comment #10
+	    } else {
+		y2warning ("No products found, setting product-compatible to 'true'");
+		_products_compatible = true;
+	    }
 	}
 	else
 	{
@@ -156,6 +167,7 @@ global boolean ProductsCompatible () {
 	}
 	y2milestone ("Products found compatible: %1", _products_compatible);
     }
+
     return _products_compatible;
 }
 

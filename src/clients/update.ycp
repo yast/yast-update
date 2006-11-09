@@ -21,6 +21,7 @@
     import "Update";
     import "Wizard";
     import "ProductControl";
+    import "Label";
 
     // set normal mode and update
     Mode::SetMode ("update");
@@ -32,6 +33,7 @@
     ProductControl::custom_control_file =  "/usr/share/YaST2/control/update.xml";
 
     Wizard::OpenNextBackDialog();
+    Wizard::SetNextButton(`next, Label::AcceptButton());
     if (!ProductControl::Init())
     {
         y2error("control file %1 not found", ProductControl::custom_control_file );
