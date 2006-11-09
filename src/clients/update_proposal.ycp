@@ -5,7 +5,7 @@
  *
  * Purpose:	Let user choose update settings.
  *
- * $Id:$
+ * $Id$
  */
 {
     textdomain "update";
@@ -21,11 +21,99 @@
     import "Popup";
     import "ProductFeatures";
     import "Product";
+    import "FileUtils";
+    import "Label";
 
 
     string func = (string) WFM::Args(0);
     map param = (map) WFM::Args(1);
     map <string, any> ret = $[];
+    
+    boolean rpm_db_existency_checked_already = false;
+
+    // bugzilla #148105
+    // Check the current RPM Database if exists
+    //
+    // RPM DB found -> return true
+    // RPM DB not found & skipped -> return true
+    // RPM DB not found & aborted -> return false
+    //
+    boolean CheckRPMDBforExistency () {
+	y2milestone ("Checking the current RPM Database in '%1'...", Installation::destdir);
+
+	// at least one must be there, the second one is for RPM v3
+	list <string> rpm_db_files = [ "/var/lib/rpm/Packages", "/var/lib/rpm/packages.rpm" ];
+	boolean ret = false;
+	boolean file_found_or_error_skipped = false;
+	
+	while (! file_found_or_error_skipped) {
+	    foreach (string check_file, rpm_db_files, {
+		if (Installation::destdir != "/")
+		    check_file = sformat("%1%2", Installation::destdir, check_file);
+		if (FileUtils::Exists (check_file)) {
+		    y2milestone ("RPM Database '%1' found", check_file);
+		    ret = true;
+		    file_found_or_error_skipped = true;
+		    break;
+		}
+	    });
+	    
+	    // file not found
+	    if (! ret) {
+		y2error ("None of files %1 exist in '%2'",
+		    rpm_db_files, Installation::destdir
+		);
+	    
+		string missing_files = "";
+		foreach (string check_file, rpm_db_files, {
+		    if (Installation::destdir != "/")
+			check_file = sformat("%1%2", Installation::destdir, check_file);
+		    missing_files = missing_files + "\n" + check_file;
+		});
+
+		UI::OpenDialog (
+		    `opt(`decorated),
+		    `VBox (
+			// popup error
+			`Label (
+			    // part of error popup message
+			    _("Cannot read the current RPM Database.") + "\n\n" +
+			    // part of error popup message, %1 stands for newline-separated list of files
+			    sformat (_("None of these files exist:%1"), missing_files) + "\n\n"
+			),
+			`HBox (
+			    `PushButton (`id(`abort),  Label::AbortButton()),
+			    `PushButton (`id(`retry),  Label::RetryButton()),
+			    `PushButton (`id(`ignore), Label::IgnoreButton())
+			)
+		    )
+		);
+	    
+		any ui_r = UI::UserInput();
+	    
+		if (ui_r == `cancel || ui_r == `abort) {
+		    ret = false;
+		    file_found_or_error_skipped = true;
+		    y2milestone ("Check failed, returning error.");
+		} else if (ui_r == `retry) {
+		    file_found_or_error_skipped = false;
+		    y2milestone ("Trying again...");
+		} else if (ui_r == `ignore) {
+		    ret = true;
+		    file_found_or_error_skipped = true;
+		    y2warning ("Skipping missing RPM Database, problems might occur...");
+		} else {
+		    file_found_or_error_skipped = false;
+		    y2error ("Unexpected return: %1", ui_r);
+		}
+
+		UI::CloseDialog();
+	    }
+	}
+	
+	y2milestone ("CheckRPMDBforExistency - returning: %1", ret);
+	return ret;
+    }
 
     define void SelectKernelPackages () {
 	list <list> provides = Pkg::PkgQueryProvides ("kernel");
@@ -243,8 +331,24 @@ some applications may not run properly.")))
 	    Update::Reset ();
 	    Packages::Reset ([`product]);
 	    Update::did_init1 = false;
+	    rpm_db_existency_checked_already = false;
 	}
 
+	// bugzilla #148105
+	if (! rpm_db_existency_checked_already) {
+	    rpm_db_existency_checked_already = true;
+
+	    // if it doesn't exist, user can still confirm to continue
+	    // packager will then suggest some set of packages
+	    if (! CheckRPMDBforExistency()) {
+		return $[
+		    // error message in proposal
+		    "warning" : _("Cannot read the current RPM Database."),
+		    "warning_level" : `fatal,
+		    "raw_proposal" : [],
+		];
+	    }
+	}
 
 	// Fill return map
 

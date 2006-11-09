@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Thu Nov  9 10:12:01 CET 2006 - locilka@suse.cz
+
+- If no base product found, do not complain about imcompatibility.
+  This happens only when updating the running system (#218720).
+- Changed [Next] button to [Accept] in the update proposal on the
+  running system (#219097).
+- Checking for RPM Database. Reporting error when it is missing and
+  offering `abort, `retry, `ignore (#148105).
+- 2.14.6
+
+-------------------------------------------------------------------
 Tue Nov  7 13:00:25 CET 2006 - locilka@suse.cz
 
 - Removing testsuite for now for not being able to pass it without
