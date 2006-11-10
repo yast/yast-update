@@ -83,8 +83,9 @@
 			),
 			`HBox (
 			    `PushButton (`id(`abort),  Label::AbortButton()),
-			    `PushButton (`id(`retry),  Label::RetryButton()),
-			    `PushButton (`id(`ignore), Label::IgnoreButton())
+			    `PushButton (`id(`retry),  Label::RetryButton())
+			    // disabled button - bugzilla #148105, comments #22 - #28
+			    // `PushButton (`id(`ignore), Label::IgnoreButton())
 			)
 		    )
 		);
@@ -98,10 +99,10 @@
 		} else if (ui_r == `retry) {
 		    file_found_or_error_skipped = false;
 		    y2milestone ("Trying again...");
-		} else if (ui_r == `ignore) {
-		    ret = true;
-		    file_found_or_error_skipped = true;
-		    y2warning ("Skipping missing RPM Database, problems might occur...");
+		//} else if (ui_r == `ignore) {
+		//    ret = true;
+		//    file_found_or_error_skipped = true;
+		//    y2warning ("Skipping missing RPM Database, problems might occur...");
 		} else {
 		    file_found_or_error_skipped = false;
 		    y2error ("Unexpected return: %1", ui_r);

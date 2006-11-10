@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov 10 09:00:15 CET 2006 - locilka@suse.cz
+
+- Removing `ignore button for now (#148105, comments #22-#28).
+- 2.13.43 
+
+-------------------------------------------------------------------
 Thu Nov  9 10:17:41 CET 2006 - locilka@suse.cz
 
 - If no base product found, do not complain about imcompatibility.
