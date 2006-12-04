@@ -308,7 +308,8 @@ global void IgnoreProductCompatibility () {
 	    return false;
 	}
 
-	updateVersion["name"] = new_product["productname"]:"?";
+	// bugzilla #225256, use "label" first, then a "productname"
+	updateVersion["name"] = new_product["label"]:new_product["productname"]:"?";
 	updateVersion["version"] = new_product["productversion"]:"?";
 	fill_version_map (updateVersion);
 
