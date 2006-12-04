@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Dec  4 10:42:16 CET 2006 - locilka@suse.cz
+
+- Installation Media (update) proposal: using key "label" instead
+  of "productname", which is used as a fallback now (#225256).
+
+-------------------------------------------------------------------
 Fri Nov 10 08:58:50 CET 2006 - locilka@suse.cz
 
 - Removing `ignore button for now (#148105, comments #22-#28).
