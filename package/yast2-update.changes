@@ -3,6 +3,7 @@ Mon Dec  4 10:42:16 CET 2006 - locilka@suse.cz
 
 - Installation Media (update) proposal: using key "label" instead
   of "productname", which is used as a fallback now (#225256).
+- 2.15.0
 
 -------------------------------------------------------------------
 Fri Nov 10 08:58:50 CET 2006 - locilka@suse.cz
