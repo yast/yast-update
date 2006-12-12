@@ -56,6 +56,7 @@
     
     list <string> already_checked_jfs_partitions = [];
 
+    list <string> non_modular_fs = [ "proc", "sysfs" ];
 
     /**
      * List of mounted partitions, activated swap partitions and loop devices.
@@ -338,10 +339,11 @@ define string MountPartition (string mount_point, string device,
 	mount_type = FileSystems::GetMountString (
 	    Storage::DetectFs (device), "");
 
-    list <string> non_modular_fs = [ "proc", "sysfs" ];
-
+    // #223878, do not call modprobe with empty mount_type
+    if (mount_type == "") {
+	y2warning ("Unknown filesystem, skipping modprobe...");
     // #211916, sysfs, proc are not modular
-    if (! contains (non_modular_fs, mount_type)) {
+    } else if (! contains (non_modular_fs, mount_type)) {
 	// #167976, was broken with "-t ", modprobe before adding it
 	y2milestone("Calling 'modprobe %1'", mount_type);
 	SCR::Execute(.target.modprobe, mount_type, "" );
@@ -1110,7 +1112,8 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		return freshman;
 	    }
 
-	    if (mount_type != "")
+	    // mustn't be empty and must be modular
+	    if (mount_type != "" && ! contains (non_modular_fs, mount_type))
 		SCR::Execute(.target.modprobe, mount_type, "" );
 	    // mount (read-only) partition to Installation::destdir
 	    if ((boolean) SCR::Execute (.target.mount, [p_dev, Installation::destdir,
