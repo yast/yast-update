@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Dec 12 10:40:40 CET 2006 - locilka@suse.cz
+
+- Better handling of .target.modprobe during update (#223878).
+
+-------------------------------------------------------------------
 Mon Dec  4 10:42:16 CET 2006 - locilka@suse.cz
 
 - Installation Media (update) proposal: using key "label" instead
