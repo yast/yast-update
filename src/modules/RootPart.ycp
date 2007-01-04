@@ -35,6 +35,9 @@
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
 
+    // FATE #301844, to find out that a system for update has been changed
+    global string previousRootPartition = "";
+
     // Map of all root partitions (key) and information map (value).
     // The information map contains the keys `valid, `name and `arch.
     global map<string,map> rootPartitions = $[];

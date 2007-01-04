@@ -1,4 +1,20 @@
 -------------------------------------------------------------------
+Thu Jan  4 14:29:11 CET 2007 - locilka@suse.cz
+
+- Added documentation for new features in control file:
+  * boolean delete_old_packages and list of products for which this
+    rule is inverted (delete_old_packages_reverse_list).
+  * boolean only_update_selected and list of products for which
+    this rule is inverted (only_update_selected_reverse_list).
+  * list of products supported for upgrade
+    (products_supported_for_upgrade)
+  These new options are defined as lists of regular expressions.
+  (All described in FATE #301844)
+- Changed dialog for selecting update options to show product-label
+  instead of product-name.
+- 2.13.45
+
+-------------------------------------------------------------------
 Mon Dec  4 10:45:12 CET 2006 - locilka@suse.cz
 
 - Installation Media (update) proposal: using key "label" instead
