@@ -12,6 +12,7 @@
 
     import "HTML";
     import "Update";
+    import "RootPart";
     import "Packages";
     import "PackageCallbacks";
     import "SpaceCalculation";
@@ -172,6 +173,26 @@
 	    Update::GetProductName ();
 	}
 
+	
+	// some products are listed in media control file and at least one is compatible
+	// with system just being updated
+	boolean update_not_possible = false;
+
+	// FATE #301844
+	y2milestone ("Previous '%1', New '%2' RootPart",
+	    RootPart::previousRootPartition, RootPart::selectedRootPartition);
+	if (RootPart::previousRootPartition != RootPart::selectedRootPartition) {
+	    RootPart::previousRootPartition = RootPart::selectedRootPartition;
+	    
+	    // check whether update is possible
+	    // reset deleteOldPackages and onlyUpdateInstalled in respect to the selected system
+	    Update::Reset();
+	    if (! Update::IsProductSupportedForUpgrade()) {
+		y2milestone ("Upgrade is not supported");
+		update_not_possible = true;
+	    }
+	}
+
 	// connect target with package manager
 	if (!Update::did_init1)
 	{
@@ -262,7 +283,7 @@
 		 Update::solve_errors = Pkg::PkgSolveErrors ();
 	}
 	// check product compatibility
-	if (! (Update::ProductsCompatible () || Update::products_incompatible))
+	if (! (Update::ProductsCompatible () || Update::products_incompatible) || update_not_possible)
 	{
 	    if (Popup::ContinueCancel (
 // continue-cancel popup

@@ -9,7 +9,7 @@
  * Show checkboxes for software categories. Let the user select his software.
  * if he want to UPGRADE his system.
  *
- * $Id:$
+ * $Id$
  */
 
 {
@@ -70,7 +70,7 @@ You will lose that selection if you change the basic selection.");
     // Build and show dialog
 
     string from_version = RootPart::GetInfoOfSelected (`name);
-    string to_version = Update::updateVersion["nameandversion"]:_("Unknown");
+    string to_version = Update::updateVersion["show"]:_("Unknown");
 
     term contents = `HVSquash(
 	`VBox(
@@ -118,12 +118,12 @@ Based on the Selection:
 either case, it is recommended to make a backup of your personal data.</p>
 ");
 
-    // help text for dialog "update options" 2/4
-    helptext = helptext + _("<p><b>With New Software:</b> This default setting
+    // help text for dialog "update options" 2/4, %1 is a product name
+    helptext = helptext + sformat(_("<p><b>With New Software:</b> This default setting
 updates the existing software and installs all new features and benefits of
-the new &product; version. The selection is based on the former predefined
+the new <tt>%1</tt> version. The selection is based on the former predefined
 software selection.</p>
-");
+"), Update::updateVersion["show"]:"");
 
     // help text for dialog "update options" 3/4
     helptext = helptext + _("<p><b>Only Installed Packages:</b> This selection
@@ -198,6 +198,7 @@ packages during the update.</p>
 
             if (Packages::using_patterns)
 	    {
+		y2milestone ("Using patterns");
 	    }
 	    else
 	    {

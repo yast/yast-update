@@ -34,7 +34,7 @@
     global integer solve_errors = 0;
 
     // Flag is set true if the user decides to delete unmaintained packages
-    global boolean deleteOldPackages = ProductFeatures::GetBooleanFeature ("software", "delete_old_packages");
+    global boolean deleteOldPackages = nil;
 
     // don't allow upgrade only update
     global boolean disallow_upgrade = false;
@@ -54,7 +54,7 @@
 
 
     // Only an update, NOT an upgrade
-    global boolean onlyUpdateInstalled = ProductFeatures::GetBooleanFeature ("software", "only_update_installed");
+    global boolean onlyUpdateInstalled = nil;
 
     global string selected_selection = "";
 
@@ -94,12 +94,138 @@
     // are the products (installed and to update) compatible?
     boolean _products_compatible = nil;
 
+    /*-----------------------------------------------------------------------
+     * FATE #301844 - Tuning Update Features
+     *-----------------------------------------------------------------------*/
 
+    boolean ListOfRegexpsMatchesProduct (list <string> regexp_items, string product) {
+	if (regexp_items == nil || regexp_items == []) return false;
+	if (product == nil) {
+	    y2error ("Product is nil");
+	    return false;
+	}
+	
+	boolean ret = false;
+	foreach (string one_regexp, regexp_items, {
+	    if (regexpmatch (product, one_regexp)) {
+		y2milestone (">%1< is matching >%2<", product, one_regexp);
+		ret = true;
+		break;
+	    }
+	});
+	
+	y2milestone ("Returning %1", ret);
+	return ret;
+    }
+
+    /**
+     * Returns whether old packages should be removed (defined in control file).
+     * True means - delete old RPMs when updating. (Functionality for FATE #301844).
+     */
+    global boolean DeleteOldPackages () {
+	// changes deleteOldPackages variable
+	boolean default_dop = ProductFeatures::GetBooleanFeature ("software", "delete_old_packages");
+	if (default_dop == nil) {
+	    y2error ("software/delete_old_packages not defined");
+	    return false;
+	}
+
+	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
+	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
+
+	if (installed_system == nil || installed_system == "") {
+	    y2error ("Cannot find out installed system name");
+	    return default_dop;
+	}
+	
+	any reverse_dop_a = ProductFeatures::GetFeature ("software", "delete_old_packages_reverse_list");
+	// No reverse rules defined
+	if (reverse_dop_a == "") {
+	    return default_dop;
+	}
+	// not a list or empty list
+	list <string> reverse_dop = (list <string>) reverse_dop_a;
+	if (reverse_dop == nil || reverse_dop == []) return default_dop;
+
+	if (ListOfRegexpsMatchesProduct (reverse_dop, installed_system)) {
+	    return (! default_dop);
+	}
+
+	return default_dop;
+    }
+    
+    /**
+     * Returns whether upgrade process should only update installed packages or
+     * also install new packages. True means - do not upgrade, only update packages.
+     * (Functionality for FATE #301844).
+     */
+    global boolean OnlyUpdateInstalled () {
+	// changes onlyUpdateInstalled variable
+	boolean default_ous = ProductFeatures::GetBooleanFeature ("software", "only_update_selected");
+	if (default_ous == nil) {
+	    y2error ("software/only_update_selected not defined");
+	    return false;
+	}
+
+	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
+	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
+
+	if (installed_system == nil || installed_system == "") {
+	    y2error ("Cannot find out installed system name");
+	    return default_ous;
+	}
+	
+	any reverse_ous_a = ProductFeatures::GetFeature ("software", "only_update_selected_reverse_list");
+	// No reverse rules defined
+	if (reverse_ous_a == "") {
+	    return default_ous;
+	}
+	// not a list or empty list
+	list <string> reverse_ous = (list <string>) reverse_ous_a;
+	if (reverse_ous == nil || reverse_ous == []) return default_ous;
+
+	if (ListOfRegexpsMatchesProduct (reverse_ous, installed_system)) {
+	    return (! default_ous);
+	}
+
+	return default_ous;
+    }
+    
+    /**
+     * Returns whether the installed product is supported for upgrade.
+     * (Functionality for FATE #301844).
+     */
+    global boolean IsProductSupportedForUpgrade () {
+	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
+	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
+	
+	if (installed_system == nil || installed_system == "") {
+	    y2error ("Cannot find out installed system name");
+	    return false;
+	}
+
+	any supported_products_a = ProductFeatures::GetFeature ("software", "products_supported_for_upgrade");
+	// No products defined
+	if (supported_products_a == "") {
+	    y2warning ("No products_supported_for_upgrade defined");
+	    return true;
+	}
+	// not a list or empty list
+	list <string> supported_products = (list <string>) supported_products_a;
+	if (supported_products == nil || supported_products == []) return true;
+
+	if (ListOfRegexpsMatchesProduct (supported_products, installed_system)) {
+	    return true;
+	}
+
+	return false;
+    }
 
 
     /*-----------------------------------------------------------------------
      * GLOBAL FUNCTIONS
      *-----------------------------------------------------------------------*/
+
 
 global list<string> SelectedProducts () {
     list<map<string,any> > selected
@@ -181,7 +307,12 @@ global void IgnoreProductCompatibility () {
      */
     global define void Reset ()
     {
-	deleteOldPackages = ProductFeatures::GetBooleanFeature ("software", "delete_old_packages");
+	y2milestone ("Calling: UpdateReset()");
+
+	deleteOldPackages = DeleteOldPackages();
+	y2milestone ("deleteOldPackages %1", deleteOldPackages);
+	onlyUpdateInstalled = OnlyUpdateInstalled();
+	y2milestone ("onlyUpdateInstalled %1", onlyUpdateInstalled);
 	disallow_upgrade = false;
 
 	manual_interaction = false;
@@ -257,6 +388,7 @@ global void IgnoreProductCompatibility () {
 	}
 	else
 	{
+	    installedVersion["show"] = old_name;
 	    installedVersion["name"] = substring (old_name, 0, p);
 	    installedVersion["version"] = substring (old_name, p + 1);
 	    fill_version_map (installedVersion);
@@ -309,6 +441,11 @@ global void IgnoreProductCompatibility () {
 	}
 
 	// bugzilla #225256, use "label" first, then a "productname"
+	updateVersion["show"] = new_product["label"]:nil;
+	if (updateVersion["show"]:nil == nil) {
+	    y2warning ("No \"label\" defined in product");
+	    updateVersion["show"] = new_product["productname"]:"?" + " " + new_product["productversion"]:"?";
+	}
 	updateVersion["name"] = new_product["label"]:new_product["productname"]:"?";
 	updateVersion["version"] = new_product["productversion"]:"?";
 	fill_version_map (updateVersion);
