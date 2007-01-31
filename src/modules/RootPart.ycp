@@ -422,6 +422,30 @@ define string FsckAndMount (string mount_point, string device,
 	    return true;
 	}
 
+	// bugzilla #237139
+	// '/dev/evms/lvm2/system/root' is the same as '/dev/system/root'
+	// the root from /etc/fstab must be used
+	if (regexpmatch (root["spec"]:"", "/dev/evms/lvm2/") || regexpmatch (partition, "/dev/evms/lvm2/")) {
+	    y2milestone ("Special case with EVMS: %1 vs. %2", root["spec"]:"", partition);
+
+	    string tmp_rootspec  = root["spec"]:"";
+	    string tmp_partition = partition;
+
+	    // they might be the same but this case covers it as well
+	    if (regexpmatch (root["spec"]:"", "/dev/evms/lvm2/"))
+		tmp_rootspec = regexpsub (root["spec"]:"", "/dev/evms/lvm2/(.*)$", "/dev/\\1");
+	    if (regexpmatch (partition, "/dev/evms/lvm2/"))
+		tmp_partition = regexpsub (partition, "/dev/evms/lvm2/(.*)$", "/dev/\\1");
+
+	    y2milestone ("Checking '%1' vs. '%2'", tmp_rootspec, tmp_partition);
+
+	    if (tmp_rootspec == tmp_partition) {
+		found_partition = root["spec"]:"";
+		y2milestone ("EVMS case matching, using %1", found_partition);
+		return true;
+	    }
+	}
+
 	if (root["spec"]:"" != partition)
 	{
 	    y2error ("root partition in fstab has wrong device");
