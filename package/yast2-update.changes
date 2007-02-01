@@ -3,6 +3,7 @@ Wed Jan 31 16:16:37 CET 2007 - locilka@suse.cz
 
 - Fixed update of system on EVMS: '/dev/abc/xyz' is the same
   as '/dev/evms/lvm2/abc/xyz' (#237139).
+- 2.13.46
 
 -------------------------------------------------------------------
 Thu Jan  4 14:29:11 CET 2007 - locilka@suse.cz
