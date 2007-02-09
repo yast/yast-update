@@ -590,4 +590,9 @@ global void IgnoreProductCompatibility () {
 	did_init2 = false;
     }
 
+    void TextsUsedInFuture () {
+	// TRANSLATORS: check-box, it might happen that we need to downgrade some packages during update
+	string aaa = _("Allow Package Downgrade");
+    }
+
 }
