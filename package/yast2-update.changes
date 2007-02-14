@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb 13 18:19:43 CET 2007 - locilka@suse.cz
+
+- Client and desktop file 'vendor' has been moved to update from
+  installation to minimize RPM dependencies.
+- Updating RPM requirements.
+
+-------------------------------------------------------------------
 Wed Jan 31 16:28:45 CET 2007 - locilka@suse.cz
 
 - Fixed update of system on EVMS: '/dev/abc/xyz' is the same

@@ -446,13 +446,6 @@ define string FsckAndMount (string mount_point, string device,
 	    }
 	}
 
-	if (root["spec"]:"" != partition)
-	{
-	    y2error ("root partition in fstab has wrong device");
-	    found_partition = root["spec"]:"";
-	    return false;
-	}
-
 	return true;
     }
 
@@ -1118,9 +1111,8 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	symbol p_type = partition["type"]:`primary;
 	symbol p_detect_fs = partition["detected_fs"]:`unknown;
 
-	if ((p_fsid == 131 || p_type == `lvm || p_type == `sw_raid) &&
-	    // possible root FS
-	    contains (possible_root_fs, p_detect_fs))
+	// possible root FS
+	if ( contains (possible_root_fs, p_detect_fs))
 	{
 	    map<symbol,string> mt_map = $[
 		`ext2: "ext2",
@@ -1143,6 +1135,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    if (mount_type != "" && ! contains (non_modular_fs, mount_type))
 		SCR::Execute(.target.modprobe, mount_type, "" );
 	    // mount (read-only) partition to Installation::destdir
+	    Storage::RemoveDmMapsTo( p_dev );
 	    if ((boolean) SCR::Execute (.target.mount, [p_dev, Installation::destdir,
 							Installation::mountlog], "-o ro"))
 	    {
@@ -1150,6 +1143,15 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		if (SCR::Read (.target.size, Installation::destdir + "/etc/fstab") > 0)
 		{
 		    y2milestone ("found fstab on %1", partition);
+
+		    list <map> fstab = [];
+		    list <map> crtab = [];
+		    read_fstab_and_cryptotab (fstab, crtab);
+		    fstab = filter( map p, fstab, ``(p["file"]:""=="/"));
+		    boolean ok = size(fstab[0,"spec"]:"")>0 &&
+		                 Storage::DeviceMatchFstab( p_dev, 
+				                            fstab[0,"spec"]:"" );
+		    freshman[`valid] = ok;
 
 		    // Get installed release name
 		    string release = SuSERelease::ReleaseInformation
@@ -1165,11 +1167,12 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    freshman[`arch] = GetArchOfELF (Installation::destdir + "/bin/bash");
 		    if (freshman[`arch]:"unknown" == GetArchOfELF ("/bin/bash"))
 		    {
-			freshman[`valid] = true;
+			freshman[`valid] = ok;
 		    }
 		    else
 		    {
 			y2milestone ("Architecture for partition %1 is %2, upgrading %3", p_dev, freshman[`arch]:"unknown", GetArchOfELF ("/bin/bash"));
+			freshman[`valid] = false;
 		    }
 		}
 
@@ -1212,6 +1215,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    Storage::SetTargetMap ((map<string,map>) SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
 
+	Storage::ActivateEvms();
 	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
 	y2milestone ("target_map: %1", target_map);
 //	target_map = (map <string, map>) Storage::GetTargetMap ();
