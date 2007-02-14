@@ -11,6 +11,8 @@
 {
     module "Update";
 
+    textdomain "update";
+
     import "Installation";
     import "Packages";
     import "ProductFeatures";
