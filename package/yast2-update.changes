@@ -3,6 +3,9 @@ Tue Feb 13 18:19:43 CET 2007 - locilka@suse.cz
 
 - Client and desktop file 'vendor' has been moved to update from
   installation to minimize RPM dependencies.
+- Fixed RootPart code handling the correctness of root partition
+  mentioned in /etc/fstab of the updated system. Using new
+  Storage::DeviceMatchFstab function from storage (#244117).
 - Updating RPM requirements.
 
 -------------------------------------------------------------------
