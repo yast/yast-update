@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Feb 14 10:25:50 CET 2007 - locilka@suse.cz
+
+- Fixed RootPart code handling the correctness of root partition
+  mentioned in /etc/fstab of the updated system. Using new
+  Storage::DeviceMatchFstab function from storage (#244117).
+- 2.13.47
+
+-------------------------------------------------------------------
 Wed Jan 31 16:16:37 CET 2007 - locilka@suse.cz
 
 - Fixed update of system on EVMS: '/dev/abc/xyz' is the same
