@@ -38,6 +38,12 @@
     // Flag is set true if the user decides to delete unmaintained packages
     global boolean deleteOldPackages = nil;
 
+    // Flag is set to true when package downgrade is allowed
+    global boolean silentlyDowngradePackages = nil;
+	
+    // Flag is set to true if installed packages should be kept
+    global boolean keepInstalledPatches = nil;
+
     // don't allow upgrade only update
     global boolean disallow_upgrade = false;
 
@@ -126,11 +132,14 @@
      */
     global boolean DeleteOldPackages () {
 	// changes deleteOldPackages variable
-	boolean default_dop = ProductFeatures::GetBooleanFeature ("software", "delete_old_packages");
-	if (default_dop == nil) {
+	any default_dop_a = ProductFeatures::GetFeature ("software", "delete_old_packages");
+
+	boolean default_dop = nil;
+	if (default_dop_a == nil || default_dop_a == "") {
 	    y2error ("software/delete_old_packages not defined");
 	    return false;
 	}
+	if (is (default_dop_a, boolean)) default_dop = (boolean) default_dop_a;
 
 	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
 	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
@@ -163,11 +172,14 @@
      */
     global boolean OnlyUpdateInstalled () {
 	// changes onlyUpdateInstalled variable
-	boolean default_ous = ProductFeatures::GetBooleanFeature ("software", "only_update_selected");
-	if (default_ous == nil) {
+	any default_ous_a = ProductFeatures::GetFeature ("software", "only_update_selected");
+
+	boolean default_ous = nil;
+	if (default_ous_a == nil || default_ous_a == "") {
 	    y2error ("software/only_update_selected not defined");
 	    return false;
 	}
+	if (is (default_ous_a, boolean)) default_ous = (boolean) default_ous_a;
 
 	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
 	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
@@ -191,6 +203,86 @@
 	}
 
 	return default_ous;
+    }
+
+    /**
+     * Returns whether upgrade process should silently downgrade packages if needed.
+     * 'true' means that packages might be downgraded, 'nil' is returned when
+     * the feature is not supported in the control file.
+     */
+    global boolean SilentlyDowngradePackages () {
+	// returns empty string if not defined, buggy GetBooleanFeature
+	any default_sdp_a = ProductFeatures::GetFeature ("software", "silently_downgrade_packages");
+
+	boolean default_sdp = nil;
+	if (default_sdp_a == nil || default_sdp_a == "") {
+	    y2milestone ("software/silently_downgrade_packages not defined");
+	    return nil;
+	}
+	if (is (default_sdp_a, boolean)) default_sdp = (boolean) default_sdp_a;
+
+	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
+	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
+
+	if (installed_system == nil || installed_system == "") {
+	    y2error ("Cannot find out installed system name");
+	    return default_sdp;
+	}
+	
+	any reverse_sdp_a = ProductFeatures::GetFeature ("software", "silently_downgrade_packages_reverse_list");
+	// No reverse rules defined
+	if (reverse_sdp_a == "") {
+	    return default_sdp;
+	}
+	// not a list or empty list
+	list <string> reverse_sdp = (list <string>) reverse_sdp_a;
+	if (reverse_sdp == nil || reverse_sdp == []) return default_sdp;
+
+	if (ListOfRegexpsMatchesProduct (reverse_sdp, installed_system)) {
+	    return (! default_sdp);
+	}
+
+	return default_sdp;
+    }
+
+    /**
+     * Returns whether upgrade process should keep installed patches.
+     * 'true' means that patches will be kept, 'nil' is returned when
+     * the feature is not supported in the control file.
+     */
+    global boolean KeepInstalledPatches () {
+	// returns empty string if not defined, buggy GetBooleanFeature
+	any default_kip_a = ProductFeatures::GetFeature ("software", "keep_installed_patches");
+
+	boolean default_kip = nil;
+	if (default_kip_a == nil || default_kip_a == "") {
+	    y2milestone ("software/keep_installed_patches not defined");
+	    return nil;
+	}
+	if (is (default_kip_a, boolean)) default_kip = (boolean) default_kip_a;
+
+	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
+	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
+
+	if (installed_system == nil || installed_system == "") {
+	    y2error ("Cannot find out installed system name");
+	    return default_kip;
+	}
+	
+	any reverse_kip_a = ProductFeatures::GetFeature ("software", "keep_installed_patches_reverse_list");
+	// No reverse rules defined
+	if (reverse_kip_a == "") {
+	    return default_kip;
+	}
+	// not a list or empty list
+	list <string> reverse_kip = (list <string>) reverse_kip_a;
+	if (reverse_kip == nil || reverse_kip == []) return default_kip;
+
+	if (ListOfRegexpsMatchesProduct (reverse_kip, installed_system)) {
+	    return (! default_kip);
+	}
+
+	return default_kip;
     }
     
     /**
@@ -305,16 +397,34 @@ global void IgnoreProductCompatibility () {
 }
 
     /**
+     * Set initial values for variables that user can't change.
+     * They are defined in the control file.
+     */
+    global define void InitUpdate () {
+	y2milestone ("Calling: InitUpdate()");
+
+	silentlyDowngradePackages = SilentlyDowngradePackages();
+	y2milestone ("silentlyDowngradePackages: %1", silentlyDowngradePackages);
+
+	keepInstalledPatches = KeepInstalledPatches();
+	y2milestone ("keepInstalledPatches: %1", keepInstalledPatches);
+    }
+
+    /**
      *
      */
     global define void Reset ()
     {
 	y2milestone ("Calling: UpdateReset()");
 
+	Update::InitUpdate();
+
 	deleteOldPackages = DeleteOldPackages();
 	y2milestone ("deleteOldPackages %1", deleteOldPackages);
+
 	onlyUpdateInstalled = OnlyUpdateInstalled();
 	y2milestone ("onlyUpdateInstalled %1", onlyUpdateInstalled);
+
 	disallow_upgrade = false;
 
 	manual_interaction = false;

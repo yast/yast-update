@@ -8,6 +8,9 @@ Requires:	yast2-packager
 # Storage::DeviceMatchFstab (#244117)
 Requires:	yast2-storage >= 2.13.83
 
+# Pkg::PkgUpdateAll (map conf)
+Conflicts:	yast2-pkg-bindings < 2.13.115
+
 Provides:	yast2-config-update y2c_update
 Obsoletes:	yast2-config-update y2c_update
 Provides:	yast2-trans-inst-update y2t_inst-update
