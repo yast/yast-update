@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Feb 15 11:32:15 CET 2007 - locilka@suse.cz
+
+- Added two new functions into Update module:
+  SilentlyDowngradePackages and KeepInstalledPatches to control
+  upgrade process better (FATE #301990, Bugzilla #238488).
+- 2.13.48
+
+-------------------------------------------------------------------
 Wed Feb 14 10:25:50 CET 2007 - locilka@suse.cz
 
 - Fixed RootPart code handling the correctness of root partition
