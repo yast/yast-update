@@ -19,6 +19,9 @@ Obsoletes:	yast2-trans-update y2t_update
 # to remove dependency on yast2-storage
 Provides:	yast2-installation:/usr/share/YaST2/clients/vendor.ycp
 
+# Pkg::PkgUpdateAll (map conf)
+Conflicts:	yast2-pkg-bindings < 2.15.11
+
 Summary:	YaST2 update
 
 %description
