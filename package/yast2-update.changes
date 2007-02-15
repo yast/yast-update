@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Feb 15 11:34:53 CET 2007 - locilka@suse.cz
+
+- Added two new functions into Update module:
+  SilentlyDowngradePackages and KeepInstalledPatches to control
+  upgrade process better (FATE #301990, Bugzilla #238488).
+- 2.15.3
+
+-------------------------------------------------------------------
 Tue Feb 13 18:19:43 CET 2007 - locilka@suse.cz
 
 - Client and desktop file 'vendor' has been moved to update from

@@ -32,6 +32,27 @@
     
     boolean rpm_db_existency_checked_already = false;
 
+    map <string, any> GetUpdateConf () {
+	// 'nil' values are skipped, in that case, ZYPP uses own default values
+	map <string, boolean> ret = $[];
+
+	if (Update::deleteOldPackages != nil) {
+	    ret["delete_unmaintained"] = Update::deleteOldPackages;
+	}
+
+	if (Update::silentlyDowngradePackages != nil) {
+	    ret["silent_downgrades"] = Update::silentlyDowngradePackages;
+	}
+
+	if (Update::keepInstalledPatches != nil) {
+	    ret["keep_installed_patches"] = Update::keepInstalledPatches;
+	}
+	
+	y2milestone ("Using update configuration: %1", ret);
+	
+	return ret;
+    }
+
     // bugzilla #148105
     // Check the current RPM Database if exists
     //
@@ -173,6 +194,9 @@
 	    Update::GetProductName ();
 	}
 
+	// FATE #301990, Bugzilla #238488
+	// Set initial update-related (packages/patches) values from control file
+	Update::InitUpdate();
 	
 	// some products are listed in media control file and at least one is compatible
 	// with system just being updated
@@ -266,8 +290,11 @@
 
 	    Packages::SelectProduct();
 	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
-	    map<symbol, integer> update_sum
-		= Pkg::PkgUpdateAll (Update::deleteOldPackages);
+
+	    // FATE #301990, Bugzilla #238488
+	    // Control the upgrade process better
+	    map <symbol, integer> update_sum
+		= Pkg::PkgUpdateAll (GetUpdateConf());
 	    y2milestone ("Update summary: %1", update_sum);
 	    Update::unknown_packages = update_sum[`ProblemListSze]:0;
 
