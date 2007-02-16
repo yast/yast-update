@@ -5,8 +5,6 @@ BuildRequires:	yast2-packager yast2-xml docbook-xsl-stylesheets doxygen libxslt 
 Requires:	yast2
 Requires:	yast2-installation
 Requires:	yast2-packager
-# Storage::DeviceMatchFstab (#244117)
-Requires:	yast2-storage >= 2.15.4
 
 Provides:	yast2-config-update y2c_update
 Obsoletes:	yast2-config-update y2c_update
@@ -19,8 +17,13 @@ Obsoletes:	yast2-trans-update y2t_update
 # to remove dependency on yast2-storage
 Provides:	yast2-installation:/usr/share/YaST2/clients/vendor.ycp
 
+# Required only in inst-sys
+# Requires:	yast2-storage
+
 # Pkg::PkgUpdateAll (map conf)
 Conflicts:	yast2-pkg-bindings < 2.15.11
+# Storage::DeviceMatchFstab (#244117)
+Conflicts:	yast2-storage < 2.15.4
 
 Summary:	YaST2 update
 

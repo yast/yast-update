@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb 16 16:19:48 CET 2007 - locilka@suse.cz
+
+- Client and desktop file 'vendor' has been moved to a new package
+  yast2-add-on-2.15.0 (#238673)
+- Removed dependency on yast2-storage (now needed only in inst-sys)
+
+-------------------------------------------------------------------
 Thu Feb 15 11:34:53 CET 2007 - locilka@suse.cz
 
 - Added two new functions into Update module:
