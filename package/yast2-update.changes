@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb 26 09:35:05 CET 2007 - locilka@suse.cz
+
+- Adding yast2-add-on to BuildRequires.
+- Cleaning makefiles from vendor.desktop.
+- 2.15.4
+
+-------------------------------------------------------------------
 Fri Feb 16 16:19:48 CET 2007 - locilka@suse.cz
 
 - Client and desktop file 'vendor' has been moved to a new package
