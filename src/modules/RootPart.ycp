@@ -1145,12 +1145,15 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    list <map> crtab = [];
 		    read_fstab_and_cryptotab (fstab, crtab);
 		    fstab = filter( map p, fstab, ``(p["file"]:""=="/"));
+
 		    if (size(fstab[0,"spec"]:"") == 0) {
 			y2warning ("Cannot find / entry in fstab %1", fstab);
 		    }
+
 		    boolean ok = size(fstab[0,"spec"]:"")>0 &&
 		                 Storage::DeviceMatchFstab( p_dev, 
 				                            fstab[0,"spec"]:"" );
+
 		    // Why this doesn't match?
 		    if (ok != true) {
 			y2warning ("Device does not match fstab: '%1' vs. '%2'", p_dev, fstab[0,"spec"]:"");
