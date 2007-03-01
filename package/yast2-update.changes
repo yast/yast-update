@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar  1 15:13:11 CET 2007 - locilka@suse.cz
+
+- Added more logging because of bug #249791.
+
+-------------------------------------------------------------------
 Mon Feb 26 09:35:05 CET 2007 - locilka@suse.cz
 
 - Adding yast2-add-on to BuildRequires.
