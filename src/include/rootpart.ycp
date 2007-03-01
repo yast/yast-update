@@ -189,29 +189,34 @@ general overview of your system's partitions.
 	if (flavor == `boot_popup)
 	{
 	    buttons = `HBox (
+			     `HStretch (),
 			     // pushbutton to (rightaway) boot the system selected above
 			     `HWeight( 1, `PushButton(`id(`next), `opt(`default), _("&Boot")) ),
 			     `HSpacing( 1 ),
-			     `HWeight( 1, `PushButton(`id(`cancel), Label::CancelButton() ) )
+			     `HWeight( 1, `PushButton(`id(`cancel), Label::CancelButton() ) ),
+			     `HStretch ()
 			     );
 	}
 
 	term full = `MinHeight (
 	    16,
-	    `HVSquash (
 		`HBox (
-		    `MinWidth (
-			26,
-			`RichText (help_text)
+		    `HSquash (
+			`MinWidth (
+			    26,
+			    `RichText (`opt(`vstretch), help_text)
+			)
 		    ),
 		    `HSpacing (2),
 		    `VBox (
-			contents,
+			`MinHeight (
+			    15,
+			    contents
+			),
 			buttons
 		    ),
 		    `HSpacing (2)
 		)
-	    )
 	);
 
 	UI::OpenDialog (full);
