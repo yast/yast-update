@@ -145,7 +145,6 @@ general overview of your system's partitions.
 ");
 
     term contents = `HBox (
-	`HSpacing (2),
 	`VBox (
 	    `VSpacing (1),
 	    `HSpacing( 40 ),	// force minimum width
@@ -169,8 +168,7 @@ general overview of your system's partitions.
 		// check box
 		_("&Show All Partitions"), false)),
 	    `VSpacing (1)
-	),
-	`HSpacing (2)
+	)
     );
 
 
@@ -198,20 +196,23 @@ general overview of your system's partitions.
 			     );
 	}
 
-	term full = `HBox (
-			   `VSpacing( 16 ),		// force dialog height
-			   `VBox(
-				 `HSpacing( 30 ),	// force help text width
-				 `RichText( help_text )
-				 ),
-			   `HSpacing( 3 ),
-			   `VBox(
-				 `VSpacing( 1 ),
-				 contents,
-				 buttons
-				 ),
-			   `HSpacing( 3 )
-			   );
+	term full = `MinHeight (
+	    16,
+	    `HVSquash (
+		`HBox (
+		    `MinWidth (
+			26,
+			`RichText (help_text)
+		    ),
+		    `HSpacing (2),
+		    `VBox (
+			contents,
+			buttons
+		    ),
+		    `HSpacing (2)
+		)
+	    )
+	);
 
 	UI::OpenDialog (full);
     }
