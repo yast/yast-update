@@ -3,6 +3,7 @@ Thu Mar  1 15:13:11 CET 2007 - locilka@suse.cz
 
 - Added more logging because of bug #249791.
 - Better layout for "Select System or Partition to Boot" dialog.
+- 2.15.5
 
 -------------------------------------------------------------------
 Mon Feb 26 09:35:05 CET 2007 - locilka@suse.cz
