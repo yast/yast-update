@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Mar 13 15:37:59 CET 2007 - locilka@suse.cz
+
+- When checking the installed system either for Update or Boot
+  Installed System, consider partition valid when inst-sys is PPC
+  and installed system is PPC64. Don't be so strict (#249791).
+- 2.13.50
+
+-------------------------------------------------------------------
 Thu Mar  1 15:10:11 CET 2007 - locilka@suse.cz
 
 - Added more logging because of bug #249791.
