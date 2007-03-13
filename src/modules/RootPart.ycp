@@ -1176,15 +1176,24 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 		    // Right architecture?
 		    freshman[`arch] = GetArchOfELF (Installation::destdir + "/bin/bash");
-		    if (freshman[`arch]:"unknown" == GetArchOfELF ("/bin/bash"))
-		    {
+		    string instsys_arch = GetArchOfELF ("/bin/bash");
+		    
+		    // installed /bin/bash and the one from inst-sys are matching
+		    if (freshman[`arch]:"unknown" == instsys_arch) {
 			freshman[`valid] = ok;
-		    }
-		    else
-		    {
-			y2milestone ("Architecture for partition %1 is %2, upgrading %3", p_dev, freshman[`arch]:"unknown", GetArchOfELF ("/bin/bash"));
+		    // both are PPC, bugzilla #249791
+		    } else if (
+			contains(["ppc", "ppc64"], freshman[`arch]:"unknown")
+			&&
+			contains(["ppc", "ppc64"], instsys_arch)
+		    ) {
+			y2milestone ("Architecture for partition %1 is %2, upgrading %3", p_dev, freshman[`arch]:"unknown", instsys_arch);
+			freshman[`valid] = true;
+		    } else {
+			y2milestone ("Architecture for partition %1 is %2, upgrading %3", p_dev, freshman[`arch]:"unknown", instsys_arch);
 			freshman[`valid] = false;
 		    }
+		    y2milestone ("Partition is valid: %1", freshman[`valid]:false);
 		}
 
 		// unmount partition
