@@ -276,6 +276,103 @@ or restart your computer.
     }
 
 /**
+ * @param string headline (optional; to disable, use "")
+ * @param string question
+ * @param string button (true)
+ * @param string button (false)
+ * @param string details (hidden under [Details] button; optional; to disable, use "")
+ */
+global boolean AnyQuestionAnyButtonsDetails (
+    string headline, string question, string button_yes, string button_no, string details
+) {
+    boolean has_details = true;
+    if (details == "" || details == nil) has_details = false;
+
+    boolean has_heading = true;
+    if (headline == "" || headline == nil) has_heading = false;
+
+    term heading = (has_heading ?
+	`VBox (
+	    `Left(`Heading (headline))
+	)
+	:
+	`Empty()
+    );
+
+    term popup_def = `Left (`Label (question));
+
+    term details_checkbox = (has_details ?
+	`VBox (
+	    `VSpacing (1),
+	    `Left (`CheckBox (`id (`details), `opt (`notify), _("Show &Details"), false))
+	)
+	:
+	`Empty ()
+    );
+
+    term popup_buttons = `VBox (
+	`VSpacing (1),
+	`HBox (
+	    `HSpacing (8),
+	    `PushButton (`id (`yes), button_yes),
+	    `VSpacing (2),
+	    `PushButton (`id (`cancel), button_no),
+	    `HSpacing (8)
+	),
+	`VSpacing (0.5)
+    );
+
+    UI::OpenDialog (`opt (`decorated),
+	`VSquash (
+	    `VBox (
+		heading,
+		popup_def,
+		`Left (`opt(`hstretch), `ReplacePoint (`id(`rp_details), `Empty())),
+		details_checkbox,
+		popup_buttons
+	    )
+	)
+    );
+    UI::SetFocus (`id (`yes));
+
+    any userinput = nil;
+    boolean ret = nil;
+
+    while (true) {
+	userinput = UI::UserInput();
+	
+	if (userinput == `yes) {
+	    ret = true;
+	    break;
+	} else if (userinput == `details) {
+	    boolean curr_status = (boolean) UI::QueryWidget (`id (`details), `Value);
+
+	    if (curr_status == false) {
+		UI::ReplaceWidget (`id (`rp_details), `Empty());
+	    } else {
+		UI::ReplaceWidget (`id (`rp_details),
+		    `MinSize (
+			60, 10,
+			`RichText (
+			    `id (`details_text),
+			    `opt (`plainText, `hstretch),
+			    details
+			)
+		    )
+		);
+	    }
+	} else {
+	    ret = false;
+	    break;
+	}
+    }
+
+    UI::CloseDialog();
+
+    return ret;
+}
+
+/**
  * Function checks the device and returns whether it is OK or not.
  * The read-only FS check is performed for jfs only and only one for
  * one device.
@@ -307,14 +404,30 @@ define boolean RunFSCKonJFS (string mount_type, string device, string & error_me
 	    y2error ("Result: %1", cmd);
 	    error_message = tostring(cmd["stderr"]:nil);
 
-	    return Popup::ContinueCancel (sformat (
-		// popup question (continue/cancel dialog)
-		// %1 is a device name such as /dev/hda5
-		_("The file system check of device %1 has failed.
+	    string details = "";
+	    if (cmd["stdout"]:"" != "") {
+		details = details + cmd["stdout"]:"";
+	    }
+	    if (cmd["stderr"]:"" != "") {
+		details = (details == "" ? "":"\n") +
+		    details + cmd["stderr"]:"";
+	    }
 
-Would you like to continue in mounting the device?"),
-		device
-	    ));
+	    return AnyQuestionAnyButtonsDetails (
+		// popup headline
+		_("File System Check Failed"),
+		sformat (
+		    // popup question (continue/cancel dialog)
+		    // %1 is a device name such as /dev/hda5
+		    _("The file system check of device %1 has failed.
+
+Would you like to continue in mounting the device?"), device
+		),
+		Label::ContinueButton(),
+		// button
+		_("&Skip Mounting"),
+		details
+	    );
 	// succeeded
 	} else {
 	    // add device into the list of already checked partitions (with exit status 0);
@@ -471,28 +584,37 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 }
 
     /**
+     * Translates FS or Cryptotab (old devices to new ones).
+     * Such as /dev/hda5 to /dev/sda5.
      *
+     * @param list <map> of definitions to translate
+     * @param string key name in map to translate
+     * @return list <map> of translated definitions
+     *
+     * @see https://bugzilla.novell.com/show_bug.cgi?id=258222
      */
-    define list <map> TranslateFSTab (list <map> fstab)
-    {
+    define list <map> TranslateFsOrCryptoTab (list <map> translate, string key_to_translate) {
+	// first find a list of values for translation
 	list <string> old_names = [];
-	foreach (map m, fstab, {
-	    old_names = add (old_names, m["spec"]:"");
+	foreach (map m, translate, {
+	    old_names = add (old_names, m[key_to_translate]:"");
 	});
 
+	// translate them
 	list <string> new_names = Storage::GetTranslatedDevices (
-	    Update::installedVersion, Update::updateVersion,
-	    old_names);
+	    Update::installedVersion, Update::updateVersion, old_names
+	);
 
 	integer i = 0;
-	while (i < size (fstab))
-	{
-	    string spec = fstab[i,"spec"]:"";
-	    fstab[i,"spec"] = new_names[i]:spec;
+
+	// replace old values with translated ones
+	while (i < size (translate)) {
+	    string default_val = translate[i, key_to_translate]:"";
+	    translate[i, key_to_translate] = new_names[i]:default_val;
 	    i = i + 1;
 	};
 
-	return fstab;
+	return translate;
     }
 
     /**
@@ -582,6 +704,7 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
     {
 	integer default_scr = WFM::SCRGetDefault ();
 	integer new_scr = nil;
+
 	if (Stage::initial ())
 	{
 	    readFsTab (fstab);
@@ -592,6 +715,14 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    fstab = (list<map>) SCR::Read (.etc.fstab);
 	    crtab = (list<map>) SCR::Read (.etc.cryptotab);
 	}
+
+	y2milestone ("fstab: %1", fstab);
+	fstab = TranslateFsOrCryptoTab (fstab, "spec");
+	y2milestone ("fstab: (translated) %1", fstab);
+
+	y2milestone ("crtab: %1", crtab);
+	crtab = TranslateFsOrCryptoTab (crtab, "file");
+	y2milestone ("crtab: (translated) %1", crtab);
 
 	return true;
     }
@@ -951,15 +1082,6 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 	    read_fstab_and_cryptotab (fstab, crtab);
 
-	    y2milestone ("fstab: %1", fstab);
-	    y2milestone ("crtab: %1", crtab);
-
-	    fstab = TranslateFSTab (fstab);
-	    crtab = TranslateFSTab (crtab);
-
-	    y2milestone ("fstab: %1", fstab);
-	    y2milestone ("crtab: %1", crtab);
-
 	    if (size (fstab) == 0)
 	    {
 		y2error ("no or empty fstab found!");
@@ -978,13 +1100,6 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		}
 		else
 		{
-/* Removed, as fstab and crtab have been translated above
-		    fstab = TranslateFSTab (fstab);
-		    crtab = TranslateFSTab (crtab);
-
-		    y2milestone ("fstab: %1", fstab);
-		    y2milestone ("crtab: %1", crtab);
-*/
 		    string tmp = "";
 
 		    if (!check_root_device (root_device_current, fstab, tmp))
@@ -1126,8 +1241,6 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    string error_message = nil;
 	    if (! RunFSCKonJFS (mount_type, p_dev, error_message)) {
 		freshman[`valid] = false;
-		// popup error, %1 is a device name /dev/hda5
-		Report::Error (sformat (_("File system check of the device %1 has failed."), p_dev));
 		return freshman;
 	    }
 
@@ -1146,8 +1259,10 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 		    list <map> fstab = [];
 		    list <map> crtab = [];
+
 		    read_fstab_and_cryptotab (fstab, crtab);
-		    fstab = filter( map p, fstab, ``(p["file"]:""=="/"));
+
+		    fstab = filter (map p, fstab, ``(p["file"]:""=="/"));
 
 		    if (size(fstab[0,"spec"]:"") == 0) {
 			y2warning ("Cannot find / entry in fstab %1", fstab);
