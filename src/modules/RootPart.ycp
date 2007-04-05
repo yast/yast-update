@@ -600,6 +600,8 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    old_names = add (old_names, m[key_to_translate]:"");
 	});
 
+	y2milestone ("Installed: %1", Update::installedVersion);
+	y2milestone ("New: %1", Update::updateVersion);
 	// translate them
 	list <string> new_names = Storage::GetTranslatedDevices (
 	    Update::installedVersion, Update::updateVersion, old_names
@@ -715,6 +717,8 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    fstab = (list<map>) SCR::Read (.etc.fstab);
 	    crtab = (list<map>) SCR::Read (.etc.cryptotab);
 	}
+	
+	Update::GetProductName();
 
 	y2milestone ("fstab: %1", fstab);
 	fstab = TranslateFsOrCryptoTab (fstab, "spec");
@@ -1078,8 +1082,6 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    // typing passwords for encrypted partitions
 	    Keyboard::CheckKeyboardDuringUpdate (Installation::destdir);
 
-	    Update::GetProductName ();
-
 	    read_fstab_and_cryptotab (fstab, crtab);
 
 	    if (size (fstab) == 0)
@@ -1259,7 +1261,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 		    list <map> fstab = [];
 		    list <map> crtab = [];
-
+		    
 		    read_fstab_and_cryptotab (fstab, crtab);
 
 		    fstab = filter (map p, fstab, ``(p["file"]:""=="/"));
