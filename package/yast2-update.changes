@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Apr  5 11:38:49 CEST 2007 - locilka@suse.cz
+
+- Always call Update::GetProductName translating fstab and
+  cryptotab.
+- 2.15.8
+
+-------------------------------------------------------------------
 Thu Apr  5 10:34:05 CEST 2007 - locilka@suse.cz
 
 - Fixed reading fstab and cryptotab to always call Storage to
