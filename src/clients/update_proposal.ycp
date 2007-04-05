@@ -407,7 +407,7 @@ some applications may not run properly.")))
 	{
 	    return $[
 		// error message in proposal
-		"warning" : _("The installed product is not compatible with the product on the installatin media."),
+		"warning" : _("The installed product is not compatible with the product on the installation media."),
 		"warning_level" : `fatal,
 		"raw_proposal" : [],
 	    ];
