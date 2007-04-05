@@ -600,8 +600,6 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    old_names = add (old_names, m[key_to_translate]:"");
 	});
 
-	y2milestone ("Installed: %1", Update::installedVersion);
-	y2milestone ("New: %1", Update::updateVersion);
 	// translate them
 	list <string> new_names = Storage::GetTranslatedDevices (
 	    Update::installedVersion, Update::updateVersion, old_names
