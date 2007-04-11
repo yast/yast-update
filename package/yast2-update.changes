@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Apr 11 16:34:50 CEST 2007 - locilka@suse.cz
+
+- Added icon into Update Options dialog.
+- Added help for Update Options summary proposal (#227265).
+- System upgrade is now forbidden, only system update is possible.
+- Upgrade based on patterns is now more visually understandable
+  (#227265).
+- 2.15.9
+
+-------------------------------------------------------------------
 Thu Apr  5 11:38:49 CEST 2007 - locilka@suse.cz
 
 - Always call Update::GetProductName translating fstab and

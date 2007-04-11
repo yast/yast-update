@@ -413,78 +413,83 @@ some applications may not run properly.")))
 	    ];
 	}
 
-	if (true)
-	{
-	    list available_base_selections = Update::GetBaseSelections ();
-	    if ((! Packages::using_patterns) && size (available_base_selections) == 0)
-	    {
-		y2error ("No base selections available");
-		// Can't find any software data, probably a installation media error
-		// error message
-		return $[ "warning" : _("Cannot read package data from installation media. Media error?"),
-			  "warning_level" : `blocker,
-			  "raw_proposal" : [] ];
-	    }
+	list available_base_selections = Update::GetBaseSelections ();
+	if ((! Packages::using_patterns) && size (available_base_selections) == 0) {
+	    y2error ("No base selections available");
+	    // Can't find any software data, probably a installation media error
+	    // error message
+	    return $[ "warning" : _("Cannot read package data from installation media. Media error?"),
+		"warning_level" : `blocker,
+		"raw_proposal" : [] ];
 	}
 
-	if (Update::disallow_upgrade)
-	{
-	    if (false)		// FIXME
-	    {
-		// proposal error
-		return $[ "warning" : _("Updating to another version is not supported from the running system."),
-			  "warning_level" : `fatal,
-			  "raw_proposal" : [] ];
-	    }
+	// when versions don't match and upgrade is not allowed (running system)
+	if ((Update::installedVersion["show"]:"A" != Update::updateVersion["show"]:"B") && Update::disallow_upgrade) {
+	    // proposal error
+	    return $[ "warning" : _("Updating to another version is not supported from the running system."),
+		"warning_level" : `fatal,
+		"raw_proposal" : [] ];
 	}
 
-	list<string> tmp = [];
+	// stores the proposal text output
+	string summary_text = "";
 
-	tmp = Update::SelectedProducts ();
-	// summary text (%1 is package selection)
-//	tmp = add (tmp, sformat (_("Update to %1"), Update::updateVersion["nameandversion"]:"?"));
+	list <string> products = Update::SelectedProducts ();
+	if (products != nil) {
+	    foreach (string one_product, products, {
+		// TRANSLATORS: proposal summary item, %1 is a product name
+		summary_text = summary_text + "<li>" + sformat (_("Update to %1"), one_product) + "</li>\n";
+	    });
+	}
 
-	if (Update::onlyUpdateInstalled)
-	{
+	if (Update::deleteOldPackages) {
+	    // Proposal for removing packages which are not maintained any more
+	    summary_text = summary_text + "<li>" + _("Delete unmaintained packages") + "</li>\n";
+	}
+
+	if (Update::onlyUpdateInstalled) {
 	    // Proposal for backup during update
-	    tmp = add (tmp, _("Only Update Installed Packages"));
-	}
-	else
-	{
-	    if (Packages::using_patterns)
-	    {
+	    summary_text = summary_text + "<li>" + _("Only update installed packages") + "</li>\n";
+	} else {
+	    if (Packages::using_patterns) {
 		list<map<string,any> > patterns = Pkg::ResolvableProperties ("", `pattern, "");
 		patterns = filter (map<string,any> p, patterns, {
 		    return p["status"]:nil == `selected && p["user_visible"]:true && p["summary"]:p["name"]:"" != "";
 		});
 		// proposal string
-		tmp = add (tmp, _("Update Based on Patterns"));
-		foreach (map<string,any> p, patterns, {
-		    tmp = add (tmp, "+  " + p["summary"]:p["name"]:"");
-		});
-	    }
-	    else
-	    {
+		summary_text = summary_text + "<li>" + _("Update based on patterns") + "</li>\n";
+
+		if (patterns != nil && size (patterns) > 0) {
+		    summary_text = summary_text + HTML::ListStart();
+
+		    foreach (map <string, any> p, patterns, {
+			summary_text = summary_text + "<li>" + p["summary"]:p["name"]:"" + "</li>\n";
+		    });
+		    
+		    summary_text = summary_text + HTML::ListEnd();
+		}
+	    } else {
 		map selection_data = Pkg::SelectionData (Update::selected_selection);
 		string selection_summary = selection_data["summary"]:"error";
 
-		// Proposal for selection during update
-		tmp = add (tmp, sformat (_("Update Based on Selection \"%1\""),
-				     selection_summary));
+		// Proposal for selection during update, %1 stands for selection name
+		summary_text = summary_text + "<li>" + sformat (_("Update based on selection \"%1\""),
+		    selection_summary) + "</li>\n";
 	    }
 	}
 
 	// recalculate the disk space usage data
 	SpaceCalculation::GetPartitionInfo();
 
-	if (Update::deleteOldPackages)
-	{
-	    // Proposal for backup during update
-	    tmp = add (tmp, _("Delete Old Packages"));
-	}
+	// TRANSLATORS: proposal dialog help
+	string update_options_help = _("<p><b><big>Update Options</big></b>
+Here you can choose how your system is going to be updated.
+Whether only installed packages should be updated or also new ones should be installed
+(the default selection) and whether unmaintained packages should be deleted.</p>");
 
-	ret = $[ "preformatted_proposal" :
-		 HTML::List (tmp)
+	ret = $[
+	    "preformatted_proposal" : HTML::ListStart() + summary_text + HTML::ListEnd(),
+	    "help" : update_options_help,
 	];
     }
     else if ( func == "AskUser" )

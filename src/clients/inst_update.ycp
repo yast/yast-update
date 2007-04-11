@@ -69,13 +69,21 @@ You will lose that selection if you change the basic selection.");
 
     // Build and show dialog
 
-    string from_version = RootPart::GetInfoOfSelected (`name);
-    string to_version = Update::updateVersion["show"]:_("Unknown");
+    string from_version = Update::installedVersion["show"]:_("Unknown");
+    string to_version   = Update::updateVersion["show"]:_("Unknown");
+
+    string update_label = "";
+    if (from_version == to_version) {
+	// label showing to which version we are updating
+	update_label = sformat (_("Update to %1"), to_version);
+    } else {
+	// label showing from which version to which version we are updating
+	update_label = sformat (_("Update from %1 to %2"), from_version, to_version);
+    }
 
     term contents = `HVSquash(
 	`VBox(
-	      // label showing from what version to what version we are updating
-	      `Left (`Label (sformat (_("Update from %1 to %2"), from_version, to_version))),
+	      `Left (`Label (update_label)),
 	      `VSpacing (1),
 	      // frame title for update selection
 	      `Frame( _("Update Mode"),
@@ -142,6 +150,7 @@ packages during the update.</p>
     Wizard::OpenAcceptDialog ();
 
     Wizard::SetContents (title, contents, helptext, (boolean) WFM::Args(0), (boolean) WFM::Args(1));
+    Wizard::SetTitleIcon ("yast-software");
 
     // preset update/upgrade radio buttons properly
 
