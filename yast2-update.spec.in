@@ -1,7 +1,7 @@
 @HEADER-COMMENT@
 
 @HEADER@
-BuildRequires:	yast2-add-on yast2-packager perl-XML-Writer update-desktop-files yast2 yast2-devtools yast2-testsuite
+BuildRequires:	yast2-add-on yast2-packager perl-XML-Writer yast2 yast2-devtools yast2-testsuite
 Requires:	yast2
 Requires:	yast2-installation
 Requires:	yast2-packager
@@ -41,7 +41,7 @@ Summary:	YaST2 update
 %files
 %defattr(-,root,root)
 @ybindir@/*
-@desktopdir@/*.desktop
+#@desktopdir@/*.desktop
 @moduledir@/*
 @clientdir@/*.ycp
 @yncludedir@/update

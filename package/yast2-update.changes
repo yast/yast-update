@@ -2,6 +2,7 @@
 Tue Apr 17 13:06:42 CEST 2007 - locilka@suse.cz
 
 - Removed System Update icon from YaST Control Center (#265225).
+- Removed update-desktop-files from BuildRequires
 - 2.13.10
 
 -------------------------------------------------------------------
