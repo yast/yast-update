@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 18 14:53:14 CEST 2007 - locilka@suse.cz
+
+- Fixed System Update script (udate.ycp) to use
+  Wizard::OpenNextBackStepsDialog instead of OpenNextBackDialog.
+
+-------------------------------------------------------------------
 Tue Apr 17 13:06:42 CEST 2007 - locilka@suse.cz
 
 - Removed System Update icon from YaST Control Center (#265225).

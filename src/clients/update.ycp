@@ -32,7 +32,7 @@
 
     ProductControl::custom_control_file =  "/usr/share/YaST2/control/update.xml";
 
-    Wizard::OpenNextBackDialog();
+    Wizard::OpenNextBackStepsDialog();
     Wizard::SetNextButton(`next, Label::AcceptButton());
     if (!ProductControl::Init())
     {
