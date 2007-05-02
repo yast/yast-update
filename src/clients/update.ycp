@@ -4,6 +4,7 @@
  * Summary:	Main update client
  * Authors:	Klaus Kaempf <kkaempf@suse.de>
  *		Arvin Schnell <arvin@suse.de>
+ *		Lukas Ocilka <locilka@suse.cz>
  *
  * $Id$
  */
@@ -11,17 +12,30 @@
 {
     textdomain "update";
 
-    // somewhere, DirInstall is imported that wants Pkg in the constructor
-    import "PackageLock";
-    // check whether having the packager for ourselves
-    if (! PackageLock::Check ())
-	return `abort;
-
     import "Mode";
     import "Update";
     import "Wizard";
     import "ProductControl";
     import "Label";
+    import "Mode";
+    import "GetInstArgs";
+    import "CommandLine";
+
+    // Bugzilla #269910, CommanLine "support"
+    // argmap is only a map, CommandLine uses string parameters
+    if (size (GetInstArgs::argmap()) == 0 && size (WFM::Args()) > 0) {
+        Mode::SetUI ("commandline");
+        y2milestone ("Mode CommandLine not supported, exiting...");
+        // TRANSLATORS: error message - the module does not provide command line interface
+        CommandLine::Print(_("There is no user interface available for this module."));
+        return `auto;
+    }
+
+    // somewhere, DirInstall is imported that wants Pkg in the constructor
+    import "PackageLock";
+    // check whether having the packager for ourselves
+    if (! PackageLock::Check ())
+	return `abort;
 
     // set normal mode and update
     Mode::SetMode ("update");
