@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu May 03 16:45:34 CEST 2007 - aschnell@suse.de
+
+- fixed mounting of /var partition during update for setups with
+  three or more disks (bug #269230)
+- 2.13.52
+
+-------------------------------------------------------------------
 Tue Apr 17 13:05:16 CEST 2007 - locilka@suse.cz
 
 - Removed System Update icon from YaST Control Center (#265225).
@@ -70,7 +77,7 @@ Mon Dec  4 10:45:12 CET 2006 - locilka@suse.cz
 Fri Nov 10 09:00:15 CET 2006 - locilka@suse.cz
 
 - Removing `ignore button for now (#148105, comments #22-#28).
-- 2.13.43 
+- 2.13.43
 
 -------------------------------------------------------------------
 Thu Nov  9 10:17:41 CET 2006 - locilka@suse.cz
@@ -388,7 +395,7 @@ Fri Jan 27 09:20:57 CET 2006 - locilka@suse.cz
 -------------------------------------------------------------------
 Wed Dec 21 10:37:57 CET 2005 - visnov@suse.cz
 
-- merged proofread texts 
+- merged proofread texts
 
 -------------------------------------------------------------------
 Fri Dec 16 15:50:57 CET 2005 - jsrain@suse.cz
@@ -400,7 +407,7 @@ Fri Dec 16 15:50:57 CET 2005 - jsrain@suse.cz
 -------------------------------------------------------------------
 Tue Nov 29 09:15:07 CET 2005 - visnov@suse.cz
 
-- removed yast2-x11 from build dependencies 
+- removed yast2-x11 from build dependencies
 
 -------------------------------------------------------------------
 Wed Nov 23 14:37:56 CET 2005 - jsrain@suse.cz
