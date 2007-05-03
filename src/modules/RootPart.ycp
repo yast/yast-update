@@ -855,6 +855,17 @@ string MountVarPartition (string device) {
 	    _("The /var partition %1 could not be mounted.\n"),
 	    device) + "\n" + mount_err + "\n\n" + sdb;
     }
+    else
+    {
+	if (SCR::Read (.target.size, Installation::destdir + "/var/log/messages") == -1)
+	{
+	    y2error ("mounted /var doesn't look like a /var partition");
+	    err_message = sformat (
+		// error message
+		_("The /var partition %1 could not be mounted.\n"),
+		device) + "\n" + mount_err + "\n\n" + sdb;
+	}
+    }
     return err_message;
 }
 
@@ -897,6 +908,10 @@ define string MountVarIfRequired (list <map> fstab, string root_device_current)
 
 	if (size (realdisks) != 2)
 	{
+	    // see bug #269230: simply assume the device name did not change
+	    y2milestone ("assume device name of /var did not change");
+	    return MountVarPartition (var_device_fstab);
+
 	    y2error ("don't know how to handle more than two disks at this point");
 		// error message
 	    return _("Unable to mount /var partition with this disk configuration.\n") + sdb;
