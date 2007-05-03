@@ -173,16 +173,7 @@
     define void init_stuff ()
     {
 	// initialize package manager
-	if (true)
-	{
-	    UI::OpenDialog (`opt(`decorated),
-			    // intermediate popup while initializing internal packagemanagement
-			    `Label(_("Reading package information. One moment please...")));
-
-	    Packages::Init (true);
-
-	    UI::CloseDialog();
-	}
+	Packages::Init(true);
 
 	// initialize target
 	if (true)
