@@ -563,7 +563,7 @@ define string FsckAndMount (string mount_point, string device,
     }
 
 /**
- * Find a monut poing in fstab
+ * Find a mount point in fstab
  * @param fstab a list of fstab entries
  * @param mountpoint string a mount point to find
  * @return string the found partition
@@ -1273,6 +1273,8 @@ Check the log file %1."), Directory::logdir + "/y2log");
 				                            fstab[0,"spec"]:"" );
 
 		    // Why this doesn't match?
+		    // Possible reasons:
+		    // - /var not mounted so hwinfo cannot translate device names
 		    if (ok != true) {
 			y2warning ("Device does not match fstab: '%1' vs. '%2'", p_dev, fstab[0,"spec"]:"");
 		    }
