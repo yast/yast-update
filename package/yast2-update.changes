@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu May 17 22:40:09 CEST 2007 - locilka@suse.cz
+
+- System Update icon is back in Control Center (#274064)
+- System Update functionality is allowed only when product versions
+  are matching (can have a different name).
+- Warning is printed when versions match but product names are
+  different (#274064).
+
+-------------------------------------------------------------------
 Thu May  3 15:51:10 CEST 2007 - lslezak@suse.cz
 
 - Don't display excessive progress popup (#269920)
