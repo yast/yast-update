@@ -19,6 +19,6 @@ X-SuSE-YaST-AutoinstResource=
 Icon=yast-update
 Exec=/sbin/yast2 update 
 
-Name=System Update
-GenericName=Update your entire system
+Name=Update to Newest Packages
+GenericName=Update your system to the newest package versions
 X-KDE-SubstituteUID=true
