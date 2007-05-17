@@ -415,11 +415,24 @@ some applications may not run properly.")))
 	}
 
 	// when versions don't match and upgrade is not allowed (running system)
-	if ((Update::installedVersion["show"]:"A" != Update::updateVersion["show"]:"B") && Update::disallow_upgrade) {
+	if ((Update::installedVersion["version"]:"A" != Update::updateVersion["version"]:"B") && Update::disallow_upgrade) {
 	    // proposal error
 	    return $[ "warning" : _("Updating to another version is not supported from the running system."),
 		"warning_level" : `fatal,
 		"raw_proposal" : [] ];
+	}
+
+	string warning_message = nil;
+	// when labels don't match
+	if (Update::installedVersion["show"]:"A" != Update::updateVersion["show"]:"B") {
+	    warning_message = sformat(
+		// TRANSLATORS: proposal warning, both %1 and %2 are replaced with product names
+		_("Warning: Updating from '%1' to '%2', products do not exactly match."),
+		// TRANSLATORS: unknown product name
+		_("Unknown product"),
+		// TRANSLATORS: unknown product name
+		_("Unknown product")
+	    );
 	}
 
 	// stores the proposal text output
@@ -482,6 +495,11 @@ Whether only installed packages should be updated or also new ones should be ins
 	    "preformatted_proposal" : HTML::ListStart() + summary_text + HTML::ListEnd(),
 	    "help" : update_options_help,
 	];
+	
+	if (warning_message != nil) {
+	    ret["warning"] = warning_message;
+	    ret["warning_level"] = `warning;
+	}
     }
     else if ( func == "AskUser" )
     {
