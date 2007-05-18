@@ -41,7 +41,7 @@ Summary:	YaST2 update
 %files
 %defattr(-,root,root)
 @ybindir@/*
-#@desktopdir@/*.desktop
+@desktopdir@/*.desktop
 @moduledir@/*
 @clientdir@/*.ycp
 @yncludedir@/update
