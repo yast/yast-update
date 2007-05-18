@@ -414,10 +414,32 @@ some applications may not run properly.")))
 		"raw_proposal" : [] ];
 	}
 
+	// TRANSLATORS: unknown product (label)
+	string update_from = _("Unknown product");
+	if (Update::installedVersion["show"]:"" != "" && Update::installedVersion["show"]:"?" != "?") {
+	    update_from = Update::installedVersion["show"]:"";
+	} else if (Update::installedVersion["version"]:"" != "" && Update::installedVersion["version"]:"?" != "?") {
+	    update_from = Update::installedVersion["name"]:"";
+	}
+
+	// TRANSLATORS: unknown product (label)
+	string update_to = _("Unknown product");
+	if (Update::updateVersion["show"]:"" != "") {
+	    update_to = Update::updateVersion["show"]:"";
+	} else if (Update::updateVersion["version"]:"" != "") {
+	    update_to = Update::updateVersion["name"]:"";
+	}
+
 	// when versions don't match and upgrade is not allowed (running system)
 	if ((Update::installedVersion["version"]:"A" != Update::updateVersion["version"]:"B") && Update::disallow_upgrade) {
-	    // proposal error
-	    return $[ "warning" : _("Updating to another version is not supported from the running system."),
+	    return $[ "warning" : sformat(
+		    // TRANSLATORS: proposal error, %1 is the version of installed system
+		    // %2 is the version being installed
+		    _("Updating system to another version (%1 -> %2) is not supported on the running system.<br>
+Please, boot from the installation media and use a normal upgrade
+or disable installation sources of products with different versions."),
+		    update_from, update_to
+		),
 		"warning_level" : `fatal,
 		"raw_proposal" : [] ];
 	}

@@ -3,7 +3,8 @@ Thu May 17 22:40:09 CEST 2007 - locilka@suse.cz
 
 - System Update icon is back in Control Center (#274064)
 - System Update functionality is allowed only when product versions
-  are matching (can have a different name).
+  are matching (can have a different name). Non-matching product
+  means no possibility for System Update.
 - Warning is printed when versions match but product names are
   different (#274064).
 - System Update temporarily renamed to 'FACTORY Update'.
