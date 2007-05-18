@@ -443,7 +443,11 @@ global void IgnoreProductCompatibility () {
      */
     global define void fill_version_map (map <string, any>& data)
     {
-	data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
+	if (data["name"]:"?" == "?" && data["version"]:"?" == "?") {
+	    data["nameandversion"] = "?";
+	} else {
+	    data["nameandversion"] = data["name"]:"?" + " " + data["version"]:"?";
+	}
 
 	list <string> tmp0 = [];
 	if (regexpmatch (data["version"]:"", " -")) {
@@ -532,6 +536,7 @@ global void IgnoreProductCompatibility () {
 	// get new product name
 
 	integer num = size (Packages::theSources);
+
 	if (num <= 0)
 	{
 	    y2error ("No source");
@@ -541,8 +546,35 @@ global void IgnoreProductCompatibility () {
 	    return false;
 	}
 
-	map new_product = Pkg::SourceProductData (Packages::theSources[num-1]:0);
-	y2milestone ("First source product %1", new_product);
+	integer update_to_source = nil;
+
+	// So-called System Update
+	if (Stage::normal()) {
+	    foreach (integer source_id, Packages::theSources, {
+		map source_map = Pkg::SourceProductData(source_id);
+
+		// source need to be described
+		if (source_map != $[]) {
+		    if (source_map["productversion"]:"A" == installedVersion["version"]:"B") {
+			y2milestone ("Found matching product: %1", source_map);
+			// first valid product is selected
+			if (update_to_source == nil)
+			    update_to_source = source_id;
+		    } else {
+			y2error ("Found non-matching product: %1", source_map);
+			// every invalid product is selected
+			update_to_source = source_id;
+		    }
+		}
+	    });
+	}
+
+	// a fallback for Stage::normal(), default for !Stage::normal()
+	if (update_to_source == nil) update_to_source = Packages::theSources[num-1]:0;
+	
+	map new_product = Pkg::SourceProductData (update_to_source);
+	y2milestone ("Product to update to: %1 %2", update_to_source, new_product);
+
 	if (new_product == nil)
 	{
 	    updateVersion["name"] = "?";
@@ -556,7 +588,12 @@ global void IgnoreProductCompatibility () {
 	updateVersion["show"] = new_product["label"]:nil;
 	if (updateVersion["show"]:nil == nil) {
 	    y2warning ("No \"label\" defined in product");
-	    updateVersion["show"] = new_product["productname"]:"?" + " " + new_product["productversion"]:"?";
+
+	    if (new_product["productname"]:"?" == "?" && new_product["productversion"]:"?" == "?") {
+		updateVersion["show"] = "?";
+	    } else {
+		updateVersion["show"] = new_product["productname"]:"?" + " " + new_product["productversion"]:"?";
+	    }
 	}
 	updateVersion["name"] = new_product["label"]:new_product["productname"]:"?";
 	updateVersion["version"] = new_product["productversion"]:"?";
