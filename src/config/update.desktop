@@ -19,6 +19,7 @@ X-SuSE-YaST-AutoinstResource=
 Icon=yast-update
 Exec=/sbin/yast2 update 
 
-Name=Update to Newest Packages
-GenericName=Update your system to the newest package versions
+Name=FACTORY Update
+GenericName=Update your system to the newest packages from FACTORY (expert tool)
+Comment=Update your system to the newest packages from FACTORY (expert tool)
 X-KDE-SubstituteUID=true
