@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jun  4 09:39:52 CEST 2007 - locilka@suse.cz
+
+- Displaying correct product names (from/to) in the FACTORY update
+  proposal in warning message when products don't match (#280145).
+- 2.15.13
+
+-------------------------------------------------------------------
 Thu May 17 22:40:09 CEST 2007 - locilka@suse.cz
 
 - System Update icon is back in Control Center (#274064)
