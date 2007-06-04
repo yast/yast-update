@@ -451,9 +451,9 @@ or disable installation sources of products with different versions."),
 		// TRANSLATORS: proposal warning, both %1 and %2 are replaced with product names
 		_("Warning: Updating from '%1' to '%2', products do not exactly match."),
 		// TRANSLATORS: unknown product name
-		_("Unknown product"),
+		Update::installedVersion["show"]:_("Unknown product"),
 		// TRANSLATORS: unknown product name
-		_("Unknown product")
+		Update::updateVersion["show"]:_("Unknown product")
 	    );
 	}
 
