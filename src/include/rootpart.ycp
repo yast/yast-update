@@ -32,12 +32,17 @@ boolean CanBeLinuxRootFS (symbol partition_fs) {
     return contains (RootPart::possible_root_fs, partition_fs);
 }
 
-list <term> make_partition_list (boolean withall) {
+// flavor is either `update or `boot
+list <term> make_partition_list (boolean withall, symbol flavor) {
 	list<term> part_list = [];
 	foreach (string partition, map i, RootPart::rootPartitions, {
 	    // see https://bugzilla.novell.com/attachment.cgi?id=96783&action=view
 
-	    if (i[`valid]:false || withall)
+	    // see bugzilla #288201
+	    // architecture needs to be valid when updating, not booting
+	    boolean arch_is_valid = (flavor == `boot ? true:i[`arch_valid]:false);
+
+	    if (withall || (i[`valid]:false && arch_is_valid))
 	    {
 		// `ext2, `jfs, ...
 		symbol part_fs = (symbol) i[`fs]:nil;
@@ -101,7 +106,9 @@ list <term> make_partition_list (boolean withall) {
 symbol RootPartitionDialog (symbol flavor) {
 
     list<term> partition_list = make_partition_list (
-	RootPart::showAllPartitions);
+	RootPart::showAllPartitions,
+	(flavor == `boot_popup ? `boot : `update)
+    );
 
 
     string title = "";
@@ -147,23 +154,27 @@ general overview of your system's partitions.
     term contents = `HBox (
 	`VBox (
 	    `VSpacing (1),
-	    `HSpacing( 40 ),	// force minimum width
 	    `Left (`Label (label)),
-	    `Table (`id (`partition),
-		`opt(`hstretch),
-			 // table header
-		`header (
-		    _("System"),
-		    // table header item
-		    _("Partition"),
-		    // table header item
-		    _("Architecture"),
-		    // table header item
-		    _("File System"),
-		    // table header item
-		    _("Label")
-		),
-		partition_list),
+	    `MinSize (
+		70, 14,
+		`Table (
+		    `id (`partition),
+		    `opt(`hstretch),
+		    `header (
+			// table header
+			_("System"),
+		        // table header item
+			_("Partition"),
+		        // table header item
+			_("Architecture"),
+			// table header item
+			_("File System"),
+			// table header item
+			_("Label")
+		    ),
+		    partition_list
+		)
+	    ),
 	    `Left(`CheckBox(`id(`showall), `opt(`notify),
 		// check box
 		_("&Show All Partitions"), false)),
@@ -244,7 +255,10 @@ general overview of your system's partitions.
 	if (ret == `showall)
 	{
 	    string tmp = (string) UI::QueryWidget (`id(`partition), `CurrentItem);
-	    partition_list = make_partition_list ((boolean) UI::QueryWidget (`id(`showall), `Value));
+	    partition_list = make_partition_list (
+		(boolean) UI::QueryWidget (`id(`showall), `Value),
+		(flavor == `boot_popup ? `boot : `update)
+	    );
 	    UI::ChangeWidget (`id(`partition), `Items, partition_list);
 	    if (tmp != nil)
 		UI::ChangeWidget (`id(`partition), `CurrentItem, tmp);

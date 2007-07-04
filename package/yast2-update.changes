@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Jul  4 15:36:07 CEST 2007 - locilka@suse.cz
+
+- Do not let wrong architecture to make partition invalid in case
+  of boot-from-partition but make it invalid in case of upgrade
+  (#288201).
+- 2.15.14
+
+-------------------------------------------------------------------
 Mon Jun  4 09:39:52 CEST 2007 - locilka@suse.cz
 
 - Displaying correct product names (from/to) in the FACTORY update
