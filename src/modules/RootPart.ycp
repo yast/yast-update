@@ -24,6 +24,8 @@
     import "Update";
     import "SuSERelease";
     import "FileUtils";
+    import "Arch";
+    import "String";
 
     include "partitioning/partition_defines.ycp";
     include "partitioning/custom_part_helptexts.ycp";
@@ -583,6 +585,10 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
     return tmp[0,"spec"]:"";
 }
 
+    // translation from new to old device names
+    // such as /dev/sdc4 -> /dev/hdb4
+    map <string, string> backward_translation = $[];
+
     /**
      * Translates FS or Cryptotab (old devices to new ones).
      * Such as /dev/hda5 to /dev/sda5.
@@ -594,6 +600,20 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
      * @see https://bugzilla.novell.com/show_bug.cgi?id=258222
      */
     define list <map> TranslateFsOrCryptoTab (list <map> translate, string key_to_translate) {
+	// Check whether there is any hardware information that could be used
+	string check_command = sformat ("/usr/bin/find '%1/var/lib/hardware/'", String::Quote (Installation::destdir));
+	map cmd = (map) SCR::Execute (.target.bash_output, check_command);
+
+	if (cmd["exit"]:nil != nil) {
+	    list <string> files = splitstring (cmd["stdout"]:"", "\n");
+	    integer files_count = size (files);
+	    if (files_count == nil || files_count <= 3) {
+		y2error ("There are only %1 files in /var/lib/hardware/, translation needn't work!", files_count);
+	    } else {
+		y2milestone ("There are %1 files in /var/lib/hardware/", files_count);
+	    }
+	}
+
 	// first find a list of values for translation
 	list <string> old_names = [];
 	foreach (map m, translate, {
@@ -610,9 +630,15 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	// replace old values with translated ones
 	while (i < size (translate)) {
 	    string default_val = translate[i, key_to_translate]:"";
-	    translate[i, key_to_translate] = new_names[i]:default_val;
+	    string new_val = new_names[i]:default_val;
+
+	    translate[i, key_to_translate] = new_val;
+	    backward_translation[new_val] = default_val;
+
 	    i = i + 1;
 	};
+
+	y2milestone ("Current backward translations: %1", backward_translation);
 
 	return translate;
     }
@@ -704,6 +730,7 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
     {
 	integer default_scr = WFM::SCRGetDefault ();
 	integer new_scr = nil;
+	backward_translation = $[];
 
 	if (Stage::initial ())
 	{
@@ -824,6 +851,73 @@ define boolean IsMounted (string mountpoint) {
     return ret;
 }
 
+    // bugzilla #258563
+    boolean CheckBootSize (string bootpart) {
+	integer min_suggested_bootsize = 65536;
+	if (Arch::ia64()) {
+	    min_suggested_bootsize = 204800;
+	}
+
+	integer bootsize = nil;
+
+	string cmd = sformat (
+	    "/bin/df --portability --no-sync -k '%1/boot' | grep -v '^Filesystem' | sed 's/[ ]\\+/ /g'",
+	    Installation::destdir
+	);
+	map bootsizeout = (map) SCR::Execute (.target.bash_output, cmd);
+
+	if (bootsizeout["exit"]:-1 != 0) {
+	    y2error ("Error: '%1' -> %2", cmd, bootsizeout);
+	} else {
+	    list <string> scriptout = splitstring (bootsizeout["stdout"]:"", " ");
+	    y2milestone ("Scriptout: %1", scriptout);
+	    bootsize = tointeger (scriptout[1]:"0");
+	}
+
+	if (bootsize == nil || bootsize == 0) {
+	    y2error ("Cannot find out bootpart size: %1", Installation::destdir);
+	    return true;
+	}
+	
+	y2milestone ("Boot size is: %1 recommended min.: %2", bootsize, min_suggested_bootsize);
+
+	// Size of the /boot partition is satisfactory
+	if (bootsize >= min_suggested_bootsize) {
+	    return true;
+
+	// Less than a hero
+	} else {
+	    integer current_bs = bootsize / 1024;
+	    integer suggested_bs = min_suggested_bootsize / 1024;
+
+	    boolean cont = Popup::ContinueCancelHeadline (
+		// TRANSLATORS: a popup headline
+		_("Warning"),
+		// TRANSLATORS: error message,
+		// %1 is replaced with the current /boot partition size
+		// %2 with the recommended size
+		sformat (
+		    _("Your /boot partition is too small (%1 MB).
+Recommended size is not less than %2 MB. It may happen that the
+new Kernel needn't fit it. It would be safer to enlarge that partition
+or even not to use the /boot partition at all.
+
+Would you like to continue in updating the current system?"),
+		    current_bs,
+		    suggested_bs
+		)
+	    );
+	    
+	    if (cont) {
+		y2warning ("User decided to continue despite small a /boot partition");
+		return true;
+	    } else {
+		y2milestone ("User decided not to continue with small /boot partition");
+		return false;
+	    }
+	}
+    }
+
     /**
      *
      */
@@ -934,12 +1028,20 @@ To abort update, click Cancel."),
 				}
 				UI::CloseDialog ();
 			    }
-/*
-			    message = sformat (_("The partition %1 could not be mounted.\n
-Check the log file %2.
-"), spec, Directory::logdir + "/y2log");
+			}
+		    }
+
+		    if (fspath == "/boot" || fspath == "/boot/") {
+			string checkspec = spec;
+
+			// translates new device name to the old one because
+			// storage still returns them in the old way
+			if (backward_translation[spec]:nil != nil) {
+			    checkspec = backward_translation[spec]:spec;
+			}
+
+			if (! CheckBootSize (checkspec)) {
 			    success = false;
-			    ret_bool = true;*/
 			}
 		    }
 		}

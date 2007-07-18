@@ -328,7 +328,8 @@ global list<string> SelectedProducts () {
 	return p["status"]:nil == `selected;
     });
     return maplist (map<string,any> p, selected, {
-	return p["summary"]:"";
+	// TRANSLATORS: "Update to: $product_name"
+	return p["display_name"]:p["summary"]:p["name"]:p["version"]:_("Unknown Product");
     });
 }
 
