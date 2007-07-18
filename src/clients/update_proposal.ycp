@@ -24,6 +24,7 @@
     import "Product";
     import "FileUtils";
     import "Label";
+    import "Stage";
 
 
     string func = (string) WFM::Args(0);
@@ -445,8 +446,9 @@ or disable installation sources of products with different versions."),
 	}
 
 	string warning_message = nil;
+
 	// when labels don't match
-	if (Update::installedVersion["show"]:"A" != Update::updateVersion["show"]:"B") {
+	if (!Stage::initial() && (Update::installedVersion["show"]:"A" != Update::updateVersion["show"]:"B")) {
 	    warning_message = sformat(
 		// TRANSLATORS: proposal warning, both %1 and %2 are replaced with product names
 		_("Warning: Updating from '%1' to '%2', products do not exactly match."),

@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Wed Jul 18 08:53:15 CEST 2007 - locilka@suse.cz
+
+- Warn user if the /boot partition is too small (less than 64 MB,
+  resp. 200 on IA64). User can either cancel updating or confirm
+  it despite the risk of possible failure (#258563).
+- Fixed update_proposal to warn 'non-mathing versions' only in case
+  the update is performed on a running system.
+- More debugging for device-names translation during upgrade.
+- 2.15.15
+
+-------------------------------------------------------------------
 Wed Jul  4 15:36:07 CEST 2007 - locilka@suse.cz
 
 - Do not let wrong architecture to make partition invalid in case
