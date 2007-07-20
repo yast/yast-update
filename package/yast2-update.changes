@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jul 20 14:55:25 CEST 2007 - locilka@suse.cz
+
+- Removing yast2-add-on and adding yast2-storage to the RPM build
+  requirements.
+- 2.15.16
+
+-------------------------------------------------------------------
 Wed Jul 18 08:53:15 CEST 2007 - locilka@suse.cz
 
 - Warn user if the /boot partition is too small (less than 64 MB,
