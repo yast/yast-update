@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul 20 15:35:42 CEST 2007 - locilka@suse.cz
+
+- Added BuildIgnore: autoyast2-installation to break the loop.
+- 2.15.17
+
+-------------------------------------------------------------------
 Fri Jul 20 14:55:25 CEST 2007 - locilka@suse.cz
 
 - Removing yast2-add-on and adding yast2-storage to the RPM build
