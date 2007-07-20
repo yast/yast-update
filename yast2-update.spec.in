@@ -2,6 +2,8 @@
 
 @HEADER@
 BuildRequires:	yast2-storage yast2-packager perl-XML-Writer yast2 yast2-devtools yast2-testsuite update-desktop-files
+# package not really needed to be installed but this breaks the building cycle
+#!BuildIgnore:	autoyast2-installation
 Requires:	yast2
 Requires:	yast2-installation
 Requires:	yast2-packager
