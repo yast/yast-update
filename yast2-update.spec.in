@@ -27,7 +27,7 @@ Conflicts:	yast2-pkg-bindings < 2.15.11
 # Storage::DeviceMatchFstab (#244117)
 Conflicts:	yast2-storage < 2.15.4
 
-Summary:	YaST2 - Libraries and scripts for the installation/upgrade.
+Summary:	YaST2 - Libraries and scripts for the installation/upgrade
 
 %package FACTORY
 
