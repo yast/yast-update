@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jul 23 14:18:05 CEST 2007 - locilka@suse.cz
+
+- Package has been split into two: yast2-update and
+  yast2-update-FACTORY (System/FACTORY update) (FATE #301731).
+- 2.15.18
+
+-------------------------------------------------------------------
 Fri Jul 20 15:35:42 CEST 2007 - locilka@suse.cz
 
 - Added BuildIgnore: autoyast2-installation to break the loop.
