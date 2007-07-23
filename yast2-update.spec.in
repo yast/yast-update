@@ -27,10 +27,30 @@ Conflicts:	yast2-pkg-bindings < 2.15.11
 # Storage::DeviceMatchFstab (#244117)
 Conflicts:	yast2-storage < 2.15.4
 
-Summary:	YaST2 update
+Summary:	YaST2 - Libraries and scripts for the installation/upgrade.
+
+%package FACTORY
+
+@HEADER@
+BuildRequires:	yast2-update update-desktop-files perl-XML-Writer yast2-devtools
+Requires:	yast2-update yast2
+
+Provides:	yast2-config-update-FACTORY y2c_update
+Obsoletes:	yast2-config-update-FACTORY y2c_update
+Provides:	yast2-trans-update y2t_update
+Obsoletes:	yast2-trans-update y2t_update
+
+# moved into yast2-update from yast2-installation
+# to remove dependency on yast2-storage
+Provides:	yast2-update:/usr/share/YaST2/clients/update.ycp
+
+Summary:	YaST2 - FACTORY update
 
 %description
--
+Installation/upgrade proposal
+
+%description FACTORY
+Updates packages to their latest versions
 
 @PREP@
 
@@ -43,10 +63,24 @@ Summary:	YaST2 update
 %files
 %defattr(-,root,root)
 @ybindir@/*
-@desktopdir@/*.desktop
 @moduledir@/*
-@clientdir@/*.ycp
+
+/usr/share/YaST2/clients/inst_rootpart.ycp
+/usr/share/YaST2/clients/inst_update.ycp
+/usr/share/YaST2/clients/inst_backup.ycp
+/usr/share/YaST2/clients/rootpart_proposal.ycp
+/usr/share/YaST2/clients/update_proposal.ycp
+/usr/share/YaST2/clients/packages_proposal.ycp
+/usr/share/YaST2/clients/backup_proposal.ycp
+/usr/share/YaST2/clients/inst_update_partition.ycp
+
 @yncludedir@/update
-@yncludedir@/update/*.ycp
-/usr/share/YaST2/control/*.xml
+@yncludedir@/update/rootpart.ycp
+
 %doc @docdir@
+
+%files FACTORY
+%defattr(-,root,root)
+@desktopdir@/update.desktop
+/usr/share/YaST2/control/update.xml
+@clientdir@/update.ycp
