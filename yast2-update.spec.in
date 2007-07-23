@@ -32,7 +32,7 @@ Summary:	YaST2 - Libraries and scripts for the installation/upgrade
 %package FACTORY
 
 @HEADER@
-BuildRequires:	yast2-update update-desktop-files perl-XML-Writer yast2-devtools
+BuildRequires:	update-desktop-files perl-XML-Writer yast2-devtools
 Requires:	yast2-update yast2
 
 Provides:	yast2-config-update-FACTORY y2c_update
