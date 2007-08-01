@@ -8,13 +8,6 @@ Requires:	yast2
 Requires:	yast2-installation
 Requires:	yast2-packager
 
-Provides:	yast2-config-update y2c_update
-Obsoletes:	yast2-config-update y2c_update
-Provides:	yast2-trans-inst-update y2t_inst-update
-Obsoletes:	yast2-trans-inst-update y2t_inst-update
-Provides:	yast2-trans-update y2t_update
-Obsoletes:	yast2-trans-update y2t_update
-
 # moved into yast2-update from yast2-installation
 # to remove dependency on yast2-storage
 Provides:	yast2-installation:/usr/share/YaST2/clients/vendor.ycp
@@ -34,11 +27,6 @@ Summary:	YaST2 - Libraries and scripts for the installation/upgrade
 @HEADER@
 BuildRequires:	update-desktop-files perl-XML-Writer yast2-devtools
 Requires:	yast2-update yast2
-
-Provides:	yast2-config-update-FACTORY y2c_update
-Obsoletes:	yast2-config-update-FACTORY y2c_update
-Provides:	yast2-trans-update y2t_update
-Obsoletes:	yast2-trans-update y2t_update
 
 # moved into yast2-update from yast2-installation
 # to remove dependency on yast2-storage

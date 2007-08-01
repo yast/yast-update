@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Aug  1 10:19:50 CEST 2007 - mvidner@suse.cz
+
+- Removed Provides/Obsoletes for ancient yast package names,
+  with the last change they broke yast2-schema build.
+- 2.15.19
+
+-------------------------------------------------------------------
 Mon Jul 23 14:18:05 CEST 2007 - locilka@suse.cz
 
 - Package has been split into two: yast2-update and
