@@ -73,7 +73,7 @@
      *
      * Keys/values are:
      *
-     *   `type     The type, one of "mount", "swap" or "loop".
+     *   `type     The type, one of "mount", "swap" or "crypt".
      *
      *   `device   The device.
      *
@@ -219,13 +219,14 @@ or restart your computer.
 			y2error("Cannot deactivate swap %1", device);
 		    }
 		}
-		else if (type == "loop")
+		else if (type == "crypt")
 		{
-		    string device = info[`device]:"";
+		    string dmname = info[`device]:"";
+		    dmname = "cr_" + substring( dmname, findlastof( dmname, "/" )+1 );
 		    // FIXME? is it safe?
-		    if (WFM::Execute(.local.bash, "losetup -d " + device) != 0)
+		    if (WFM::Execute(.local.bash, "cryptsetup remove " + dmname) != 0)
 		    {
-			y2error("Cannot deactivate loopback device %1", device);
+			y2error("Cannot remove dm device %1", dmname);
 		    }
 		}
 	    }
@@ -818,7 +819,7 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 				    "passno" : 0,
 				    "vfstype": vfstype ];
 		    fstab = prepend (fstab, add_fs);
-		    AddMountedPartition ($[`type : "loop", `device : device]);
+		    AddMountedPartition ($[`type : "crypt", `device : device]);
 		    again = false;
 		}
 	      }
