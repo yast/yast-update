@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug  9 16:20:58 CEST 2007 - locilka@suse.cz
+
+- Using cryptsetup instead of losetup, patch created by Thomas Fehr
+  (#258222).
+- 2.15.20
+
+-------------------------------------------------------------------
 Wed Aug  1 10:19:50 CEST 2007 - mvidner@suse.cz
 
 - Removed Provides/Obsoletes for ancient yast package names,
