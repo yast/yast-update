@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug 23 15:22:12 CEST 2007 - locilka@suse.cz
+
+- Preselecting new kernel if recommended and installed kernels do
+  not match. Removing other kernels but kernel-xen (#302419).
+- 2.15.21
+
+-------------------------------------------------------------------
 Thu Aug  9 16:20:58 CEST 2007 - locilka@suse.cz
 
 - Using cryptsetup instead of losetup, patch created by Thomas Fehr
