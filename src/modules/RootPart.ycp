@@ -596,11 +596,12 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
      *
      * @param list <map> of definitions to translate
      * @param string key name in map to translate
+     * @param string key name in map to keep the old value
      * @return list <map> of translated definitions
      *
      * @see https://bugzilla.novell.com/show_bug.cgi?id=258222
      */
-    define list <map> TranslateFsOrCryptoTab (list <map> translate, string key_to_translate) {
+    define list <map> TranslateFsOrCryptoTab (list <map> translate, string key_to_translate, string key_preserve_as) {
 	// Check whether there is any hardware information that could be used
 	string check_command = sformat ("/usr/bin/find '%1/var/lib/hardware/'", String::Quote (Installation::destdir));
 	map cmd = (map) SCR::Execute (.target.bash_output, check_command);
@@ -634,7 +635,8 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    string new_val = new_names[i]:default_val;
 
 	    translate[i, key_to_translate] = new_val;
-	    backward_translation[new_val] = default_val;
+	    translate[i, key_preserve_as]  = default_val;
+	    backward_translation[new_val]  = default_val;
 
 	    i = i + 1;
 	};
@@ -747,11 +749,11 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	Update::GetProductName();
 
 	y2milestone ("fstab: %1", fstab);
-	fstab = TranslateFsOrCryptoTab (fstab, "spec");
+	fstab = TranslateFsOrCryptoTab (fstab, "spec", "spec_old");
 	y2milestone ("fstab: (translated) %1", fstab);
 
 	y2milestone ("crtab: %1", crtab);
-	crtab = TranslateFsOrCryptoTab (crtab, "file");
+	crtab = TranslateFsOrCryptoTab (crtab, "file", "file_old");
 	y2milestone ("crtab: (translated) %1", crtab);
 
 	return true;
@@ -1373,7 +1375,9 @@ Check the log file %1."), Directory::logdir + "/y2log");
 
 		    boolean ok = size(fstab[0,"spec"]:"")>0 &&
 		                 Storage::DeviceMatchFstab( p_dev, 
-				                            fstab[0,"spec"]:"" );
+							    // bugzilla #304269
+							    // DeviceMatchFstab expects _old_ not _translated_ device
+				                            fstab[0,"spec_old"]:fstab[0,"spec"]:"" );
 
 		    // Why this doesn't match?
 		    // Possible reasons:
