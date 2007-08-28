@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug 28 12:35:29 CEST 2007 - locilka@suse.cz
+
+- Update proposal doesn't use recommended Kernel if the package is
+  not available (#304646).
+- 2.15.23
+
+-------------------------------------------------------------------
 Mon Aug 27 14:18:25 CEST 2007 - locilka@suse.cz
 
 - Calling Storage::DeviceMatchFstab with not-translated device name
