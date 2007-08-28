@@ -158,6 +158,11 @@
 	y2milestone ("Selected kernel: %1, recommended kernel: %2",
 	    selected_kernel, recom_kernel);
 
+	// when the recommended Kernel is not available (installable)
+	if (recom_kernel[0]:nil != nil && ! Pkg::IsAvailable (recom_kernel[0]:nil)) {
+	    recom_kernel[0] = selected_kernel;
+	}
+
 	// recommended package is different to the selected one
 	// select the recommended one
 	if (recom_kernel[0]:nil != nil && recom_kernel[0]:nil != selected_kernel) {
