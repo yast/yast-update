@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct 25 14:00:51 CEST 2007 - locilka@suse.cz
+
+- Never list duplicate entries in "upgrade based on products" in
+  upgrade proposal (#331560).
+
+-------------------------------------------------------------------
 Tue Aug 28 12:35:29 CEST 2007 - locilka@suse.cz
 
 - Update proposal doesn't use recommended Kernel if the package is

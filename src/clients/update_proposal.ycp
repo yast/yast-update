@@ -494,10 +494,20 @@ or disable installation sources of products with different versions."),
 	string summary_text = "";
 
 	list <string> products = Update::SelectedProducts ();
+	list <string> already_printed = [];
+
 	if (products != nil) {
 	    foreach (string one_product, products, {
+		// never print duplicates, bugzilla #331560
+		// 'toset' could be used but we want to keep sorting
+		if (contains (already_printed, one_product)) {
+		    return;
+		} else {
+		    already_printed = add (already_printed, one_product);
+		}
+
 		// TRANSLATORS: proposal summary item, %1 is a product name
-		summary_text = summary_text + "<li>" + sformat (_("Update to %1"), one_product) + "</li>\n";
+		summary_text = summary_text + "<li><b>" + sformat (_("Update to %1"), one_product) + "</b></li>\n";
 	    });
 	}
 

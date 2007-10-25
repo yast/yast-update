@@ -571,7 +571,7 @@ define string FsckAndMount (string mount_point, string device,
  * @param mountpoint string a mount point to find
  * @return string the found partition
  */
-define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
+define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
     if (substring (mountpoint, size (mountpoint) - 1, 1) == "/")
 	mountpoint = substring (mountpoint, 0, size (mountpoint) - 1);
 
@@ -609,7 +609,7 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	if (cmd["exit"]:nil != nil) {
 	    list <string> files = splitstring (cmd["stdout"]:"", "\n");
 	    integer files_count = size (files);
-	    if (files_count == nil || files_count <= 3) {
+	    if (files_count == nil || files_count <= 2) {
 		y2error ("There are only %1 files in /var/lib/hardware/, translation needn't work!", files_count);
 	    } else {
 		y2milestone ("There are %1 files in /var/lib/hardware/", files_count);
@@ -726,10 +726,19 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	    }
     }
 
+    boolean FstabHasSeparateVar (list <map> & fstab) {
+	string var_device_fstab = FindPartitionInFstab (fstab, "/var");
+	y2milestone ("/var partition is %1", var_device_fstab);
+
+	return (var_device_fstab != nil);
+    }
+
+    define string MountVarIfRequired (list <map> fstab, string root_device_current);
+
     /**
      *
      */
-    define boolean read_fstab_and_cryptotab (list <map>& fstab, list <map>& crtab)
+    define boolean read_fstab_and_cryptotab (list <map>& fstab, list <map>& crtab, string root_device_current)
     {
 	integer default_scr = WFM::SCRGetDefault ();
 	integer new_scr = nil;
@@ -748,6 +757,15 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	
 	Update::GetProductName();
 
+	boolean fstab_has_separate_var = FstabHasSeparateVar (fstab);
+	// mount /var
+	if (fstab_has_separate_var) {
+	    y2warning ("Separate /var partition!");
+	    MountVarIfRequired (fstab, root_device_current);
+	} else {
+	    y2milestone ("No separate /var partition found");
+	}
+
 	y2milestone ("fstab: %1", fstab);
 	fstab = TranslateFsOrCryptoTab (fstab, "spec", "spec_old");
 	y2milestone ("fstab: (translated) %1", fstab);
@@ -755,6 +773,11 @@ define string FindPartitionInFstab (list<map> fstab, string mountpoint) {
 	y2milestone ("crtab: %1", crtab);
 	crtab = TranslateFsOrCryptoTab (crtab, "file", "file_old");
 	y2milestone ("crtab: (translated) %1", crtab);
+
+	// umount /var
+	if (fstab_has_separate_var) {
+	    SCR::Execute (.target.umount, Installation::destdir + "/var");
+	}
 
 	return true;
     }
@@ -1089,7 +1112,7 @@ string MountVarPartition (string device) {
     string err_message = nil;
     if (mount_err != nil)
     {
-	y2error ("failed to mount /var");
+	y2error (-1, "failed to mount /var");
 	err_message = sformat (
 	    // error message
 	    _("The /var partition %1 could not be mounted.\n"),
@@ -1107,8 +1130,12 @@ string MountVarPartition (string device) {
 define string MountVarIfRequired (list <map> fstab, string root_device_current)
 {
 	string var_device_fstab = FindPartitionInFstab (fstab, "/var");
-	if (var_device_fstab == nil)
+
+	// No need to mount "/var", it's not separate == already mounted with "/"
+	if (var_device_fstab == nil) {
+	    y2milestone ("Not a separate /var...");
 	    return nil;
+	}
 
 	if (!Storage::DeviceRealDisk (var_device_fstab))
 	    return MountVarPartition (var_device_fstab);
@@ -1185,7 +1212,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    // typing passwords for encrypted partitions
 	    Keyboard::CheckKeyboardDuringUpdate (Installation::destdir);
 
-	    read_fstab_and_cryptotab (fstab, crtab);
+	    read_fstab_and_cryptotab (fstab, crtab, root_device_current);
 
 	    if (size (fstab) == 0)
 	    {
@@ -1365,7 +1392,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    list <map> fstab = [];
 		    list <map> crtab = [];
 		    
-		    read_fstab_and_cryptotab (fstab, crtab);
+		    read_fstab_and_cryptotab (fstab, crtab, p_dev);
 
 		    fstab = filter (map p, fstab, ``(p["file"]:""=="/"));
 
