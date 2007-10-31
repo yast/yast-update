@@ -448,22 +448,22 @@ some applications may not run properly.")))
 
 	// TRANSLATORS: unknown product (label)
 	string update_from = _("Unknown product");
-	if (Update::installedVersion["show"]:"" != "" && Update::installedVersion["show"]:"?" != "?") {
-	    update_from = Update::installedVersion["show"]:"";
-	} else if (Update::installedVersion["version"]:"" != "" && Update::installedVersion["version"]:"?" != "?") {
-	    update_from = Update::installedVersion["name"]:"";
+	if (Installation::installedVersion["show"]:"" != "" && Installation::installedVersion["show"]:"?" != "?") {
+	    update_from = Installation::installedVersion["show"]:"";
+	} else if (Installation::installedVersion["version"]:"" != "" && Installation::installedVersion["version"]:"?" != "?") {
+	    update_from = Installation::installedVersion["name"]:"";
 	}
 
 	// TRANSLATORS: unknown product (label)
 	string update_to = _("Unknown product");
-	if (Update::updateVersion["show"]:"" != "") {
-	    update_to = Update::updateVersion["show"]:"";
-	} else if (Update::updateVersion["version"]:"" != "") {
-	    update_to = Update::updateVersion["name"]:"";
+	if (Installation::updateVersion["show"]:"" != "") {
+	    update_to = Installation::updateVersion["show"]:"";
+	} else if (Installation::updateVersion["version"]:"" != "") {
+	    update_to = Installation::updateVersion["name"]:"";
 	}
 
 	// when versions don't match and upgrade is not allowed (running system)
-	if ((Update::installedVersion["version"]:"A" != Update::updateVersion["version"]:"B") && Update::disallow_upgrade) {
+	if ((Installation::installedVersion["version"]:"A" != Installation::updateVersion["version"]:"B") && Update::disallow_upgrade) {
 	    return $[ "warning" : sformat(
 		    // TRANSLATORS: proposal error, %1 is the version of installed system
 		    // %2 is the version being installed
@@ -479,14 +479,14 @@ or disable installation sources of products with different versions."),
 	string warning_message = nil;
 
 	// when labels don't match
-	if (!Stage::initial() && (Update::installedVersion["show"]:"A" != Update::updateVersion["show"]:"B")) {
+	if (!Stage::initial() && (Installation::installedVersion["show"]:"A" != Installation::updateVersion["show"]:"B")) {
 	    warning_message = sformat(
 		// TRANSLATORS: proposal warning, both %1 and %2 are replaced with product names
 		_("Warning: Updating from '%1' to '%2', products do not exactly match."),
 		// TRANSLATORS: unknown product name
-		Update::installedVersion["show"]:_("Unknown product"),
+		Installation::installedVersion["show"]:_("Unknown product"),
 		// TRANSLATORS: unknown product name
-		Update::updateVersion["show"]:_("Unknown product")
+		Installation::updateVersion["show"]:_("Unknown product")
 	    );
 	}
 
