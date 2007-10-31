@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Oct 31 13:21:55 CET 2007 - locilka@suse.cz
+
+- installedVersion and updateVersion moved from 'Update' to
+  'Installation' YCP module to remove dependencies.
+- 2.16.0
+
+-------------------------------------------------------------------
 Thu Oct 25 14:00:51 CEST 2007 - locilka@suse.cz
 
 - Never list duplicate entries in "upgrade based on products" in

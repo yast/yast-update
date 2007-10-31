@@ -68,25 +68,17 @@
 
     global boolean products_incompatible = false;
 
-
-    /*
-     *  Information about old and new product.
-     *
-     *  They do contain:
-     *    name (string), e.g. "SuSE Linux"
-     *    version (string), e.g. "9.1"
-     *    nameandversion (string), e.g. "SuSE Linux 9.1"
-     *
-     *  They may contain:
-     *    major (integer), e.g. "9"
-     *    minor (integer), e.g. "1"
-     */
-
     // Version of the targetsystem
-    global map <string, any> installedVersion = $[];
+    //
+    // !!! moved to Installation::installedVersion !!!
+    //
+    // global map <string, any> installedVersion = $[];
 
     // Version of the source medium
-    global map <string, any> updateVersion = $[];
+    //
+    // !!! moved to Installation::updateVersion !!!
+    //
+    // global map <string, any> updateVersion = $[];
 
 
     // Flag, if the basesystem have to be installed
@@ -472,13 +464,13 @@ global void IgnoreProductCompatibility () {
 
     /**
      * Read product name and version for the old and new release.
-     * Fill installedVersion and updateVersion.
+     * Fill Installation::installedVersion and Installation::updateVersion.
      * @return success
      */
     global define boolean GetProductName ()
     {
-	installedVersion = $[];
-	updateVersion = $[];
+	Installation::installedVersion = $[];
+	Installation::updateVersion = $[];
 
 	// get old product name
 
@@ -501,32 +493,32 @@ global void IgnoreProductCompatibility () {
 	if (p == nil)
 	{
 	    y2error ("release info <%1> is screwed", old_name);
-	    installedVersion = $[];
+	    Installation::installedVersion = $[];
 	}
 	else
 	{
-	    installedVersion["show"] = old_name;
-	    installedVersion["name"] = substring (old_name, 0, p);
-	    installedVersion["version"] = substring (old_name, p + 1);
-	    fill_version_map (installedVersion);
+	    Installation::installedVersion["show"] = old_name;
+	    Installation::installedVersion["name"] = substring (old_name, 0, p);
+	    Installation::installedVersion["version"] = substring (old_name, p + 1);
+	    fill_version_map (Installation::installedVersion);
 	}
 
 	// "minor" and "major" version keys
 	// bug #153576, "version" == "9" or "10.1" or ...
-	string inst_ver = installedVersion["version"]:"";
+	string inst_ver = Installation::installedVersion["version"]:"";
 	if (inst_ver != "" && inst_ver != nil) {
 	    // SLE, SLD, OES...
 	    if (regexpmatch (inst_ver, "^[0123456789]+$")) {
-		installedVersion["major"] = tointeger (inst_ver);
+		Installation::installedVersion["major"] = tointeger (inst_ver);
 	    // openSUSE
 	    } else if (regexpmatch (inst_ver, "^[0123456789]+\.[0123456789]+$")) {
-		installedVersion["major"] = tointeger (regexpsub (inst_ver, "^([0123456789]+)\.[0123456789]+$", "\\1"));
-		installedVersion["minor"] = tointeger (regexpsub (inst_ver, "^[0123456789]+\.([0123456789]+)$", "\\1"));
+		Installation::installedVersion["major"] = tointeger (regexpsub (inst_ver, "^([0123456789]+)\.[0123456789]+$", "\\1"));
+		Installation::installedVersion["minor"] = tointeger (regexpsub (inst_ver, "^[0123456789]+\.([0123456789]+)$", "\\1"));
 	    } else {
 		y2error("Cannot find out major/minor from >%1<", inst_ver);
 	    }
 	} else {
-	    y2error("Cannot find out version: %1", installedVersion);
+	    y2error("Cannot find out version: %1", Installation::installedVersion);
 	}
 	
 	if (Mode::test()) {
@@ -541,9 +533,9 @@ global void IgnoreProductCompatibility () {
 	if (num <= 0)
 	{
 	    y2error ("No source");
-	    updateVersion["name"] = "?";
-	    updateVersion["version"] = "?";
-	    fill_version_map (updateVersion);
+	    Installation::updateVersion["name"] = "?";
+	    Installation::updateVersion["version"] = "?";
+	    fill_version_map (Installation::updateVersion);
 	    return false;
 	}
 
@@ -556,7 +548,7 @@ global void IgnoreProductCompatibility () {
 
 		// source need to be described
 		if (source_map != $[]) {
-		    if (source_map["productversion"]:"A" == installedVersion["version"]:"B") {
+		    if (source_map["productversion"]:"A" == Installation::installedVersion["version"]:"B") {
 			y2milestone ("Found matching product: %1", source_map);
 			// first valid product is selected
 			if (update_to_source == nil)
@@ -578,45 +570,45 @@ global void IgnoreProductCompatibility () {
 
 	if (new_product == nil)
 	{
-	    updateVersion["name"] = "?";
-	    updateVersion["version"] = "?";
-	    y2error("Cannot find out source details: %1", updateVersion);
-	    fill_version_map (updateVersion);
+	    Installation::updateVersion["name"] = "?";
+	    Installation::updateVersion["version"] = "?";
+	    y2error("Cannot find out source details: %1", Installation::updateVersion);
+	    fill_version_map (Installation::updateVersion);
 	    return false;
 	}
 
 	// bugzilla #225256, use "label" first, then a "productname"
-	updateVersion["show"] = new_product["label"]:nil;
-	if (updateVersion["show"]:nil == nil) {
+	Installation::updateVersion["show"] = new_product["label"]:nil;
+	if (Installation::updateVersion["show"]:nil == nil) {
 	    y2warning ("No \"label\" defined in product");
 
 	    if (new_product["productname"]:"?" == "?" && new_product["productversion"]:"?" == "?") {
-		updateVersion["show"] = "?";
+		Installation::updateVersion["show"] = "?";
 	    } else {
-		updateVersion["show"] = new_product["productname"]:"?" + " " + new_product["productversion"]:"?";
+		Installation::updateVersion["show"] = new_product["productname"]:"?" + " " + new_product["productversion"]:"?";
 	    }
 	}
-	updateVersion["name"] = new_product["label"]:new_product["productname"]:"?";
-	updateVersion["version"] = new_product["productversion"]:"?";
-	fill_version_map (updateVersion);
+	Installation::updateVersion["name"] = new_product["label"]:new_product["productname"]:"?";
+	Installation::updateVersion["version"] = new_product["productversion"]:"?";
+	fill_version_map (Installation::updateVersion);
 
-	string new_ver = updateVersion["version"]:"";
+	string new_ver = Installation::updateVersion["version"]:"";
 	if (new_ver != "" && new_ver != nil) {
 	    // SLE, SLD, OES...
 	    if (regexpmatch (new_ver, "^[0123456789]+$")) {
-		updateVersion["major"] = tointeger (new_ver);
+		Installation::updateVersion["major"] = tointeger (new_ver);
 	    // openSUSE
 	    } else if (regexpmatch (new_ver, "^[0123456789]+\.[0123456789]$")) {
-		updateVersion["major"] = tointeger (regexpsub (new_ver, "^([0123456789]+)\.[0123456789]$", "\\1"));
-		updateVersion["minor"] = tointeger (regexpsub (new_ver, "^[0123456789]+\.([0123456789])$", "\\1"));
+		Installation::updateVersion["major"] = tointeger (regexpsub (new_ver, "^([0123456789]+)\.[0123456789]$", "\\1"));
+		Installation::updateVersion["minor"] = tointeger (regexpsub (new_ver, "^[0123456789]+\.([0123456789])$", "\\1"));
 	    } else {
 		y2error("Cannot find out major/minor from %1", new_ver);
 	    }
 	} else {
-	    y2error("Cannot find out version: %1", updateVersion);
+	    y2error("Cannot find out version: %1", Installation::updateVersion);
 	}
 
-	y2milestone ("update from %1 to %2", installedVersion, updateVersion);
+	y2milestone ("update from %1 to %2", Installation::installedVersion, Installation::updateVersion);
 
 	return true;
     }

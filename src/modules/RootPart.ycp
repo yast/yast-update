@@ -624,7 +624,7 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 
 	// translate them
 	list <string> new_names = Storage::GetTranslatedDevices (
-	    Update::installedVersion, Update::updateVersion, old_names
+	    Installation::installedVersion, Installation::updateVersion, old_names
 	);
 
 	integer i = 0;
@@ -1535,7 +1535,7 @@ global string GetDistroArch () {
                         `Label(_("Mounting partitions. One moment please...")));
 
         boolean tmp = RootPart::MountPartitions (RootPart::selectedRootPartition);
-        sleep (500);
+        // sleep (500);
 
         UI::CloseDialog ();
 
