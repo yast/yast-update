@@ -34,6 +34,7 @@
 
     import "Update";
     import "Mode";
+    import "Installation";
 
     Mode::SetTest("testsuite");
 
@@ -46,7 +47,7 @@
 	DUMP ("------------------------------------------------------------");
 	TEST (``(Update::GetProductName()), [READ, WRITE, EXEC], nil);
 	DUMP (prd_string);
-	DUMP (Update::installedVersion);
+	DUMP (Installation::installedVersion);
     });
 
 }
