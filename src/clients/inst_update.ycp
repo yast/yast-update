@@ -131,7 +131,7 @@ either case, it is recommended to make a backup of your personal data.</p>
 updates the existing software and installs all new features and benefits of
 the new <tt>%1</tt> version. The selection is based on the former predefined
 software selection.</p>
-"), Update::updateVersion["show"]:"");
+"), Installation::updateVersion["show"]:"");
 
     // help text for dialog "update options" 3/4
     helptext = helptext + _("<p><b>Only Installed Packages:</b> This selection
