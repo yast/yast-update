@@ -20,7 +20,7 @@
     import "RootPart";
     import "Update";
     import "Packages";
-
+    import "Installation";
 
     // screen title for update options
     string title = _("Update Options");
@@ -69,8 +69,8 @@ You will lose that selection if you change the basic selection.");
 
     // Build and show dialog
 
-    string from_version = Update::installedVersion["show"]:_("Unknown");
-    string to_version   = Update::updateVersion["show"]:_("Unknown");
+    string from_version = Installation::installedVersion["show"]:_("Unknown");
+    string to_version   = Installation::updateVersion["show"]:_("Unknown");
 
     string update_label = "";
     if (from_version == to_version) {
