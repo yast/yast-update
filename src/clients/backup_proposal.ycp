@@ -13,6 +13,7 @@
 
     import "HTML";
     import "Update";
+    import "Installation";
 
     string func  = (string) WFM::Args(0);
     map    param = (map) WFM::Args(1);
