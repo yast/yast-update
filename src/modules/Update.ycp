@@ -3,6 +3,7 @@
  *
  * Authors:		Anas Nashif <nashif@suse.de>
  *			Arvin Schnell <arvin@suse.de>
+ *			Lukas Ocilka <locilka@suse.cz>
  *
  * Purpose:		Update module
  *
@@ -51,15 +52,7 @@
 
     global boolean did_init2 = false;
 
-
     global integer last_runlevel = -1;
-
-
-    global boolean backup_modified = true;
-    global boolean backup_sysconfig = true;
-    global boolean remove_old_backups = false;
-    global string backup_path = "/var/adm/backup";
-
 
     // Only an update, NOT an upgrade
     global boolean onlyUpdateInstalled = nil;
@@ -424,10 +417,10 @@ global void IgnoreProductCompatibility () {
 	products_incompatible = false;
 	_products_compatible = nil;
 
-	backup_modified = true;
-	backup_sysconfig = true;
-	remove_old_backups = false;
-	backup_path = "/var/adm/backup";
+	Installation::update_backup_modified = true;
+	Installation::update_backup_sysconfig = true;
+	Installation::update_remove_old_backups = false;
+	Installation::update_backup_path = "/var/adm/backup";
     }
 
 
