@@ -2,10 +2,11 @@
  * Module:	backup_proposal.ycp
  *
  * Author:	Arvin Schnell <arvin@suse.de>
+ *		Lukas Ocilka <locilka@suse.cz>
  *
  * Purpose:	Let user choose backup during update.
  *
- * $Id:$
+ * $Id$
  */
 {
     textdomain "update";
@@ -30,21 +31,21 @@
 
 	if (force_reset)
 	{
-	    Update::backup_modified = true;
-	    Update::backup_sysconfig = true;
-	    Update::remove_old_backups = false;
+	    Installation::update_backup_modified = true;
+	    Installation::update_backup_sysconfig = true;
+	    Installation::update_remove_old_backups = false;
 	}
 
 	list<string> tmp = [];
 
-	if (Update::backup_modified || Update::backup_sysconfig)
+	if (Installation::update_backup_modified || Installation::update_backup_sysconfig)
 	{
-	    if (Update::backup_modified) {
+	    if (Installation::update_backup_modified) {
 		// Proposal for backup during update
 		tmp = add (tmp, _("Create Backup of Modified Files"));
 	    }
 
-	    if (Update::backup_sysconfig) {
+	    if (Installation::update_backup_sysconfig) {
 		// Proposal for backup during update
 		tmp = add (tmp, _("Create Backup of /etc/sysconfig Directory"));
 	    }
@@ -54,7 +55,7 @@
 	    tmp = add (tmp, _("Do Not Create Backups"));
 	}
 
-	if (Update::remove_old_backups) {
+	if (Installation::update_remove_old_backups) {
 	    // Proposal for backup during update
 	    tmp = add (tmp, _("Remove Backups from Previous Updates"));
 	}

@@ -3,10 +3,11 @@
  *
  * Authors:	Stefan Schubert <schubi@suse.de>
  *		Arvin Schnell <arvin@suse.de>
+ *		Lukas Ocilka <locilka@suse.cz>
  *
  * Purpose:	Ask the user for backups during the update.
  *
- * $Id:$
+ * $Id$
  */
 
 {
@@ -147,9 +148,9 @@ remove them.</p>
 
     Wizard::SetContents (title, contents, help_text, (boolean) WFM::Args(0), (boolean) WFM::Args(1));
 
-    UI::ChangeWidget (`id(`modified), `Value, Update::backup_modified);
+    UI::ChangeWidget (`id(`modified), `Value, Installation::update_backup_modified);
     UI::ChangeWidget (`id(`sysconfig), `Value, Update::backup_sysconfig);
-    UI::ChangeWidget (`id(`remove), `Value, Update::remove_old_backups);
+    UI::ChangeWidget (`id(`remove), `Value, Installation::update_remove_old_backups);
 
     any ret = nil;
 
@@ -172,9 +173,9 @@ remove them.</p>
 	    if (tmp && !check_backup_path (partition))
 		continue;
 
-	    Update::backup_modified = (boolean) UI::QueryWidget (`id(`modified), `Value);
+	    Installation::update_backup_modified = (boolean) UI::QueryWidget (`id(`modified), `Value);
 	    Update::backup_sysconfig = (boolean) UI::QueryWidget (`id(`sysconfig), `Value);
-	    Update::remove_old_backups = (boolean) UI::QueryWidget (`id(`remove), `Value);
+	    Installation::update_remove_old_backups = (boolean) UI::QueryWidget (`id(`remove), `Value);
 
 	    break;
 	}
