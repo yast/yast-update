@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov  1 15:39:45 CET 2007 - locilka@suse.cz
+
+- Removed #!BuildIgnore: autoyast2-installation because recent
+  changes have already fixed the dependency loop.
+
+-------------------------------------------------------------------
 Wed Oct 31 13:21:55 CET 2007 - locilka@suse.cz
 
 - installedVersion and updateVersion moved from 'Update' to
