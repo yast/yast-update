@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Nov 19 16:58:31 CET 2007 - locilka@suse.cz
+
+- Unified used terminology (repositories) (FATE #302970).
+
+-------------------------------------------------------------------
 Thu Nov  1 16:47:44 CET 2007 - locilka@suse.cz
 
 - Update/backup-related variables were moved from Update::* to

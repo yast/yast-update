@@ -469,7 +469,7 @@ some applications may not run properly.")))
 		    // %2 is the version being installed
 		    _("Updating system to another version (%1 -> %2) is not supported on the running system.<br>
 Please, boot from the installation media and use a normal upgrade
-or disable installation sources of products with different versions."),
+or disable software repositories of products with different versions."),
 		    update_from, update_to
 		),
 		"warning_level" : `fatal,
