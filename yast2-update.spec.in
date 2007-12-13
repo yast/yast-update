@@ -17,6 +17,7 @@ Provides:	yast2-installation:/usr/share/YaST2/clients/vendor.ycp
 
 # Required only in inst-sys
 # Requires:	yast2-storage
+# Requires:	yast2-country
 
 # Pkg::PkgUpdateAll (map conf)
 Conflicts:	yast2-pkg-bindings < 2.15.11
