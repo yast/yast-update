@@ -7,6 +7,7 @@ client_DATA =				\
 	inst_update.ycp			\
 	inst_backup.ycp			\
 	rootpart_proposal.ycp		\
+	rootpart_check_keyboard.ycp	\
 	update_proposal.ycp		\
 	packages_proposal.ycp		\
 	backup_proposal.ycp		\
