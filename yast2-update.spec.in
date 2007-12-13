@@ -56,6 +56,16 @@ Updates packages to their latest versions
 @ybindir@/*
 @moduledir@/*
 
+@clientdir@/inst_rootpart.ycp
+@clientdir@/inst_update.ycp
+@clientdir@/inst_backup.ycp
+@clientdir@/rootpart_proposal.ycp
+@clientdir@/update_proposal.ycp
+@clientdir@/packages_proposal.ycp
+@clientdir@/backup_proposal.ycp
+@clientdir@/inst_update_partition.ycp
+@clientdir@/rootpart_check_keyboard.ycp
+
 @yncludedir@/update
 @yncludedir@/update/rootpart.ycp
 
@@ -65,4 +75,4 @@ Updates packages to their latest versions
 %defattr(-,root,root)
 @desktopdir@/update.desktop
 /usr/share/YaST2/control/update.xml
-@clientdir@/*.ycp
+@clientdir@/update.ycp
