@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Dec 13 13:00:36 CET 2007 - locilka@suse.cz
+
+- Fixed build-dependency on yast2-country.
+- 2.16.2
+
+-------------------------------------------------------------------
 Thu Dec  6 10:03:09 CET 2007 - locilka@suse.cz
 
 - Merged proofread texts.

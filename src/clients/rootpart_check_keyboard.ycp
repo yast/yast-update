@@ -1,0 +1,25 @@
+/**
+ * Module:	rootpart_check_keyboard.ycp
+ *
+ * Author:	Lukas Ocilka <locilka@suse.cz>
+ *
+ * Purpose:	Break build-requires, used only in inst-sys
+ *
+ * $Id:$
+ */
+{
+    textdomain "update";
+
+    import "Keyboard";
+    import "GetInstArgs";
+    import "Installation";
+
+    map argmap = GetInstArgs::argmap();
+    y2milestone ("Script args: %1", argmap);
+    string destdir = argmap["destdir"]:Installation::destdir;
+
+    y2milestone ("Checking keyboard in system mounted to %1", destdir);
+    Keyboard::CheckKeyboardDuringUpdate (destdir);
+
+    return true;
+}
