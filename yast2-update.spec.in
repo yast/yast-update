@@ -29,7 +29,6 @@ Summary:	YaST2 - Libraries and scripts for the installation/upgrade
 %package FACTORY
 
 @HEADER@
-BuildRequires:	update-desktop-files perl-XML-Writer yast2-devtools
 Requires:	yast2-update yast2
 
 # moved into yast2-update from yast2-installation
@@ -57,15 +56,6 @@ Updates packages to their latest versions
 @ybindir@/*
 @moduledir@/*
 
-/usr/share/YaST2/clients/inst_rootpart.ycp
-/usr/share/YaST2/clients/inst_update.ycp
-/usr/share/YaST2/clients/inst_backup.ycp
-/usr/share/YaST2/clients/rootpart_proposal.ycp
-/usr/share/YaST2/clients/update_proposal.ycp
-/usr/share/YaST2/clients/packages_proposal.ycp
-/usr/share/YaST2/clients/backup_proposal.ycp
-/usr/share/YaST2/clients/inst_update_partition.ycp
-
 @yncludedir@/update
 @yncludedir@/update/rootpart.ycp
 
@@ -75,4 +65,4 @@ Updates packages to their latest versions
 %defattr(-,root,root)
 @desktopdir@/update.desktop
 /usr/share/YaST2/control/update.xml
-@clientdir@/update.ycp
+@clientdir@/*.ycp
