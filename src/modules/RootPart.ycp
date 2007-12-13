@@ -1211,7 +1211,9 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    // read the keyboard settings now, so that it used when
 	    // typing passwords for encrypted partitions
 	    // Calling a script because otherwise this module would depend on yast2-country
-	    WFM::call ("rootpart_check_keyboard", [$["destdir":Installation::destdir]]);
+	    if (Stage::initial()) {
+		WFM::call ("rootpart_check_keyboard", [$["destdir":Installation::destdir]]);
+	    }
 
 	    read_fstab_and_cryptotab (fstab, crtab, root_device_current);
 
