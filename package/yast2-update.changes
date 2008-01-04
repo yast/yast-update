@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan  4 13:33:32 CET 2008 - lslezak@suse.cz
+
+- do not call Pkg::SaveState() and Pkg::RestoreState(), the state
+  is saved/restored by the package selector widget
+- 2.16.3
+
+-------------------------------------------------------------------
 Thu Dec 13 13:00:36 CET 2007 - locilka@suse.cz
 
 - Fixed build-dependency on yast2-country.
