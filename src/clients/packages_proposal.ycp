@@ -5,7 +5,7 @@
  *
  * Purpose:	Let user choose packages during update.
  *
- * $Id:$
+ * $Id$
  */
 {
     textdomain "update";
@@ -34,21 +34,13 @@
 	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
 	}
 
-	Pkg::SaveState();
-
 	symbol ret = (symbol) UI::RunPkgSelection (`id(`selector));
 	if (ret == `accept)
 	{
-	    Pkg::ClearSaveState();
-
 	    // FIXME: IT'S A MESS
 	    Update::solve_errors = 0;
 	    Update::unknown_packages = 0;
 	    Packages::base_selection_modified = true;
-	}
-	else
-	{
-	    Pkg::RestoreState(true);
 	}
 
 	UI::CloseDialog();
