@@ -1,7 +1,7 @@
 @HEADER-COMMENT@
 
 @HEADER@
-BuildRequires:	yast2-storage yast2-packager perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files
+BuildRequires:	yast2-storage yast2-packager perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files yast2-country
 BuildRequires:	yast2 >= 2.16.5
 # package not really needed to be installed but this breaks the building cycle
 

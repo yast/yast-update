@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jan 11 09:40:25 CET 2008 - coolo@suse.de
+
+- Fixed build-dependency on yast2-country again
+
+-------------------------------------------------------------------
 Fri Jan  4 13:33:32 CET 2008 - lslezak@suse.cz
 
 - do not call Pkg::SaveState() and Pkg::RestoreState(), the state
