@@ -15,7 +15,6 @@
 
     import "Directory";
     import "Mode";
-    import "Keyboard";
     import "Linuxrc";
     import "Storage";
     import "Popup";
