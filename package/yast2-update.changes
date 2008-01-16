@@ -2,7 +2,7 @@
 Wed Jan 16 09:50:54 CET 2008 - locilka@suse.cz
 
 - Removed build dependency on yast2-country again - removed
-  forgotten import of Keyboard module).
+  forgotten import of Keyboard module.
 - 2.16.4
 
 -------------------------------------------------------------------
