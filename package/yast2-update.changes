@@ -1,8 +1,8 @@
 -------------------------------------------------------------------
 Mon Jan 21 13:30:09 CET 2008 - locilka@suse.cz
 
-- BuildRequires: +yast2-storage +yast2-country
-- Requires: +yast2-country
+- BuildRequires: +yast2-storage +yast2-country (#354727)
+- Requires: +yast2-country (#354727)
 - 2.13.53
 
 -------------------------------------------------------------------
