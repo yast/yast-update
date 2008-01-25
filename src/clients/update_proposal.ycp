@@ -33,6 +33,20 @@
     
     boolean rpm_db_existency_checked_already = false;
 
+    /**
+     * Function returns map of upgrade-configuration.
+     * Some keys might be missing. In that case, the default libzypp
+     * values will be used. See FATE #301990 and bug #238488.
+     * The keys should be matching keys for Pkg::PkgUpdateAll().
+     *
+     * @return map <string, any> with a configuration
+     *
+     * @struct $[
+     *     "delete_unmaintained" : boolean,
+     *     "silent_downgrades" : boolean,
+     *     "keep_installed_patches" : boolean,
+     * ]
+     */
     map <string, any> GetUpdateConf () {
 	// 'nil' values are skipped, in that case, ZYPP uses own default values
 	map <string, boolean> ret = $[];
