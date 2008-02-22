@@ -25,9 +25,11 @@
     import "FileUtils";
     import "Arch";
     import "String";
+    import "Installation";
+    import "Report";
+    import "Label";
+    import "Stage";
 
-    include "partitioning/partition_defines.ycp";
-    include "partitioning/custom_part_helptexts.ycp";
     include "partitioning/custom_part_dialogs.ycp";
 
     // all supported filesystems
