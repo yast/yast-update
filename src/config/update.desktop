@@ -23,3 +23,4 @@ Name=FACTORY Update
 GenericName=Update your system to the newest packages from FACTORY (expert tool)
 Comment=Update your system to the newest packages from FACTORY (expert tool)
 X-KDE-SubstituteUID=true
+StartupNotify=true
