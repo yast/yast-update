@@ -3,7 +3,7 @@ Thu Mar 20 11:37:54 CET 2008 - locilka@suse.cz
 
 - Not displaying a pop-up warning when upgrading ppc to ppc64 and
   vice versa. The current check can't really distinguish between
-  these two.
+  these two (bnc #372309).
 - 2.16.5
 
 -------------------------------------------------------------------
