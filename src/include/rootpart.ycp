@@ -101,6 +101,23 @@ list <term> make_partition_list (boolean withall, symbol flavor) {
 	return part_list;
 }
 
+// Returns whether wanted and selected architectures match
+// bnc #372309
+boolean DoArchitecturesMatch (string arch_1, string arch_2) {
+    list <string> ppc_archs = ["ppc", "ppc64"];
+
+    // exact match
+    if (arch_1 == arch_2) {
+	return true;
+    // ppc exception
+    } else if (contains (ppc_archs, arch_1) && contains (ppc_archs, arch_2)) {
+	return true;
+    }
+
+    // else
+    return false;
+}
+
 // This dialog comes in three different flavors: `update_dialog,
 // `update_popup and `boot_popup, `update_dialog_proposal
 symbol RootPartitionDialog (symbol flavor) {
@@ -280,7 +297,7 @@ general overview of your system's partitions.
 _("No installed system that can be upgraded with this product was found
 on the selected partition."));
 	    }
-	    else if (freshman[`arch]:"" != RootPart::GetDistroArch ())
+	    else if (! DoArchitecturesMatch (freshman[`arch]:"", RootPart::GetDistroArch()))
 	    {
 		cont = Popup::ContinueCancel (
 // continue-cancel popup
