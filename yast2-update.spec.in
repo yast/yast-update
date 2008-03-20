@@ -28,7 +28,6 @@ Summary:	YaST2 - Libraries and scripts for the installation/upgrade
 
 %package FACTORY
 
-@HEADER@
 Requires:	yast2-update yast2
 
 # moved into yast2-update from yast2-installation
