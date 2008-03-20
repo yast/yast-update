@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Mar 20 11:37:54 CET 2008 - locilka@suse.cz
+
+- Not displaying a pop-up warning when upgrading ppc to ppc64 and
+  vice versa. The current check can't really distinguish between
+  these two.
+- 2.16.5
+
+-------------------------------------------------------------------
 Mon Mar 17 12:43:32 CET 2008 - jsrain@suse.cz
 
 - added 'StartupNotify=true' to the desktop file (bnc #304964)

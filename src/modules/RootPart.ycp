@@ -1549,6 +1549,7 @@ global string GetDistroArch () {
 global void Detect () {
     if (!didSearchForRootPartitions)
     {
+	// FIXME: can we use a Progress for that?
         UI::OpenDialog (`opt(`decorated ),
                         // label
                         `Label(_("Evaluating root partition. One moment please...")));
