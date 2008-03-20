@@ -27,7 +27,8 @@ Conflicts:	yast2-storage < 2.15.4
 Summary:	YaST2 - Libraries and scripts for the installation/upgrade
 
 %package FACTORY
-
+Group:		System/YaST
+PreReq:		%fillup_prereq
 Requires:	yast2-update yast2
 
 # moved into yast2-update from yast2-installation
