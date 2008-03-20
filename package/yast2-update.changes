@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Mar 20 12:33:39 CET 2008 - locilka@suse.cz
+
+- Not displaying a pop-up warning when upgrading ppc to ppc64 and
+  vice versa. The current check can't really distinguish between
+  these two (bnc #372309).
+- 2.13.54
+
+-------------------------------------------------------------------
 Mon Jan 21 13:30:09 CET 2008 - locilka@suse.cz
 
 - BuildRequires: +yast2-storage +yast2-country (#354727)
