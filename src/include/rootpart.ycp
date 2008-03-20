@@ -110,7 +110,7 @@ boolean DoArchitecturesMatch (string arch_1, string arch_2) {
     }
 
     // else
-    return true;
+    return false;
 }
 
 // This dialog comes in three different flavors: `update_dialog,
