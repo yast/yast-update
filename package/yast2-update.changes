@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 21 10:55:32 CET 2008 - locilka@suse.cz
+
+- Dropping keep_installed_patches support from control file as it
+  is currently handled by libzypp itself (bnc #349533).
+
+-------------------------------------------------------------------
 Thu Mar 20 11:37:54 CET 2008 - locilka@suse.cz
 
 - Not displaying a pop-up warning when upgrading ppc to ppc64 and
