@@ -36,15 +36,15 @@
     /**
      * Function returns map of upgrade-configuration.
      * Some keys might be missing. In that case, the default libzypp
-     * values will be used. See FATE #301990 and bug #238488.
+     * values will be used. See FATE #301990 and bnc #238488.
      * The keys should be matching keys for Pkg::PkgUpdateAll().
+     * "keep_installed_patches" were removed by bnc #349533.
      *
      * @return map <string, any> with a configuration
      *
      * @struct $[
      *     "delete_unmaintained" : boolean,
      *     "silent_downgrades" : boolean,
-     *     "keep_installed_patches" : boolean,
      * ]
      */
     map <string, any> GetUpdateConf () {
@@ -59,10 +59,6 @@
 	    ret["silent_downgrades"] = Update::silentlyDowngradePackages;
 	}
 
-	if (Update::keepInstalledPatches != nil) {
-	    ret["keep_installed_patches"] = Update::keepInstalledPatches;
-	}
-	
 	y2milestone ("Using update configuration: %1", ret);
 	
 	return ret;

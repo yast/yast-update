@@ -231,46 +231,6 @@
     }
 
     /**
-     * Returns whether upgrade process should keep installed patches.
-     * 'true' means that patches will be kept, 'nil' is returned when
-     * the feature is not supported in the control file.
-     */
-    global boolean KeepInstalledPatches () {
-	// returns empty string if not defined, buggy GetBooleanFeature
-	any default_kip_a = ProductFeatures::GetFeature ("software", "keep_installed_patches");
-
-	boolean default_kip = nil;
-	if (default_kip_a == nil || default_kip_a == "") {
-	    y2milestone ("software/keep_installed_patches not defined");
-	    return nil;
-	}
-	if (is (default_kip_a, boolean)) default_kip = (boolean) default_kip_a;
-
-	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
-	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
-
-	if (installed_system == nil || installed_system == "") {
-	    y2error ("Cannot find out installed system name");
-	    return default_kip;
-	}
-	
-	any reverse_kip_a = ProductFeatures::GetFeature ("software", "keep_installed_patches_reverse_list");
-	// No reverse rules defined
-	if (reverse_kip_a == "") {
-	    return default_kip;
-	}
-	// not a list or empty list
-	list <string> reverse_kip = (list <string>) reverse_kip_a;
-	if (reverse_kip == nil || reverse_kip == []) return default_kip;
-
-	if (ListOfRegexpsMatchesProduct (reverse_kip, installed_system)) {
-	    return (! default_kip);
-	}
-
-	return default_kip;
-    }
-    
-    /**
      * Returns whether the installed product is supported for upgrade.
      * (Functionality for FATE #301844).
      */
@@ -391,9 +351,6 @@ global void IgnoreProductCompatibility () {
 
 	silentlyDowngradePackages = SilentlyDowngradePackages();
 	y2milestone ("silentlyDowngradePackages: %1", silentlyDowngradePackages);
-
-	keepInstalledPatches = KeepInstalledPatches();
-	y2milestone ("keepInstalledPatches: %1", keepInstalledPatches);
     }
 
     /**
