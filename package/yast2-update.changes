@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Apr 11 18:05:54 CEST 2008 - locilka@suse.cz
+
+- Added missing </p> (bnc #377476).
+
+-------------------------------------------------------------------
 Fri Mar 21 10:55:32 CET 2008 - locilka@suse.cz
 
 - Dropping keep_installed_patches support from control file as it
