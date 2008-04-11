@@ -47,7 +47,7 @@
     ProductControl::custom_control_file =  "/usr/share/YaST2/control/update.xml";
 
     Wizard::OpenNextBackStepsDialog();
-    Wizard::SetNextButton(`next, Label::AcceptButton());
+    Wizard::SetNextButton(`next, _("&Update"));
     if (!ProductControl::Init())
     {
         y2error("control file %1 not found", ProductControl::custom_control_file );

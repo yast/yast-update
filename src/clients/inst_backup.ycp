@@ -93,7 +93,7 @@
 
     // Build and show dialog
 
-    Wizard::OpenAcceptDialog();
+    Wizard::OpenOKDialog();
 
     term contents = `HVSquash(
 			      `VBox(
@@ -169,7 +169,7 @@ remove them.</p>
 	boolean tmp = (boolean) UI::QueryWidget (`id(`modified), `Value) ||
 	    (boolean) UI::QueryWidget (`id(`sysconfig), `Value);
 
-	if (ret == `next)
+	if (ret == `next || ret == `ok)
 	{
 	    if (tmp && !check_backup_path (partition))
 		continue;

@@ -2,7 +2,8 @@
 
 @HEADER@
 BuildRequires:	yast2-storage yast2-packager perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files
-BuildRequires:	yast2 >= 2.16.5
+# Wizard::OpenOKDialog
+BuildRequires:	yast2 >= 2.16.49
 # package not really needed to be installed but this breaks the building cycle
 
 # Installation::installedVersion && Installation::updateVersion

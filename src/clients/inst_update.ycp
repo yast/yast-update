@@ -147,7 +147,7 @@ packages during the update.</p>
 ");
 
 
-    Wizard::OpenAcceptDialog ();
+    Wizard::OpenOKDialog ();
 
     Wizard::SetContents (title, contents, helptext, (boolean) WFM::Args(0), (boolean) WFM::Args(1));
     Wizard::SetTitleIcon ("yast-software");
@@ -198,7 +198,7 @@ packages during the update.</p>
 	    continue;
 	}
 
-	if (ret == `next && Pkg::RestoreState (true))
+	if ((ret == `next || ret == `ok) && Pkg::RestoreState (true))
 	{
 	    boolean something_changed = false;
 
@@ -227,11 +227,11 @@ packages during the update.</p>
 	    }
 	}
 
-	if (ret == `back || ret == `next)
+	if (ret == `back || ret == `next || ret == `ok)
 	    break;
     }
 
-    if (ret == `next)
+    if (ret == `next || ret == `ok)
     {
 	Update::did_init1 = false;
 
