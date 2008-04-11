@@ -208,7 +208,7 @@ general overview of your system's partitions.
     {
 	Wizard::CreateDialog ();
 	Wizard::SetContentsButtons (title, contents, help_text,
-	    Label::BackButton (), Label::AcceptButton ());
+	    Label::BackButton (), Label::OKButton ());
     }
     else
     {
