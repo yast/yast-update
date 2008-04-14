@@ -3,6 +3,7 @@ Fri Apr 11 18:05:54 CEST 2008 - locilka@suse.cz
 
 - Added missing </p> (bnc #377476).
 - Changing Accept buttons to OK buttons (FATE #120373).
+- 2.16.6
 
 -------------------------------------------------------------------
 Fri Mar 21 10:55:32 CET 2008 - locilka@suse.cz
