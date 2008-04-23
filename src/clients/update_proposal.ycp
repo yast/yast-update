@@ -323,6 +323,8 @@
 
 	    Packages::SelectProduct();
 	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
+	    // bnc #382208
+	    SelectKernelPackages ();
 
 	    // FATE #301990, Bugzilla #238488
 	    // Control the upgrade process better
@@ -331,7 +333,6 @@
 	    y2milestone ("Update summary: %1", update_sum);
 	    Update::unknown_packages = update_sum[`ProblemListSze]:0;
 
-	    SelectKernelPackages ();
 	    list<string> sys_patterns = Packages::ComputeSystemPatternList ();
 	    foreach (string pat, sys_patterns, {
 		Pkg::ResolvableInstall (pat, `pattern);
