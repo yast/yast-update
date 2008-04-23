@@ -5,6 +5,7 @@ Wed Apr 23 15:29:55 CEST 2008 - locilka@suse.cz
   old update client is left to handle command-line or to call
   the new client (bnc #382044).
 - Fixed update proposal not to propose two kernels (bnc #382208).
+- 2.16.7
 
 -------------------------------------------------------------------
 Fri Apr 11 18:05:54 CEST 2008 - locilka@suse.cz
