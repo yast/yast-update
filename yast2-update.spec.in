@@ -77,3 +77,4 @@ Updates packages to their latest versions
 @desktopdir@/update.desktop
 /usr/share/YaST2/control/update.xml
 @clientdir@/update.ycp
+@clientdir@/run_update.ycp
