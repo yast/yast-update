@@ -1495,14 +1495,35 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	Storage::ActivateEvms();
 	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
 	y2milestone ("target_map: %1", target_map);
-//	target_map = (map <string, map>) Storage::GetTargetMap ();
-//	y2milestone ("target_map: %1", target_map);
+
+	// prepare progress-bar
+	if (UI::WidgetExists (`id ("search_progress")))
+	    UI::ReplaceWidget (
+		`id ("search_progress"),
+		`ProgressBar (
+		    `id ("search_pb"),
+    		    _("Evaluating root partition. One moment please..."),
+    		    100,
+    		    0
+		)
+	    );
 
 	rootPartitions = $[];
 	numberOfValidRootPartitions = 0;
 
+	// all partitions on all devices
+	integer max_steps = 0;
+	foreach (string device, map description, target_map, {
+	    max_steps = max_steps + size (description["partitions"]:[]);
+	});
+
+	integer counter = 0;
 	foreach (string device, map description, target_map, {
 	    foreach (map partition, description["partitions"]:[], {
+
+		counter = counter + 1;
+		if (UI::WidgetExists (`id ("search_progress")))
+		    UI::ChangeWidget (`id ("search_pb"), `Value, (100 * counter / max_steps));
 
 		// some partitions don't make sense at all
 		if (partition["detected_fs"]:`unknown != `swap &&
@@ -1522,6 +1543,10 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		}
 	    });
 	});
+
+	// 100%
+	if (UI::WidgetExists (`id ("search_progress")))
+	    UI::ChangeWidget (`id ("search_pb"), `Value, 100);
 
 	didSearchForRootPartitions = true;
 
@@ -1549,14 +1574,18 @@ global string GetDistroArch () {
 global void Detect () {
     if (!didSearchForRootPartitions)
     {
-	// FIXME: can we use a Progress for that?
-        UI::OpenDialog (`opt(`decorated ),
-                        // label
-                        `Label(_("Evaluating root partition. One moment please...")));
+	Wizard::SetContents (
+	    // TRANSLATORS: dialog caption
+	    _("Update Configuration"),
+	    `VBox (
+		`ReplacePoint (`id ("search_progress"), `Empty())
+	    ),
+    	    "",
+    	    false,
+    	    false
+    	);
 
         FindRootPartitions ();
-
-        UI::CloseDialog ();
 
         selectedRootPartition = "";
 	y2milestone ("Detected root partitions: %1", rootPartitions);

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr 29 13:31:05 CEST 2008 - locilka@suse.cz
+
+- Progress for "searching for partitions" (bnc #384707).
+- 2.16.8
+
+-------------------------------------------------------------------
 Wed Apr 23 15:29:55 CEST 2008 - locilka@suse.cz
 
 - Added new client for run_update that does the real update, the
