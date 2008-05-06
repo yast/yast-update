@@ -51,9 +51,10 @@
 	// 'nil' values are skipped, in that case, ZYPP uses own default values
 	map <string, boolean> ret = $[];
 
-	if (Update::deleteOldPackages != nil) {
-	    ret["delete_unmaintained"] = Update::deleteOldPackages;
-	}
+// not supported by libzypp anymore
+//	if (Update::deleteOldPackages != nil) {
+//	    ret["delete_unmaintained"] = Update::deleteOldPackages;
+//	}
 
 	if (Update::silentlyDowngradePackages != nil) {
 	    ret["silent_downgrades"] = Update::silentlyDowngradePackages;
@@ -522,10 +523,10 @@ or disable software repositories of products with different versions."),
 	    });
 	}
 
-	if (Update::deleteOldPackages) {
-	    // Proposal for removing packages which are not maintained any more
-	    summary_text = summary_text + "<li>" + _("Delete unmaintained packages") + "</li>\n";
-	}
+//	if (Update::deleteOldPackages) {
+//	    // Proposal for removing packages which are not maintained any more
+//	    summary_text = summary_text + "<li>" + _("Delete unmaintained packages") + "</li>\n";
+//	}
 
 	if (Update::onlyUpdateInstalled) {
 	    // Proposal for backup during update
