@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue May  6 18:47:09 CEST 2008 - locilka@suse.cz
+
+- Removed support for 'delete unmaintained packages' from
+  configuration UI as it is no longer supported by libzypp and
+  replaced with list of packages to delete defined in control
+  file (bnc #300540).
+- 2.16.9
+
+-------------------------------------------------------------------
 Tue Apr 29 13:31:05 CEST 2008 - locilka@suse.cz
 
 - Progress for "searching for partitions" (bnc #384707).

@@ -110,11 +110,11 @@ Based on the Selection:
 					       )
 			    )
 		      ),
-	      `VSpacing (1),
-	      `Left(`CheckBox(`id(`delete),
-			      // check box label
-			      // translator: add a & shortcut
-			      _("&Delete Unmaintained Packages"), true)),
+//	      `VSpacing (1),
+//	      `Left(`CheckBox(`id(`delete),
+//			      // check box label
+//			      // translator: add a & shortcut
+//			      _("&Delete Unmaintained Packages"), true)),
 	      `VSpacing(1),
 	      `Label( `id(`wrn_label), wrn_msg )
 	      )
@@ -163,7 +163,7 @@ packages during the update.</p>
 	UI::ChangeWidget(`id(sel), `Enabled, !Update::onlyUpdateInstalled);
     });
 
-    UI::ChangeWidget(`id(`delete), `Value, Update::deleteOldPackages);
+//    UI::ChangeWidget(`id(`delete), `Value, Update::deleteOldPackages);
 
     any ret = nil;
     boolean details_pressed = false;
@@ -216,8 +216,8 @@ packages during the update.</p>
 		    something_changed = true;
 	    }
 
-	    if (UI::QueryWidget (`id(`delete), `Value ) != Update::deleteOldPackages)
-		something_changed = true;
+//	    if (UI::QueryWidget (`id(`delete), `Value ) != Update::deleteOldPackages)
+//		something_changed = true;
 
 	    if (something_changed && Packages::base_selection_modified)
 	    {
@@ -237,7 +237,7 @@ packages during the update.</p>
 
 	boolean b1 = Update::onlyUpdateInstalled;
 	Update::onlyUpdateInstalled = (boolean) UI::QueryWidget (`id(`notupgrade), `Value);
-	Update::deleteOldPackages = (boolean) UI::QueryWidget (`id(`delete), `Value);
+//	Update::deleteOldPackages = (boolean) UI::QueryWidget (`id(`delete), `Value);
 
 	if (Packages::using_patterns)
 	{

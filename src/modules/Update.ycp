@@ -17,6 +17,7 @@
     import "Installation";
     import "Packages";
     import "ProductFeatures";
+    import "ProductControl";
     import "Stage";
     import "SuSERelease";
     import "Mode";
@@ -36,8 +37,8 @@
     // number of errors (packages?) returned by solver
     global integer solve_errors = 0;
 
-    // Flag is set true if the user decides to delete unmaintained packages
-    global boolean deleteOldPackages = nil;
+//    // Flag is set true if the user decides to delete unmaintained packages
+//    global boolean deleteOldPackages = nil;
 
     // Flag is set to true when package downgrade is allowed
     global boolean silentlyDowngradePackages = nil;
@@ -115,6 +116,9 @@
      * Returns whether old packages should be removed (defined in control file).
      * True means - delete old RPMs when updating. (Functionality for FATE #301844).
      */
+/*
+    // not supported by libzypp anymore
+
     global boolean DeleteOldPackages () {
 	// changes deleteOldPackages variable
 	any default_dop_a = ProductFeatures::GetFeature ("software", "delete_old_packages");
@@ -149,6 +153,7 @@
 
 	return default_dop;
     }
+*/
     
     /**
      * Returns whether upgrade process should only update installed packages or
@@ -354,6 +359,30 @@ global void IgnoreProductCompatibility () {
     }
 
     /**
+     * Drops packages defined in control file (string) software->dropped_packages
+     *
+     * @see bnc #300540
+     */
+    void DropObsoletePackages () {
+	string packages_to_drop = ProductFeatures::GetStringFeature ("software", "dropped_packages");
+
+	if (packages_to_drop == nil || packages_to_drop == "") {
+	    y2milestone ("No obsolete packages to drop");
+	    return;
+	}
+
+	list <string> l_packages_to_drop = splitstring (packages_to_drop, ", ");
+	y2milestone ("Packages to drop: %1", l_packages_to_drop);
+
+	foreach (string one_package, l_packages_to_drop, {
+	    if (Pkg::PkgInstalled (one_package) || Pkg::IsSelected (one_package)) {
+		y2milestone ("Package to delete: %1", one_package);
+		Pkg::PkgDelete (one_package);
+	    }
+	});
+    }
+
+    /**
      *
      */
     global define void Reset ()
@@ -362,8 +391,11 @@ global void IgnoreProductCompatibility () {
 
 	Update::InitUpdate();
 
-	deleteOldPackages = DeleteOldPackages();
-	y2milestone ("deleteOldPackages %1", deleteOldPackages);
+	// bnc #300540
+	DropObsoletePackages();
+
+//	deleteOldPackages = DeleteOldPackages();
+//	y2milestone ("deleteOldPackages %1", deleteOldPackages);
 
 	onlyUpdateInstalled = OnlyUpdateInstalled();
 	y2milestone ("onlyUpdateInstalled %1", onlyUpdateInstalled);
