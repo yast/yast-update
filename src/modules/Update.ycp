@@ -371,7 +371,7 @@ global void IgnoreProductCompatibility () {
 	    return;
 	}
 
-	list <string> l_packages_to_drop = splitstring (packages_to_drop, ", ");
+	list <string> l_packages_to_drop = splitstring (packages_to_drop, ", \n");
 	y2milestone ("Packages to drop: %1", l_packages_to_drop);
 
 	foreach (string one_package, l_packages_to_drop, {
