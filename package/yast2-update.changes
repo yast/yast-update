@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri May 16 16:40:22 CEST 2008 - jsrain@suse.cz
+
+- added categories Settings and System into desktop file
+  (bnc #382778)
+
+-------------------------------------------------------------------
 Tue May  6 18:47:09 CEST 2008 - locilka@suse.cz
 
 - Removed support for 'delete unmaintained packages' from
