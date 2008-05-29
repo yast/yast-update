@@ -363,7 +363,7 @@ global void IgnoreProductCompatibility () {
      *
      * @see bnc #300540
      */
-    void DropObsoletePackages () {
+    global void DropObsoletePackages () {
 	string packages_to_drop = ProductFeatures::GetStringFeature ("software", "dropped_packages");
 
 	if (packages_to_drop == nil || packages_to_drop == "") {
@@ -390,9 +390,6 @@ global void IgnoreProductCompatibility () {
 	y2milestone ("Calling: UpdateReset()");
 
 	Update::InitUpdate();
-
-	// bnc #300540
-	DropObsoletePackages();
 
 //	deleteOldPackages = DeleteOldPackages();
 //	y2milestone ("deleteOldPackages %1", deleteOldPackages);
