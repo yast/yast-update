@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jul 24 12:50:06 CEST 2008 - locilka@suse.cz
+
+- Making possible to upgrade running system using YaST Update even
+  if it changes a release (the original/current installation
+  repository must be present).
+- 2.17.0
+
+-------------------------------------------------------------------
 Thu May 29 14:56:15 CEST 2008 - locilka@suse.cz
 
 - Selecting packages for deletion after PkgApplReset call instead
