@@ -529,13 +529,12 @@ global void IgnoreProductCompatibility () {
 		if (source_map != $[]) {
 		    if (source_map["productversion"]:"A" == Installation::installedVersion["version"]:"B") {
 			y2milestone ("Found matching product: %1", source_map);
-			// first valid product is selected
-			if (update_to_source == nil)
-			    update_to_source = source_id;
+			update_to_source = source_id;
 		    } else {
 			y2error ("Found non-matching product: %1", source_map);
 			// every invalid product is selected
-			update_to_source = source_id;
+			if (update_to_source == nil)
+			    update_to_source = source_id;
 		    }
 		}
 	    });
