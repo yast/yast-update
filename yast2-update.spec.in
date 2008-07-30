@@ -75,6 +75,7 @@ Updates packages to their latest versions
 %files FACTORY
 %defattr(-,root,root)
 @desktopdir@/update.desktop
+%dir /usr/share/YaST2/control
 /usr/share/YaST2/control/update.xml
 @clientdir@/update.ycp
 @clientdir@/run_update.ycp

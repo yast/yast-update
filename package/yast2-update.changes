@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jul 30 07:19:56 CEST 2008 - coolo@suse.de
+
+- fix file list of package
+
+-------------------------------------------------------------------
 Thu Jul 24 12:50:06 CEST 2008 - locilka@suse.cz
 
 - Making possible to upgrade running system using YaST Update even
