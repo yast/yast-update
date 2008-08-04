@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug  4 13:18:47 CEST 2008 - locilka@suse.cz
+
+- Initializing target as soon as possible (updating running system)
+  (bnc #394662).
+- 2.17.1
+
+-------------------------------------------------------------------
 Wed Jul 30 07:19:56 CEST 2008 - coolo@suse.de
 
 - fix file list of package

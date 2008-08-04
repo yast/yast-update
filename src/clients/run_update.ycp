@@ -18,6 +18,7 @@
     import "ProductControl";
     import "Wizard";
     import "Update";
+    import "Installation";
 
     // check whether having the packager for ourselves
     if (! PackageLock::Check ())
@@ -40,6 +41,10 @@
     }
     list<map> stage_mode = [$["stage": "normal",  "mode": Mode::mode() ]];
     ProductControl::AddWizardSteps(stage_mode);
+
+    // bnc #394662
+    // initialize target ASAP
+    Pkg::TargetInit (Installation::destdir, true);
 
     symbol ret = ProductControl::Run();
 
