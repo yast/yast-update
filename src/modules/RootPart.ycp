@@ -1492,7 +1492,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    Storage::SetTargetMap ((map<string,map>) SCR::Read (.target.yast2, "test_target_map.ycp"));
 	}
 
-	Storage::ActivateEvms();
+//	Storage::ActivateEvms();
 	map <string, map> target_map = (map <string, map>) Storage::GetOndiskTarget ();
 	y2milestone ("target_map: %1", target_map);
 
