@@ -539,6 +539,8 @@ define string FsckAndMount (string mount_point, string device,
 	    return true;
 	}
 
+/*
+ * No more EVMS
 	// bugzilla #237139
 	// '/dev/evms/lvm2/system/root' is the same as '/dev/system/root'
 	// the root from /etc/fstab must be used
@@ -565,6 +567,7 @@ define string FsckAndMount (string mount_point, string device,
 
 	return true;
     }
+*/
 
 /**
  * Find a mount point in fstab
