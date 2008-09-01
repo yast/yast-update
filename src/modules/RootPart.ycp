@@ -564,10 +564,10 @@ define string FsckAndMount (string mount_point, string device,
 		return true;
 	    }
 	}
+*/
 
 	return true;
     }
-*/
 
 /**
  * Find a mount point in fstab
