@@ -574,7 +574,7 @@ or disable software repositories of products with different versions."),
 	// TRANSLATORS: proposal dialog help
 	string update_options_help = _("<p><b><big>Update Options</big></b>
 Here you can choose how your system is going to be updated.
-Choose whether only installed packages should be updated or also new ones should be installed
+Choose whether only installed packages should be updated or whether new ones should be installed also 
 (the default selection), and whether unmaintained packages should be deleted.</p>");
 
 	ret = $[
