@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Sep 23 15:13:24 CEST 2008 - ug@suse.de
+
+- more sophisticated "mountby" detection for autoyast's
+  partitioning_advanced added and fixed a bug in that too
+  (bnc#425454)
+- 2.17.5
+
+-------------------------------------------------------------------
 Thu Sep 11 08:31:18 CEST 2008 - jsrain@suse.cz
 
 - merged texts from proofread
