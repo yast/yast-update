@@ -3,6 +3,7 @@ Tue Sep 23 17:22:51 CEST 2008 - locilka@suse.cz
 
 - Calling Packages::CheckOldAddOns to report warning about product
   automatically selected for removal (FATE #304488).
+- Using new Packages::GetBaseSourceID function (FATE #304488).
 - 2.17.6
 
 -------------------------------------------------------------------
