@@ -1,7 +1,9 @@
 @HEADER-COMMENT@
 
 @HEADER@
-BuildRequires:	yast2-storage yast2-packager perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files
+BuildRequires:	yast2-storage perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files
+# Packages::GetBaseSourceID
+BuildRequires:	yast2-packager >= 2.17.19
 # Wizard::OpenOKDialog
 BuildRequires:	yast2 >= 2.16.49
 # package not really needed to be installed but this breaks the building cycle
@@ -10,7 +12,7 @@ BuildRequires:	yast2 >= 2.16.49
 # Update::* moved to Installation::update_*
 Requires:	yast2 >= 2.16.5
 Requires:	yast2-installation
-Requires:	yast2-packager
+Requires:	yast2-packager >= 2.17.19
 
 # moved into yast2-update from yast2-installation
 # to remove dependency on yast2-storage

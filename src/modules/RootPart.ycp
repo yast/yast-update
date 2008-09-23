@@ -736,7 +736,7 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 		
 		SCR::UnregisterAgent (.target.etc.cryptotab);
 	    } else {
-		y2warning ("No such file %1. Not using cryptotab.", crtab_file);
+		y2milestone ("No such file %1. Not using cryptotab.", crtab_file);
 	    }
     }
 

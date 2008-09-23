@@ -519,11 +519,12 @@ global void IgnoreProductCompatibility () {
 	}
 
 	integer update_to_source = nil;
+	y2milestone ("Known sources: %1", Packages::theSources);
 
 	// So-called System Update
 	if (Stage::normal()) {
 	    foreach (integer source_id, Packages::theSources, {
-		map source_map = Pkg::SourceProductData(source_id);
+		map source_map = Pkg::SourceProductData (source_id);
 
 		// source need to be described
 		if (source_map != $[]) {
@@ -540,11 +541,18 @@ global void IgnoreProductCompatibility () {
 	    });
 	}
 
-	// a fallback for Stage::normal(), default for !Stage::normal()
-	if (update_to_source == nil) update_to_source = Packages::theSources[num-1]:0;
+	// fallback for Stage::normal()
+	if (Stage::normal()) {
+	    if (update_to_source == nil) update_to_source = Packages::theSources[num-1]:0;
+	// default for !Stage::normal
+	} else {
+	    update_to_source = Packages::GetBaseSourceID();
+	}
 	
 	map new_product = Pkg::SourceProductData (update_to_source);
-	y2milestone ("Product to update to: %1 %2", update_to_source, new_product);
+	map new_source  = Pkg::SourceGeneralData (update_to_source);
+
+	y2milestone ("Product to update to: %1 %2 %3", update_to_source, new_product, new_source);
 
 	if (new_product == nil)
 	{
@@ -558,7 +566,7 @@ global void IgnoreProductCompatibility () {
 	// bugzilla #225256, use "label" first, then a "productname"
 	Installation::updateVersion["show"] = new_product["label"]:nil;
 	if (Installation::updateVersion["show"]:nil == nil) {
-	    y2warning ("No \"label\" defined in product");
+	    y2warning ("No 'label' defined in product");
 
 	    if (new_product["productname"]:"?" == "?" && new_product["productversion"]:"?" == "?") {
 		Installation::updateVersion["show"] = "?";

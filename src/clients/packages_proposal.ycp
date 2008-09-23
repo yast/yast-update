@@ -97,6 +97,9 @@
 	{
 	    ret = $[ "preformatted_proposal" : HTML::List (tmp) ];
 	}
+
+	y2milestone ("Products: %1", Pkg::ResolvableProperties ("", `product, ""));
+	Packages::CheckOldAddOns (ret);
     }
     else if ( func == "AskUser" )
     {
