@@ -118,15 +118,23 @@ boolean DoArchitecturesMatch (string arch_1, string arch_2) {
     return false;
 }
 
-// This dialog comes in three different flavors: `update_dialog,
-// `update_popup and `boot_popup, `update_dialog_proposal
+/**
+ * This dialog comes in several different flavors:
+ * `update_dialog - used to show partitions available for upgrade,
+ * `update_popup - obsolete, used to be used as a pop-up in proposal dialog (MakeProposal),
+ * `update_dialog_proposal - obsolete, used to be used as a pop-up in proposal dialog (AskUser),
+ * `boot_popup - obsolete, used to be used as a dilaog offering to boot to a selected partition,
+ *
+ * @param symbol flavor
+ * @return symbol `cancel, `back, `next, `abort
+ */
 symbol RootPartitionDialog (symbol flavor) {
+    // FIXME: Most of the code in this function is obsolete
 
     list<term> partition_list = make_partition_list (
 	RootPart::showAllPartitions,
 	(flavor == `boot_popup ? `boot : `update)
     );
-
 
     string title = "";
     string label = "";
@@ -199,6 +207,11 @@ general overview of your system's partitions.
 	)
     );
 
+    // bnc #429080
+    // finishing the target before selecting a new system to load
+    if (flavor == `update_dialog) {
+	Pkg::TargetFinish();
+    }
 
     if (flavor == `update_dialog)
     {
@@ -334,6 +347,11 @@ is different than the one of this product."));
 
     if (flavor != `update_dialog)
 	UI::CloseDialog ();
+
+    // New partition has been mounted
+    if (flavor == `update_dialog && ret == `next) {
+	Pkg::TargetLoad();
+    }
 
     return (symbol)ret;
 }

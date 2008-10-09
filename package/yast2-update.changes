@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Oct  9 18:56:12 CEST 2008 - locilka@suse.cz
+
+- Loading the Target after the partition to update is mounted,
+  Finishing the target before the partition is monted (because of
+  'going back') (bnc #429080).
+
+-------------------------------------------------------------------
 Tue Sep 23 17:22:51 CEST 2008 - locilka@suse.cz
 
 - Calling Packages::CheckOldAddOns to report warning about product
