@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Oct 14 17:08:25 CEST 2008 - ug@suse.de
+
+- partitioning_advanced in autoyast reads mount options too now
+  (bnc#425454)
+
+-------------------------------------------------------------------
 Thu Oct  9 18:56:12 CEST 2008 - locilka@suse.cz
 
 - Loading the Target after the partition to update is mounted,

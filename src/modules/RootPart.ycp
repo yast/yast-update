@@ -1308,7 +1308,8 @@ Check the log file %1."), Directory::logdir + "/y2log");
     {
 	// All storage devices
         map <string, map> target_map = Storage::GetTargetMap ();
-
+	list<map> fstab = [];
+	readFsTab(fstab);
 	// all activated
 	list <map> tmp = filter (map e, activated, {
 	    return (e[`type]:"" == "mount" || e[`type]:"" == "swap");
@@ -1326,14 +1327,19 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    break;
 		}
 	    });
-	    boolean format_partition = false;
-	    if (p["format"]:nil != nil) {
-		format_partition = p["format"]:false;
-	    }
-	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
-	    target_map = Storage::SetPartitionData (target_map, part, "format", format_partition);
+	    string mount_options = "";
+	    foreach (map entry, fstab, {
+		if( entry["file"]:"" == mntpt ) {
+			mount_options = entry["mntops"]:"";
+			break;
+		}
+	    });
+	    target_map = Storage::SetPartitionData (target_map, part, "mount", p["fstopt"]:mntpt );
+	    target_map = Storage::SetPartitionData (target_map, part, "format", p["format"]:false );
 	    target_map = Storage::SetPartitionData (target_map, part, "delete", false);
 	    target_map = Storage::SetPartitionData (target_map, part, "create", false);
+	    if( size(mount_options) > 0 )
+		    target_map = Storage::SetPartitionData (target_map, part, "fstopt", mount_options);
             if( haskey( p, "mountby" ) )
                 target_map = Storage::SetPartitionData (target_map, part, "mountby", p["mountby"]:`device);
 	});
