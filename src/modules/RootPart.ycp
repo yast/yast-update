@@ -1334,7 +1334,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 			break;
 		}
 	    });
-	    target_map = Storage::SetPartitionData (target_map, part, "mount", p["fstopt"]:mntpt );
+	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
 	    target_map = Storage::SetPartitionData (target_map, part, "format", p["format"]:false );
 	    target_map = Storage::SetPartitionData (target_map, part, "delete", false);
 	    target_map = Storage::SetPartitionData (target_map, part, "create", false);
