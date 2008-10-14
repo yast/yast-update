@@ -1338,8 +1338,10 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    target_map = Storage::SetPartitionData (target_map, part, "format", p["format"]:false );
 	    target_map = Storage::SetPartitionData (target_map, part, "delete", false);
 	    target_map = Storage::SetPartitionData (target_map, part, "create", false);
-	    if( size(mount_options) > 0 )
+	    if( size(mount_options) > 0 && !haskey(p, "fstopt" ) )
 		    target_map = Storage::SetPartitionData (target_map, part, "fstopt", mount_options);
+	    if( haskey(p, "fstopt" ) )
+		    target_map = Storage::SetPartitionData (target_map, part, "fstopt", p["fstopt"]:"");
             if( haskey( p, "mountby" ) )
                 target_map = Storage::SetPartitionData (target_map, part, "mountby", p["mountby"]:`device);
 	});
