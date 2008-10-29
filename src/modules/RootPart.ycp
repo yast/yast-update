@@ -685,7 +685,9 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 		          `Optional(`Whitespace()),
 		          `Optional(`freq (`Number())),
 		          `Optional(`Whitespace()),
-		          `Optional(`passno (`Number()))
+		          `Optional(`passno (`Number())),
+		          `Optional(`Whitespace()),
+		          `Optional(`the_rest (`String ("^\n")))
 		        ),
 		        "\n"
 		      ))
@@ -725,7 +727,9 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 			  `Separator ("\t "),
 			  `opt1 (`String("^\t ")),
 			  `Separator ("\t "),
-			  `opt2 (`String("^ \t\n"))
+			  `opt2 (`String("^ \t")),
+			  `Optional(`Whitespace()),
+			  `Optional(`the_rest (`String ("^\n")))
 			),
 			"\n"
 		      ))
