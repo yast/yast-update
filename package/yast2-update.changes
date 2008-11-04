@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov  4 11:32:57 CET 2008 - locilka@suse.cz
+
+- Making obvious (in log) why a partition is marked 'not-valid'
+  (bnc #441378)
+- 2.17.10
+
+-------------------------------------------------------------------
 Wed Oct 29 14:47:03 CET 2008 - locilka@suse.cz
 
 - Extended agent reading fstab files (bnc #438129).
