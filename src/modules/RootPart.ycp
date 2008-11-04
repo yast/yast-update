@@ -1430,7 +1430,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 			y2warning ("Cannot find / entry in fstab %1", fstab);
 		    }
 
-		    boolean ok = size(fstab[0,"spec"]:"")>0 &&
+		    freshman[`valid] = size(fstab[0,"spec"]:"")>0 &&
 		                 Storage::DeviceMatchFstab( p_dev, 
 							    // bugzilla #304269
 							    // DeviceMatchFstab expects _old_ not _translated_ device
@@ -1439,11 +1439,9 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    // Why this doesn't match?
 		    // Possible reasons:
 		    // - /var not mounted so hwinfo cannot translate device names
-		    if (ok != true) {
+		    if (freshman[`valid]:false != true) {
 			y2warning ("Device does not match fstab: '%1' vs. '%2'", p_dev, fstab[0,"spec"]:"");
 		    }
-
-		    freshman[`valid] = ok;
 
 		    // Get installed release name
 		    string release = SuSERelease::ReleaseInformation
@@ -1462,7 +1460,9 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    // `arch_valid, see bugzilla #288201
 		    // installed /bin/bash and the one from inst-sys are matching
 		    if (freshman[`arch]:"unknown" == instsys_arch) {
-			freshman[`arch_valid] = ok;
+			y2milestone ("Arcitecture (%1) is valid", instsys_arch);
+			freshman[`arch_valid] = true;
+
 		    // both are PPC, bugzilla #249791
 		    } else if (
 			contains(["ppc", "ppc64"], freshman[`arch]:"unknown")
@@ -1471,9 +1471,17 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    ) {
 			y2milestone ("Architecture for partition %1 is %2, upgrading %3", p_dev, freshman[`arch]:"unknown", instsys_arch);
 			freshman[`arch_valid] = true;
+
+		    // Architecture is not matching
 		    } else {
 			y2milestone ("Architecture for partition %1 is %2, upgrading %3", p_dev, freshman[`arch]:"unknown", instsys_arch);
 			freshman[`arch_valid] = false;
+		    }
+
+		    // If architecture is not matching, the whole partition is considered to be wrong
+		    if (freshman[`arch_valid]:false != true) {
+			y2milestone ("Architecture is not valid -> the whole partition is not valid");
+			freshman[`valid] = false;
 		    }
 
 		    y2milestone ("Partition is valid: %1, arch is valid: %2", freshman[`valid]:false, freshman[`arch_valid]:false);
