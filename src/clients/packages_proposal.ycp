@@ -13,6 +13,7 @@
     import "HTML";
     import "Packages";
     import "SpaceCalculation";
+    import "PackagesUI";
 
     import "Update";
 
@@ -24,17 +25,14 @@
 
     define symbol call_packageselector ()
     {
-	if (Update::unknown_packages > 0) // FIXME
-	{
-	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector),
-								  `opt(`updateMode)));
-	}
-	else
-	{
-	    UI::OpenDialog (`opt(`defaultsize), `PackageSelector (`id(`selector)));
-	}
+	map<string,any> options = $[];
 
-	symbol ret = (symbol) UI::RunPkgSelection (`id(`selector));
+	// changing the default mode if there are some unknown packages
+	if (Update::unknown_packages > 0)
+	    options["mode"] = `summaryMode;
+
+	symbol ret = PackagesUI::RunPackageSelector (options);
+
 	if (ret == `accept)
 	{
 	    // FIXME: IT'S A MESS
@@ -42,8 +40,6 @@
 	    Update::unknown_packages = 0;
 	    Packages::base_selection_modified = true;
 	}
-
-	UI::CloseDialog();
 
 	return ret;
     }

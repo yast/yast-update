@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov  7 11:26:47 CET 2008 - locilka@suse.cz
+
+- Using PackagesUI for opening a package selector (bnc #435479).
+- 2.17.11
+
+-------------------------------------------------------------------
 Tue Nov  4 11:32:57 CET 2008 - locilka@suse.cz
 
 - Making obvious (in log) why a partition is marked 'not-valid'
