@@ -1367,6 +1367,28 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	return deletechars (bash_out["stdout"]:"unknown", "\n");
     }
 
+    /**
+     * Checks the partition whether it contains an incomplete installation.
+     *
+     * @see BNC #441919
+     * @param string system mounted to directory
+     * @return boolean true if incomplete
+     */
+    global boolean IncompleteInstallationDetected (string mounted_to) {
+	// by default, installation is complete
+	boolean ret = false;
+
+	foreach (string check_this, [Installation::run_yast_at_boot], {
+	    check_this = sformat ("%1/%2", mounted_to, check_this);
+	    if (FileUtils::Exists (check_this) == true) {
+		y2milestone ("File %1 exists, installation is incomplete", check_this);
+		ret = true;
+		break;
+	    }
+	});
+
+	return ret;
+    }
 
     /**
      * Check a root partition and return map with infomations (see
@@ -1481,6 +1503,11 @@ Check the log file %1."), Directory::logdir + "/y2log");
 		    // If architecture is not matching, the whole partition is considered to be wrong
 		    if (freshman[`arch_valid]:false != true) {
 			y2milestone ("Architecture is not valid -> the whole partition is not valid");
+			freshman[`valid] = false;
+		    }
+
+		    if (IncompleteInstallationDetected (Installation::destdir)) {
+			y2milestone ("Incomplete installation detected, partition is not valid");
 			freshman[`valid] = false;
 		    }
 
