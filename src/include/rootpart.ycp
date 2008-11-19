@@ -19,6 +19,7 @@ import "RootPart";
 import "GetInstArgs";
 import "Report";
 import "Update";
+import "Installation";
 
 // Returns boolean whether partition can be
 // a Linux 'root' file system
@@ -116,6 +117,11 @@ boolean DoArchitecturesMatch (string arch_1, string arch_2) {
 
     // else
     return false;
+}
+
+void UmountMountedPartition () {
+    Update::Detach ();
+    RootPart::UnmountPartitions (false);
 }
 
 /**
@@ -330,13 +336,31 @@ is different than the one of this product."));
 	    {
 		RootPart::targetOk = RootPart::mount_target ();
 
-		if (!RootPart::targetOk)
-		{
+		// Not mounted correctly
+		if (! RootPart::targetOk) {
 		    // error report
 		    Report::Error (_("Failed to mount target system"));
-		    Update::Detach ();
-		    RootPart::UnmountPartitions (false);
+		    UmountMountedPartition();
 		    continue;
+
+		// Correctly mounted but incomplete installation found
+		} else if (RootPart::IncompleteInstallationDetected (Installation::destdir)) {
+		    if (Popup::AnyQuestion (
+			Label::WarningMsg(),
+			// pop-up question
+			_("A possibly incomplete installation has been detected on the selected partition.
+Are sure you want to use it anyway?"),
+			// button label
+			_("&Yes, Use It"),
+			Label::CancelButton(),
+			`focus_no
+		    )) {
+			y2milestone ("User wants to update possibly incomplete system");
+		    } else {
+			y2milestone ("User decided not to update incomplete system");
+			UmountMountedPartition();
+			continue;
+		    }
 		}
 	    }
 	    break;

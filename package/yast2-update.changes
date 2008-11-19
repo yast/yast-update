@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 19 17:32:01 CET 2008 - locilka@suse.cz
+
+- Added checking for incomplete installation when such system is
+  selected for update (bnc #441919).
+- 2.17.12
+
+-------------------------------------------------------------------
 Fri Nov  7 11:26:47 CET 2008 - locilka@suse.cz
 
 - Using PackagesUI for opening a package selector (bnc #435479).
