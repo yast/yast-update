@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 20 14:05:59 CET 2008 - aschnell@suse.de
+
+- added warning for use of kernel device names in /etc/fstab
+  during update (bnc #429019)
+- 2.17.13
+
+-------------------------------------------------------------------
 Wed Nov 19 17:32:01 CET 2008 - locilka@suse.cz
 
 - Added checking for incomplete installation when such system is
