@@ -751,6 +751,32 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 	return (var_device_fstab != nil);
     }
 
+
+    boolean FstabUsesKernelDeviceNameForHarddisks(list<map> fstab)
+    {
+	// We just want to check the use of kernel device names for hard
+	// disks. Not for e.g. BIOS RAIDs or LVM logical volumes.
+
+	// Since we are looking at device names of hard disks that may no
+	// longer exist all we have at hand is the name.
+
+	return find(map line, fstab, {
+
+	    string spec = line["spec"]:"error";
+
+	    if (regexpmatch(spec, "^/dev/sd[a-z]+[0-9]+$"))
+		return true;
+	    if (regexpmatch(spec, "^/dev/hd[a-z]+[0-9]+$"))
+		return true;
+	    if (regexpmatch(spec, "^/dev/dasd[a-z]+[0-9]+$"))
+		return true;
+
+	    return false;
+
+	}) != nil;
+    }
+
+
     define string MountVarIfRequired (list <map> fstab, string root_device_current);
 
     /**
@@ -772,7 +798,7 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 	    fstab = (list<map>) SCR::Read (.etc.fstab);
 	    crtab = (list<map>) SCR::Read (.etc.cryptotab);
 	}
-	
+
 	Update::GetProductName();
 
 	boolean fstab_has_separate_var = FstabHasSeparateVar (fstab);
@@ -782,6 +808,15 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 	    MountVarIfRequired (fstab, root_device_current);
 	} else {
 	    y2milestone ("No separate /var partition found");
+	}
+
+	if (FstabUsesKernelDeviceNameForHarddisks(fstab))
+	{
+	    y2warning("fstab on %1 uses kernel device name for hard disks", root_device_current);
+	    Popup::Warning(sformat(_("Some partitions in the system on %1 are mounted by kernel-device name. This is
+not reliable for the update since kernel-device names are unfortunately not
+persistent. It is strongly recommended to start the old system and change the
+mount-by method to any other method for all partitions."), root_device_current));
 	}
 
 	y2milestone ("fstab: %1", fstab);
