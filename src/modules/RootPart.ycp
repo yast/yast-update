@@ -1211,7 +1211,8 @@ define string MountVarIfRequired (list <map> fstab, string root_device_current)
 
 	list <string> realdisks = [];
 	foreach (string s, map m, (map <string, map>) Storage::GetOndiskTarget (), {
-	    if (Storage::DeviceRealDisk (s))
+	    // BNC #448577, checking device
+	    if (Storage::IsKernelDeviceName(s) && Storage::DeviceRealDisk (s))
 		realdisks = add (realdisks, s);
 	});
 
