@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov 28 10:52:15 CET 2008 - locilka@suse.cz
+
+- Checking spec for /var partition if it is a persisten device
+  name (bnc #448577).
+- 2.17.14
+
+-------------------------------------------------------------------
 Thu Nov 20 14:05:59 CET 2008 - aschnell@suse.de
 
 - added warning for use of kernel device names in /etc/fstab
