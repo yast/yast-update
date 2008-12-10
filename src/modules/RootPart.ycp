@@ -779,6 +779,7 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 
     define string MountVarIfRequired (list <map> fstab, string root_device_current);
 
+
     /**
      *
      */
@@ -808,15 +809,6 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 	    MountVarIfRequired (fstab, root_device_current);
 	} else {
 	    y2milestone ("No separate /var partition found");
-	}
-
-	if (FstabUsesKernelDeviceNameForHarddisks(fstab))
-	{
-	    y2warning("fstab on %1 uses kernel device name for hard disks", root_device_current);
-	    Popup::Warning(sformat(_("Some partitions in the system on %1 are mounted by kernel-device name. This is
-not reliable for the update since kernel-device names are unfortunately not
-persistent. It is strongly recommended to start the old system and change the
-mount-by method to any other method for all partitions."), root_device_current));
 	}
 
 	y2milestone ("fstab: %1", fstab);
@@ -1270,6 +1262,15 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    }
 
 	    read_fstab_and_cryptotab (fstab, crtab, root_device_current);
+
+	    if (FstabUsesKernelDeviceNameForHarddisks(fstab))
+	    {
+		y2warning("fstab on %1 uses kernel device name for hard disks", root_device_current);
+		Popup::Warning(sformat(_("Some partitions in the system on %1 are mounted by kernel-device name. This is
+not reliable for the update since kernel-device names are unfortunately not
+persistent. It is strongly recommended to start the old system and change the
+mount-by method to any other method for all partitions."), root_device_current));
+	    }
 
 	    if (size (fstab) == 0)
 	    {
