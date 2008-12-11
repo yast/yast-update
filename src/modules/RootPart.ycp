@@ -1519,7 +1519,7 @@ mount-by method to any other method for all partitions."), root_device_current))
 		    // `arch_valid, see bugzilla #288201
 		    // installed /bin/bash and the one from inst-sys are matching
 		    if (freshman[`arch]:"unknown" == instsys_arch) {
-			y2milestone ("Arcitecture (%1) is valid", instsys_arch);
+			y2milestone ("Architecture (%1) is valid", instsys_arch);
 			freshman[`arch_valid] = true;
 
 		    // both are PPC, bugzilla #249791
