@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 16 15:50:26 CET 2009 - locilka@suse.cz
+
+- Initialize the target before loading it, evaluate the return
+  values and report errors to user (bnc #466803).
+- 2.18.0
+
+-------------------------------------------------------------------
 Wed Dec 10 12:53:01 CET 2008 - aschnell@suse.de
 
 - show strange warning only once (bnc #457762)
