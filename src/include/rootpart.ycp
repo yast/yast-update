@@ -374,7 +374,40 @@ Are sure you want to use it anyway?"),
 
     // New partition has been mounted
     if (flavor == `update_dialog && ret == `next) {
-	Pkg::TargetLoad();
+	// Target load failed, #466803
+	if (! Pkg::TargetInit (Installation::destdir, true /* dummy */) && Popup::AnyQuestion (
+	    Label::ErrorMsg(),
+	    _("Initializing the system for upgrade has failed for unknown reason.
+It is highly recommended not to continue the upgrade process.
+
+Are you sure you want to continue?"),
+	    _("&Yes, Continue"),
+	    Label::CancelButton(),
+	    `focus_no
+	)) {
+	    ret = `back;
+	} else {
+	    y2warning ("User decided to continue despite the error above (Pkg::TargetInit() failed)");
+	}
+
+	// not aborted
+	if (ret != `back) {
+	    // Target load failed, #466803
+	    if (! Pkg::TargetLoad() && Popup::AnyQuestion (
+		Label::ErrorMsg(),
+		_("Initializing the system for upgrade has failed for unknown reason.
+It is highly recommended not to continue the upgrade process.
+
+Are you sure you want to continue?"),
+		_("&Yes, Continue"),
+		Label::CancelButton(),
+		`focus_no
+	    )) {
+		ret = `back;
+	    } else {
+		y2warning ("User decided to continue despite the error above (Pkg::TargetLoad() failed)");
+	    }
+	}
     }
 
     return (symbol)ret;
