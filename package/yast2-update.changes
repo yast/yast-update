@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jan 19 16:17:31 CET 2009 - locilka@suse.cz
+
+- Added possibility to manually choose a /var partition if YaST
+  fails to find it automatically (bnc #448577).
+- 2.18.1
+
+-------------------------------------------------------------------
 Fri Jan 16 15:50:26 CET 2009 - locilka@suse.cz
 
 - Initialize the target before loading it, evaluate the return
