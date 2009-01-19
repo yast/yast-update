@@ -777,7 +777,7 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
     }
 
 
-    define string MountVarIfRequired (list <map> fstab, string root_device_current);
+    define string MountVarIfRequired (list <map> fstab, string root_device_current, boolean manual_var_mount);
 
 
     /**
@@ -806,7 +806,7 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 	// mount /var
 	if (fstab_has_separate_var) {
 	    y2warning ("Separate /var partition!");
-	    MountVarIfRequired (fstab, root_device_current);
+	    MountVarIfRequired (fstab, root_device_current, false);
 	} else {
 	    y2milestone ("No separate /var partition found");
 	}
@@ -1166,13 +1166,132 @@ string MountVarPartition (string device) {
     return err_message;
 }
 
+// <-- BNC #448577, Cannot find /var partition automatically
+// returns if successful
+boolean MountUserDefinedVarPartition () {
+    // function return value
+    boolean manual_mount_successful = false;
+
+    list <string> list_of_devices = [];
+    // $[ "/dev/sda3" : "Label: My_Partition" ]
+    map <string, string> device_info = $[];
+
+    // Creating the list of known partitions
+    foreach (string device, map description, Storage::GetOndiskTarget(), {
+	foreach (map partition, description["partitions"]:[], {
+	    // Some partitions logically can't be used for /var
+	    if (partition["detected_fs"]:`unknown == `swap) return;
+	    if (partition["type"]:`unknown == `extended) return;
+	    if (! haskey (partition, "device")) return;
+
+	    list_of_devices = add (list_of_devices, partition["device"]:"");
+
+	    device_info[partition["device"]:""] = sformat (
+		// Informational text about selected partition, %x are replaced with values later
+		_("<b>File system:</b> %1, <b>Type:</b> %2,<br>
+<b>Label:</b> %3, <b>Size:</b> %4,<br>
+<b>udev IDs:</b> %5,<br>
+<b>udev path:</b> %6"),
+		// starts with >`<
+		substring (tostring (partition["detected_fs"]:`unknown), 1),
+		partition["fstype"]:_("Unknown"),
+		partition["label"]:_("None"),
+		String::FormatSize (partition["size_k"]:0 * 1024),
+		mergestring (partition["udev_id"]:[], ", "),
+		partition["udev_path"]:_("Unknown")
+	    );
+	});
+    });
+
+    list_of_devices = sort (list_of_devices);
+    y2milestone ("Known devices: %1", list_of_devices);
+
+    while (true) {
+	UI::OpenDialog (
+	    `VBox (
+		`MarginBox (1, 0,
+		    `VBox (
+			// a popup caption
+			`Left (`Heading (_("Unable to find the /var partition automatically"))),
+			// a popup message
+			`Left (`Label (_("Your system uses a separate /var partition which is required for the upgrade
+process to detect the disk-naming changes. Select the /var partition manually
+to continue the upgrade process."))),
+			`VSpacing (1),
+			`Left (`ComboBox (
+			    `id ("var_device"),
+			    `opt (`notify),
+			    // a combo-box label
+			    _("&Select /var Partition Device"),
+			    list_of_devices
+			)),
+			`VSpacing (0.5),
+			// an informational rich-text widget label
+			`Left (`Label (_("Device Info"))),
+			`MinHeight (
+			    3, `RichText (`id ("device_info"), "")
+			),
+			`VSpacing (1)
+		    )
+		),
+		`MarginBox (1, 0, `ButtonBox (
+		    `PushButton (`id (`ok), `opt (`okButton), Label::OKButton()),
+		    `PushButton (`id (`cancel), `opt (`cancelButton), Label::CancelButton())
+		))
+	    )
+	);
+
+	any ret = nil;
+
+	// initial device
+	string var_device = (string) UI::QueryWidget (`id ("var_device"), `Value);
+	UI::ChangeWidget (`id ("device_info"), `Value, device_info[var_device]:"");
+
+	// to handle switching the combo-box or [OK]/[Cancel]
+	while (true) {
+	    ret = UI::UserInput();
+	    var_device = (string) UI::QueryWidget (`id ("var_device"), `Value);
+
+	    if (ret == "var_device") {
+		UI::ChangeWidget (`id ("device_info"), `Value, device_info[var_device]:"");
+	    } else {
+		break;
+	    }
+	}
+
+	UI::CloseDialog();
+
+	// Trying user-selection
+	if (ret == `ok) {
+	    y2milestone ("Trying to mount %1 as /var", var_device);
+	    string mount_error = MountVarPartition (var_device);
+
+	    if (mount_error != nil) {
+		Report::Error (mount_error);
+		continue;
+	    } else {
+		y2milestone ("Manual mount (/var) successful");
+		manual_mount_successful = true;
+		break;
+	    }
+	// `cancel
+	} else {
+	    y2warning ("User doesn't want to enter the /var partition device");
+	    break;
+	}
+    }
+
+    return manual_mount_successful;
+}
+
 /**
  * Check if /var partition is needed, mount it if it is
  * @param fstab a list of fstab entries
  * @param root_device_current string current root device
+ * @param manual_var_mount whether to ask user to enter /var device if not found
  * @return string nil on success, error description on fail
  */
-define string MountVarIfRequired (list <map> fstab, string root_device_current)
+define string MountVarIfRequired (list <map> fstab, string root_device_current, boolean manual_var_mount)
 {
 	string var_device_fstab = FindPartitionInFstab (fstab, "/var");
 
@@ -1210,6 +1329,11 @@ define string MountVarIfRequired (list <map> fstab, string root_device_current)
 
 	if (size (realdisks) != 2)
 	{
+	    // <-- BNC #448577, Cannot find /var partition automatically
+	    if (manual_var_mount && MountUserDefinedVarPartition ()) {
+		return nil;
+	    }
+
 	    y2error ("don't know how to handle more than two disks at this point");
 		// error message
 	    return _("Unable to mount /var partition with this disk configuration.\n") + sdb;
@@ -1281,7 +1405,7 @@ mount-by method to any other method for all partitions."), root_device_current))
 	    }
 	    else
 	    {
-		string tmp_msg = MountVarIfRequired (fstab, root_device_current);
+		string tmp_msg = MountVarIfRequired (fstab, root_device_current, true);
 		if (tmp_msg != nil)
 		{
 		    y2error ("failed to mount /var!");
