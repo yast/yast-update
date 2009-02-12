@@ -29,6 +29,7 @@
     import "Report";
     import "Label";
     import "Stage";
+    import "Wizard";
 
     include "partitioning/custom_part_dialogs.ycp";
 
