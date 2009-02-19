@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Feb 19 17:27:25 CET 2009 - aschnell@suse.de
+
+- added missing import statement
+- 2.18.2
+
+-------------------------------------------------------------------
 Mon Jan 19 16:17:31 CET 2009 - locilka@suse.cz
 
 - Added possibility to manually choose a /var partition if YaST
