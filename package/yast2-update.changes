@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 31 15:18:39 CEST 2009 - locilka@suse.cz
+
+- Cleanup in RootPart module.
+- 2.18.3
+
+-------------------------------------------------------------------
 Thu Feb 19 17:27:25 CET 2009 - aschnell@suse.de
 
 - added missing import statement

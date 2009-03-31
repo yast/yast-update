@@ -84,6 +84,15 @@
      */
     list <map <symbol, string> > activated = [];
 
+    /**
+     * Returns currently activated partitions.
+     *
+     * @return list <map <symbol, string> > activated
+     */
+    global list <map <symbol, string> > GetActivated () {
+	return activated;
+    }
+
     global boolean Mounted () {
 	return size (activated) > 0;
     }
@@ -550,33 +559,6 @@ define string FsckAndMount (string mount_point, string device,
 	    return true;
 	}
 
-/*
- * No more EVMS
-	// bugzilla #237139
-	// '/dev/evms/lvm2/system/root' is the same as '/dev/system/root'
-	// the root from /etc/fstab must be used
-	if (regexpmatch (root["spec"]:"", "/dev/evms/lvm2/") || regexpmatch (partition, "/dev/evms/lvm2/")) {
-	    y2milestone ("Special case with EVMS: %1 vs. %2", root["spec"]:"", partition);
-
-	    string tmp_rootspec  = root["spec"]:"";
-	    string tmp_partition = partition;
-
-	    // they might be the same but this case covers it as well
-	    if (regexpmatch (root["spec"]:"", "/dev/evms/lvm2/"))
-		tmp_rootspec = regexpsub (root["spec"]:"", "/dev/evms/lvm2/(.*)$", "/dev/\\1");
-	    if (regexpmatch (partition, "/dev/evms/lvm2/"))
-		tmp_partition = regexpsub (partition, "/dev/evms/lvm2/(.*)$", "/dev/\\1");
-
-	    y2milestone ("Checking '%1' vs. '%2'", tmp_rootspec, tmp_partition);
-
-	    if (tmp_rootspec == tmp_partition) {
-		found_partition = root["spec"]:"";
-		y2milestone ("EVMS case matching, using %1", found_partition);
-		return true;
-	    }
-	}
-*/
-
 	return true;
     }
 
@@ -782,7 +764,12 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 
 
     /**
+     * Reads FSTab and CryptoTab and fills fstab and crtab got as parameters.
+     * Uses Installation::destdir as the base mount point.
      *
+     * @param list <map> ('pointer' to) fstab
+     * @param list <map> ('pointer' to) crtab
+     * @param string root device
      */
     define boolean read_fstab_and_cryptotab (list <map>& fstab, list <map>& crtab, string root_device_current)
     {
@@ -800,8 +787,6 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 	    fstab = (list<map>) SCR::Read (.etc.fstab);
 	    crtab = (list<map>) SCR::Read (.etc.cryptotab);
 	}
-
-	Update::GetProductName();
 
 	boolean fstab_has_separate_var = FstabHasSeparateVar (fstab);
 	// mount /var
@@ -1387,6 +1372,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    }
 
 	    read_fstab_and_cryptotab (fstab, crtab, root_device_current);
+	    Update::GetProductName();
 
 	    if (FstabUsesKernelDeviceNameForHarddisks(fstab))
 	    {
@@ -1468,54 +1454,6 @@ mount-by method to any other method for all partitions."), root_device_current))
 
 	return success;
     }
-
-
-    global define boolean SetFormatPartitions (list<map> fstabpart)
-    {
-	// All storage devices
-        map <string, map> target_map = Storage::GetTargetMap ();
-	list<map> fstab = [];
-	readFsTab(fstab);
-	// all activated
-	list <map> tmp = filter (map e, activated, {
-	    return (e[`type]:"" == "mount" || e[`type]:"" == "swap");
-	});
-
-	foreach (map e, tmp, {
-	    string mntpt = (e[`type]:"" == "swap")?("swap"):(e[`mntpt]:"");
-	    string part  = e[`device]:"";
-
-	    map p = $[];
-	    foreach (map pp, fstabpart, {
-		// mountpoint matches
-		if (pp["mount"]:"" == mntpt) {
-		    p = pp;
-		    break;
-		}
-	    });
-	    string mount_options = "";
-	    foreach (map entry, fstab, {
-		if( entry["file"]:"" == mntpt ) {
-			mount_options = entry["mntops"]:"";
-			break;
-		}
-	    });
-	    target_map = Storage::SetPartitionData (target_map, part, "mount", mntpt );
-	    target_map = Storage::SetPartitionData (target_map, part, "format", p["format"]:false );
-	    target_map = Storage::SetPartitionData (target_map, part, "delete", false);
-	    target_map = Storage::SetPartitionData (target_map, part, "create", false);
-	    if( size(mount_options) > 0 && !haskey(p, "fstopt" ) )
-		    target_map = Storage::SetPartitionData (target_map, part, "fstopt", mount_options);
-	    if( haskey(p, "fstopt" ) )
-		    target_map = Storage::SetPartitionData (target_map, part, "fstopt", p["fstopt"]:"");
-            if( haskey( p, "mountby" ) )
-                target_map = Storage::SetPartitionData (target_map, part, "mountby", p["mountby"]:`device);
-	});
-
-        Storage::SetTargetMap (target_map);
-        return true;
-    }
-
 
     /**
      * Get architecture of an elf file.
@@ -1607,6 +1545,7 @@ mount-by method to any other method for all partitions."), root_device_current))
 		    list <map> crtab = [];
 		    
 		    read_fstab_and_cryptotab (fstab, crtab, p_dev);
+		    Update::GetProductName();
 
 		    fstab = filter (map p, fstab, ``(p["file"]:""=="/"));
 
@@ -1812,28 +1751,6 @@ global void Detect () {
 
         selectedRootPartition = "";
 	y2milestone ("Detected root partitions: %1", rootPartitions);
-    }
-}
-
-global void Propose (boolean force_reset) {
-    y2milestone ("Proposing root partition");
-    Detect ();
-    if (force_reset)
-    {
-        selectedRootPartition = "";
-    }
-
-    if (numberOfValidRootPartitions == 0
-        && selectedRootPartition == "")
-    {
-        targetOk = false;
-    }
-    else
-    {
-        if (selectedRootPartition == "")
-        {
-            SetSelectedToValid ();
-        }
     }
 }
 
