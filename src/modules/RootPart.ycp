@@ -1287,8 +1287,16 @@ define string MountVarIfRequired (list <map> fstab, string root_device_current, 
 	    return nil;
 	}
 
-	if (!Storage::DeviceRealDisk (var_device_fstab))
+	if (!Storage::DeviceRealDisk (var_device_fstab)) {
+	    y2milestone ("Device %1 is not a real disk, mounting...", var_device_fstab);
 	    return MountVarPartition (var_device_fstab);
+	}
+
+	// BNC #494240: If a device name is not created by Kernel, we can use it for upgrade
+	if (!Storage::IsKernelDeviceName (var_device_fstab)) {
+	    y2milestone ("Device %1 is not a Kernel device name, mounting...", var_device_fstab);
+	    return MountVarPartition (var_device_fstab);
+	}
 
 	list <map> tmp1 = filter (map entry, fstab, ``(entry["file"]:"" == "/"));
 	string root_device_fstab = tmp1[0,"spec"]:"";
