@@ -5,7 +5,7 @@
  *
  * Purpose:	Break build-requires, used only in inst-sys
  *
- * $Id:$
+ * $Id$
  */
 {
     textdomain "update";

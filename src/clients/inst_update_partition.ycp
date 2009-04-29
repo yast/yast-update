@@ -8,7 +8,7 @@
  *		RootPart::rootPartitions must be filled before
  *		calling this module.
  *
- * $Id:$
+ * $Id$
  */
 {
 textdomain "update";
