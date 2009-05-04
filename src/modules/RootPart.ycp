@@ -34,7 +34,7 @@
     include "partitioning/custom_part_dialogs.ycp";
 
     // all supported filesystems
-    global list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
+    global list possible_root_fs = [ `ext2, `ext3, `ext4, `reiser, `xfs, `jfs ];
 
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
@@ -980,7 +980,7 @@ Would you like to continue updating the current system?"),
      */
     define boolean MountFSTab (list <map> fstab, string& message)
     {
-	list allowed_fs = [ "ext", "ext2", "ext3", "minix", "reiserfs", "jfs",
+	list allowed_fs = [ "ext", "ext2", "ext3", "ext4", "minix", "reiserfs", "jfs",
 			    "xfs", "xiafs", "hpfs", "vfat", "auto", "proc" ];
 
 	// mount sysfs first
@@ -1524,6 +1524,7 @@ mount-by method to any other method for all partitions."), root_device_current))
 	    map<symbol,string> mt_map = $[
 		`ext2: "ext2",
 		`ext3: "ext3",
+		`ext4: "ext4",
 		`reiser: "reiserfs",
 		`xfs: "xfs",
 		`jfs: "jfs",
@@ -1649,6 +1650,7 @@ mount-by method to any other method for all partitions."), root_device_current))
 	ModuleLoading::Load ("jfs", "", "Linux", "JFS", Linuxrc::manual (), true);
 	ModuleLoading::Load ("xfs", "", "Linux", "XFS", Linuxrc::manual (), true);
 	ModuleLoading::Load ("ext3", "", "Linux", "Ext3", Linuxrc::manual (), true);
+	ModuleLoading::Load ("ext4", "", "Linux", "Ext4", Linuxrc::manual (), true);
 	ModuleLoading::Load ("raid0", "", "Linux", "Raid 0", Linuxrc::manual (), true);
 	ModuleLoading::Load ("raid1", "", "Linux", "Raid 1", Linuxrc::manual (), true);
 	ModuleLoading::Load ("raid5", "", "Linux", "Raid 5", Linuxrc::manual (), true);
