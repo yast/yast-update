@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue May 12 13:04:11 CEST 2009 - locilka@suse.cz
+
+- Removed copying inst-sys users to installed system during
+  upgrade. Users are added by RPMs (bnc #496958).
+- 2.13.55 
+
+-------------------------------------------------------------------
 Thu Mar 20 12:33:39 CET 2008 - locilka@suse.cz
 
 - Not displaying a pop-up warning when upgrading ppc to ppc64 and
