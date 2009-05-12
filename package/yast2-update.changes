@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue May 12 13:08:12 CEST 2009 - locilka@suse.cz
+
+- Removed copying inst-sys users to installed system during
+  upgrade. Users are added by RPMs (bnc #496958).
+- 2.18.5
+
+-------------------------------------------------------------------
 Thu Apr 16 11:42:32 CEST 2009 - locilka@suse.cz
 
 - Mounting /var partition automatically if a device is not created
