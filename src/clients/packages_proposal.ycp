@@ -5,7 +5,7 @@
  *
  * Purpose:	Let user choose packages during update.
  *
- * $Id:$
+ * $Id$
  */
 {
     textdomain "update";

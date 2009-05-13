@@ -5,7 +5,7 @@
  *
  * Purpose:	Let user choose backup during update.
  *
- * $Id:$
+ * $Id$
  */
 {
     textdomain "update";
