@@ -5,7 +5,7 @@
  *
  * Purpose:	Let user choose root partition during update.
  *
- * $Id:$
+ * $Id$
  */
 {
     textdomain "update";
