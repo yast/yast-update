@@ -1659,6 +1659,8 @@ mount-by method to any other method for all partitions."), root_device_current))
 	ModuleLoading::Load ("raid0", "", "Linux", "Raid 0", Linuxrc::manual (), true);
 	ModuleLoading::Load ("raid1", "", "Linux", "Raid 1", Linuxrc::manual (), true);
 	ModuleLoading::Load ("raid5", "", "Linux", "Raid 5", Linuxrc::manual (), true);
+	ModuleLoading::Load ("raid6", "", "Linux", "Raid 6", Linuxrc::manual (), true);
+	ModuleLoading::Load ("raid10", "", "Linux", "Raid 10", Linuxrc::manual (), true);
 	ModuleLoading::Load ("multipath", "", "Linux", "Multipath", Linuxrc::manual (), true);
 	ModuleLoading::Load ("dm-mod", "", "Linux", "DM", Linuxrc::manual (), true);
 	SCR::Execute (.target.bash, "/sbin/devmap_mknod.sh");
