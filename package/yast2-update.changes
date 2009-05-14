@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May 14 11:08:56 CEST 2009 - ug@suse.de
+
+- being less strict when looking for root partitions in
+  Mode::autoinst()
+
+-------------------------------------------------------------------
 Tue May 12 13:08:12 CEST 2009 - locilka@suse.cz
 
 - Removed copying inst-sys users to installed system during

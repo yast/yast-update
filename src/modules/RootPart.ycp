@@ -1574,6 +1574,11 @@ mount-by method to any other method for all partitions."), root_device_current))
 		    if (freshman[`valid]:false != true) {
 			y2warning ("Device does not match fstab: '%1' vs. '%2'", p_dev, fstab[0,"spec"]:"");
 		    }
+                    if( Mode::autoinst() ) {
+                        // we dont care about the other checks in autoinstallation
+                        SCR::Execute (.target.umount, Installation::destdir);
+                        return freshman;
+                    }
 
 		    // Get installed release name
 		    string release = SuSERelease::ReleaseInformation
