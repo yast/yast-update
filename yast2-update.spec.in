@@ -47,10 +47,10 @@ Provides:	yast2-update:/usr/share/YaST2/clients/update.ycp
 Summary:	YaST2 - Update
 
 %description
-Installation/upgrade proposal
+Use this component if you wish to update your system.
 
 %description FACTORY
-Updates packages to their latest versions
+Use this component if you wish to update your system.
 
 @PREP@
 
