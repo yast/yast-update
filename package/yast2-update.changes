@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Sep  8 13:46:06 CEST 2009 - kmachalkova@suse.cz
+
+- Adapted control file to new validation schema (compulsory unique 
+  IDs in proposals)
+- 2.18.6 
+
+-------------------------------------------------------------------
 Thu May 14 11:08:56 CEST 2009 - ug@suse.de
 
 - being less strict when looking for root partitions in
