@@ -19,6 +19,7 @@ textdomain="update"
             <mode>update</mode>
             <name>update</name>
             <stage>normal</stage>
+	    <unique_id>update</unique_id>
             <proposal_modules config:type="list">
                 <proposal_module>update</proposal_module>
                 <proposal_module>packages</proposal_module>
