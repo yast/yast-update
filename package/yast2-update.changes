@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Tue May 12 13:06:56 CEST 2009 - locilka@suse.cz
+
+- Removed copying inst-sys users to installed system during
+  upgrade. Users are added by RPMs (bnc #496958).
+
+-------------------------------------------------------------------
+Thu Apr 16 11:42:32 CEST 2009 - locilka@suse.cz
+
+- Mounting /var partition automatically if a device is not created
+  by Kernel (bnc #494240).
+
+-------------------------------------------------------------------
 Mon Jan 19 16:17:31 CET 2009 - locilka@suse.cz
 
 - Added possibility to manually choose a /var partition if YaST
