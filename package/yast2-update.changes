@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 28 11:07:00 CET 2010 - locilka@suse.cz
+
+- Counting packages directly in packages proposal (BNC #573482).
+- 2.17.18.1
+
+-------------------------------------------------------------------
 Mon Jan 19 16:17:31 CET 2009 - locilka@suse.cz
 
 - Added possibility to manually choose a /var partition if YaST
