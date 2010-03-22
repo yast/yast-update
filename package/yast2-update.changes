@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Mar 22 14:36:27 CET 2010 - jsrain@suse.cz
+
+- leave kernel selection purely on dependencies during update
+  (bnc#582702)
+- 2.17.20
+
+-------------------------------------------------------------------
 Thu Jan 28 11:07:00 CET 2010 - locilka@suse.cz
 
 - Counting packages directly in packages proposal (BNC #573482).
