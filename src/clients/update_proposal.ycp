@@ -268,7 +268,10 @@
 	    Packages::SelectProduct();
 	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
 	    // bnc #382208
-	    Packages::SelectKernelPackages ();
+
+	    // bnc#582702 - do not select kernel on update, leave that on dependencies like 'zypper dup'
+	    // therefore commented line below out
+//	    Packages::SelectKernelPackages ();
 
 	    // FATE #301990, Bugzilla #238488
 	    // Control the upgrade process better
