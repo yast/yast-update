@@ -3,7 +3,9 @@
 @HEADER@
 Group:	System/YaST
 License: GPL v2 or later
-BuildRequires:	yast2-storage perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files
+BuildRequires:	perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files
+# FileSystems::possible_root_fs
+BuildRequires:	yast2-storage >= 2.19.12
 # Packages::GetBaseSourceID
 BuildRequires:	yast2-packager >= 2.17.19
 # Wizard::OpenOKDialog
@@ -16,6 +18,8 @@ BuildRequires:	libxml2
 # control.rng
 BuildRequires:	yast2-installation >= 2.17.44
 
+# FileSystems::possible_root_fs
+Requires:	yast2-storage >= 2.19.12
 # PackagesUI::RunPackageSelector
 Requires:	yast2 >= 2.17.40
 Requires:	yast2-installation

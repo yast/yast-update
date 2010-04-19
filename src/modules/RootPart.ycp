@@ -33,8 +33,6 @@
 
     include "partitioning/custom_part_dialogs.ycp";
 
-    // all supported filesystems
-    global list possible_root_fs = [ `ext2, `ext3, `ext4, `btrfs, `reiser, `xfs, `jfs ];
 
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
@@ -119,7 +117,7 @@ about how to solve this problem."),
 		return i[what]:"";
 
 	    // Linux partition, but no root FS found
-	    } else if (contains (possible_root_fs, i[`fs]:`nil)) {
+	    } else if (contains(FileSystems::possible_root_fs, i[`fs]:`nil)) {
 		// label - name of sustem to update
 		return _("Unknown Linux System");
 
@@ -1519,7 +1517,7 @@ mount-by method to any other method for all partitions."), root_device_current))
 	symbol p_detect_fs = partition["detected_fs"]:`unknown;
 
 	// possible root FS
-	if ( contains (possible_root_fs, p_detect_fs))
+	if (contains(FileSystems::possible_root_fs, p_detect_fs))
 	{
 	    map<symbol,string> mt_map = $[
 		`ext2: "ext2",
