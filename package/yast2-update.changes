@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 19 10:51:40 CEST 2010 - aschnell@suse.de
+
+- allow btrfs as root fs
+- 2.19.0
+
+-------------------------------------------------------------------
 Thu Jan 28 11:07:00 CET 2010 - locilka@suse.cz
 
 - Counting packages directly in packages proposal (BNC #573482).
