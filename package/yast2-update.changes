@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 23 15:17:22 CEST 2010 - aschnell@suse.de
+
+- fixed namespace error in rootpart.ycp
+- 2.19.1
+
+-------------------------------------------------------------------
 Mon Apr 19 10:51:40 CEST 2010 - aschnell@suse.de
 
 - allow btrfs as root fs
