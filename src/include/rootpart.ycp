@@ -20,6 +20,7 @@ import "GetInstArgs";
 import "Report";
 import "Update";
 import "Installation";
+import "FileSystems";
 
 // Returns boolean whether partition can be
 // a Linux 'root' file system
@@ -30,7 +31,7 @@ boolean CanBeLinuxRootFS (symbol partition_fs) {
     }
 
     // possible_root_fs contains list of supported FSs
-    return contains (RootPart::possible_root_fs, partition_fs);
+    return contains (FileSystems::possible_root_fs, partition_fs);
 }
 
 // flavor is either `update or `boot
