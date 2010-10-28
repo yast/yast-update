@@ -1383,7 +1383,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    if (FstabUsesKernelDeviceNameForHarddisks(fstab))
 	    {
 		y2warning("fstab on %1 uses kernel device name for hard disks", root_device_current);
-		Popup::Warning(sformat(_("Some partitions in the system on %1 are mounted by kernel-device name. This is
+		Report::Warning(sformat(_("Some partitions in the system on %1 are mounted by kernel-device name. This is
 not reliable for the update since kernel-device names are unfortunately not
 persistent. It is strongly recommended to start the old system and change the
 mount-by method to any other method for all partitions."), root_device_current));
