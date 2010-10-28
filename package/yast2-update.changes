@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Oct 28 14:34:16 CEST 2010 - ug@suse.de
+
+- replaced a Popup:: by a Report:: for autoinstallation
+
+-------------------------------------------------------------------
 Fri Apr 23 15:17:22 CEST 2010 - aschnell@suse.de
 
 - fixed namespace error in rootpart.ycp
