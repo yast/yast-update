@@ -79,6 +79,7 @@ Use this component if you wish to update your system.
 @clientdir@/packages_proposal.ycp
 @clientdir@/backup_proposal.ycp
 @clientdir@/inst_update_partition.ycp
+@clientdir@/inst_update_partition_auto.ycp
 @clientdir@/rootpart_check_keyboard.ycp
 
 @yncludedir@/update

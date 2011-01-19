@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jan 19 14:11:44 CET 2011 - jsrain@suse.cz
+
+- adaptations for unattended migration (fate#310481)
+- 2.20.0.
+
+-------------------------------------------------------------------
 Thu Oct 28 14:34:16 CEST 2010 - ug@suse.de
 
 - replaced a Popup:: by a Report:: for autoinstallation
