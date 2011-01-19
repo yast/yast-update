@@ -73,6 +73,7 @@ Updates packages to their latest versions
 @clientdir@/packages_proposal.ycp
 @clientdir@/backup_proposal.ycp
 @clientdir@/inst_update_partition.ycp
+@clientdir@/inst_update_partition_auto.ycp
 @clientdir@/rootpart_check_keyboard.ycp
 
 @yncludedir@/update

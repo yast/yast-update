@@ -29,6 +29,7 @@
     import "Report";
     import "Label";
     import "Stage";
+    import "Wizard";
 
     include "partitioning/custom_part_dialogs.ycp";
 
@@ -604,6 +605,12 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
     // such as /dev/sdc4 -> /dev/hdb4
     map <string, string> backward_translation = $[];
 
+    string update_mount_options (string options) {
+        if (regexpmatch (options, "^\(.*,\)\?hotplug\(,.*\)\?$"))
+            return regexpsub (options, "^\(.*,\)\?hotplug\(,.*\)\?$", "\\1nofail\\2");
+        return options;
+    }
+
     /**
      * Translates FS or Cryptotab (old devices to new ones).
      * Such as /dev/hda5 to /dev/sda5.
@@ -651,6 +658,8 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 	    translate[i, key_to_translate] = new_val;
 	    translate[i, key_preserve_as]  = default_val;
 	    backward_translation[new_val]  = default_val;
+
+	    translate[i, "mntops"] = update_mount_options (translate[i, "mntops"]:"");
 
 	    i = i + 1;
 	};
@@ -1398,10 +1407,16 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    if (FstabUsesKernelDeviceNameForHarddisks(fstab))
 	    {
 		y2warning("fstab on %1 uses kernel device name for hard disks", root_device_current);
-		Popup::Warning(sformat(_("Some partitions in the system on %1 are mounted by kernel-device name. This is
+		string warning = sformat(_("Some partitions in the system on %1 are mounted by kernel-device name. This is
 not reliable for the update since kernel-device names are unfortunately not
 persistent. It is strongly recommended to start the old system and change the
-mount-by method to any other method for all partitions."), root_device_current));
+mount-by method to any other method for all partitions."), root_device_current);
+
+		if (Mode::autoupgrade()) {
+		    Popup::TimedWarning(warning, 10);
+		} else {
+		    Popup::Warning(warning);
+		}
 	    }
 
 	    if (size (fstab) == 0)
