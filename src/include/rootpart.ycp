@@ -21,6 +21,7 @@ import "Report";
 import "Update";
 import "Installation";
 import "FileSystems";
+import "Mode";
 
 // Returns boolean whether partition can be
 // a Linux 'root' file system
@@ -223,6 +224,8 @@ general overview of your system's partitions.
     if (flavor == `update_dialog)
     {
 	Wizard::SetContents (title, contents, help_text, true, true);
+	if (Mode::autoupgrade())
+	    Wizard::EnableAbortButton();
     }
     else if (flavor == `update_dialog_proposal)
     {
@@ -286,6 +289,8 @@ general overview of your system's partitions.
 	else
 	    ret = UI::UserInput ();
 
+	if (ret == `cancel)
+	    ret = `abort;
 	if (ret == `abort && Popup::ConfirmAbort (`painless))
 	    break;
 
@@ -372,6 +377,8 @@ Are sure you want to use it anyway?"),
 
     if (flavor != `update_dialog)
 	UI::CloseDialog ();
+    else if (Mode::autoupgrade())
+	Wizard::DisableAbortButton();
 
     // New partition has been mounted
     if (flavor == `update_dialog && ret == `next) {
