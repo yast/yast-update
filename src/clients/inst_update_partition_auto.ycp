@@ -1,0 +1,68 @@
+/**
+ * Module:	inst_update_partition.ycp
+ *
+ * Authors:	Stefan Schubert <schubi@suse.de>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * Purpose:	Select root partition for update or booting.
+ *		RootPart::rootPartitions must be filled before
+ *		calling this module.
+ *
+ * $Id:$
+ */
+{
+textdomain "update";
+
+import "ProductControl";
+import "RootPart";
+
+include "update/rootpart.ycp";
+
+if (RootPart::Mounted ()) {
+    Update::Detach ();
+    RootPart::UnmountPartitions (false);
+}
+
+RootPart::Detect ();
+// if there is only one suitable partition which can be mounted, use it without asking
+string target_system = "";
+
+
+map<string,map> partitions = filter (string name, map p, RootPart::rootPartitions, {
+    if (p[`valid]:false)
+        target_system = name;
+    return p[`valid]:false;
+});
+
+if (size (partitions) == 1)
+{
+    y2milestone ("Auto-mounting system located at %1", target_system);
+    RootPart::selectedRootPartition = target_system;
+    RootPart::targetOk = RootPart::mount_target ();
+
+    // Not mounted correctly
+    if (! RootPart::targetOk) {
+        // error report
+        Report::Error (_("Failed to mount target system"));
+        UmountMountedPartition();
+    // Correctly mounted but incomplete installation found
+    } else if (RootPart::IncompleteInstallationDetected (Installation::destdir)) {
+	Report::Error (_("A possibly incomplete installation has been detected."));
+        UmountMountedPartition();
+    }
+    else if (!(Pkg::TargetInitialize (Installation::destdir) && Pkg::TargetLoad()))
+    {
+	Report::Error ("Initializing the target system failed");
+        UmountMountedPartition();
+	Pkg::TargetFinish();
+    }
+    else
+    {
+	return `next;
+    }
+}
+symbol ret = RootPartitionDialog (`update_dialog);
+
+return ret;
+
+}
