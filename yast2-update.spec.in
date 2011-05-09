@@ -4,8 +4,8 @@
 BuildRequires:	yast2-storage perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files
 # Packages::GetBaseSourceID
 BuildRequires:	yast2-packager >= 2.17.19
-# Wizard::OpenOKDialog
-BuildRequires:	yast2 >= 2.16.49
+# Wizard::OpenOKDialog, Mode::autoupgrade
+BuildRequires:	yast2 >= 2.17.93
 # package not really needed to be installed but this breaks the building cycle
 
 # xmllint
@@ -14,8 +14,8 @@ BuildRequires:	libxml2
 # control.rng
 BuildRequires:	yast2-installation >= 2.17.44
 
-# PackagesUI::RunPackageSelector
-Requires:	yast2 >= 2.17.40
+# PackagesUI::RunPackageSelector, Mode::autoupgrade
+Requires:	yast2 >= 2.17.93
 Requires:	yast2-installation
 # Function SelectKernelPackages has been moved to Packages module (bnc #326269).
 Requires:	yast2-packager >= 2.17.27
