@@ -1768,7 +1768,7 @@ global void Detect () {
     {
 	Wizard::SetContents (
 	    // TRANSLATORS: dialog caption
-	    _("Update Configuration"),
+	    _("Searching for Available Systems"),
 	    `VBox (
 		`ReplacePoint (`id ("search_progress"), `Empty())
 	    ),
