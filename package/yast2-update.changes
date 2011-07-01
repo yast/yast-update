@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul  1 15:13:01 CEST 2011 - locilka@suse.cz
+
+- better dialog label while searching for systems on disks
+  (BNC #537628).
+
+-------------------------------------------------------------------
 Wed Jan 19 14:12:00 CET 2011 - jsrain@suse.cz
 
 - adaptations for unattended migration (fate#310481)
