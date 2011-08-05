@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug  5 12:35:44 CEST 2011 - tgoettlicher@suse.de
+
+- fixed .desktop file (bnc #681249)
+
+-------------------------------------------------------------------
 Fri Jul  1 15:13:01 CEST 2011 - locilka@suse.cz
 
 - better dialog label while searching for systems on disks
