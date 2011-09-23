@@ -5,6 +5,7 @@ Fri Sep 23 11:01:27 UTC 2011 - lslezak@suse.cz
   (replaced by patterns long time ago),
   use Pkg::SourceProductData() instead of obsoleted
   Pkg::SourceProduct()
+- 2.21.1
 
 -------------------------------------------------------------------
 Thu Sep 22 11:02:45 CEST 2011 - jsuchome@suse.cz
