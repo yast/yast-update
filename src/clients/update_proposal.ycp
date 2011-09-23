@@ -192,12 +192,6 @@
 	{
 	    Update::did_init1 = true;
 
-	    if (size (Pkg::ResolvableProperties ("", `pattern, "")) > 0)
-	    {
-		y2milestone ("No base selection found, but patterns found...");
-		Packages::using_patterns = true;
-	    }
-
 	    list<string> restore = [];
 	    list<map<string,any> > selected = Pkg::ResolvableProperties ("", `product, "");
 	    foreach (map<string,any> s, selected, {
@@ -216,57 +210,20 @@
 	    });
 	    if (! Update::onlyUpdateInstalled)
 	    {
-		    if (Packages::using_patterns)
-		    {
-			Update::SetDesktopPattern ();
-		    }
-		    else
-		    {
-			Update::ProposeSelection ();
-		    }
+		Update::SetDesktopPattern ();
 	    }
 
-	    if (Update::onlyUpdateInstalled)			// just consider already installed packages
-	    {
-		Pkg::SetSelection ("");				// -> don't select any additional selections
-	    }
-	    else if (Packages::using_patterns)
-	    {
-		if (! ProductFeatures::GetBooleanFeature ("software",
-		    "only_update_installed"))
+	    if (!Update::onlyUpdateInstalled	// just consider already installed packages
+		&& (!ProductFeatures::GetBooleanFeature ("software",  "only_update_installed"))
 		{
 		    foreach (string pat, Product::patterns, {
 			y2milestone("Pre-select pattern %1", pat);
 			Pkg::ResolvableInstall( pat, `pattern );
 		    });
 		}
-
-	    }
-	    else						// update selections too
-	    {
-		Pkg::SetSelection (Update::selected_selection);	// -> set the base selection (minimal, default, ....)
-
-		if (!Update::manual_interaction)
-		{
-		    // now compare installed (old) selections against available (new) selections
-		    //  and set all selections which are installed (old) and available (new)
-		    //  as 'to be installed' -> UI will show "to be updated" for these selections
-
-		    list<string> available_addons = Pkg::GetSelections (`available, "");
-		    list<string> installed_addons = Pkg::GetSelections (`installed, "");
-
-		    foreach (string installed, installed_addons,
-		    {
-			if (contains (available_addons, installed))	// we have a newer selection for an installed one
-			{
-			    Pkg::SetSelection (installed);		// update this selection too (selection solving included)
-			}
-		    });
-		}
 	    }
 
 	    Packages::SelectProduct();
-	    Pkg::ActivateSelections ();					// now go through all selected selections and select their packages
 	    // bnc #382208
 	    Packages::SelectKernelPackages ();
 
@@ -354,16 +311,6 @@ some applications may not run properly.")))
 	    ];
 	}
 
-	list available_base_selections = Update::GetBaseSelections ();
-	if ((! Packages::using_patterns) && size (available_base_selections) == 0) {
-	    y2error ("No base selections available");
-	    // Can't find any software data, probably a installation media error
-	    // error message
-	    return $[ "warning" : _("Cannot read package data from installation media. Media error?"),
-		"warning_level" : `blocker,
-		"raw_proposal" : [] ];
-	}
-
 	// TRANSLATORS: unknown product (label)
 	string update_from = _("Unknown product");
 	if (Installation::installedVersion["show"]:"" != "" && Installation::installedVersion["show"]:"?" != "?") {
@@ -438,30 +385,21 @@ or disable software repositories of products with different versions."),
 	    // Proposal for backup during update
 	    summary_text = summary_text + "<li>" + _("Only update installed packages") + "</li>\n";
 	} else {
-	    if (Packages::using_patterns) {
-		list<map<string,any> > patterns = Pkg::ResolvableProperties ("", `pattern, "");
-		patterns = filter (map<string,any> p, patterns, {
-		    return p["status"]:nil == `selected && p["user_visible"]:true && p["summary"]:p["name"]:"" != "";
+	    list<map<string,any> > patterns = Pkg::ResolvableProperties ("", `pattern, "");
+	    patterns = filter (map<string,any> p, patterns, {
+		return p["status"]:nil == `selected && p["user_visible"]:true && p["summary"]:p["name"]:"" != "";
+	    });
+	    // proposal string
+	    summary_text = summary_text + "<li>" + _("Update based on patterns") + "</li>\n";
+
+	    if (patterns != nil && size (patterns) > 0) {
+		summary_text = summary_text + HTML::ListStart();
+
+		foreach (map <string, any> p, patterns, {
+		    summary_text = summary_text + "<li>" + p["summary"]:p["name"]:"" + "</li>\n";
 		});
-		// proposal string
-		summary_text = summary_text + "<li>" + _("Update based on patterns") + "</li>\n";
 
-		if (patterns != nil && size (patterns) > 0) {
-		    summary_text = summary_text + HTML::ListStart();
-
-		    foreach (map <string, any> p, patterns, {
-			summary_text = summary_text + "<li>" + p["summary"]:p["name"]:"" + "</li>\n";
-		    });
-		    
-		    summary_text = summary_text + HTML::ListEnd();
-		}
-	    } else {
-		map selection_data = Pkg::SelectionData (Update::selected_selection);
-		string selection_summary = selection_data["summary"]:"error";
-
-		// Proposal for selection during update, %1 stands for selection name
-		summary_text = summary_text + "<li>" + sformat (_("Update based on selection \"%1\""),
-		    selection_summary) + "</li>\n";
+		summary_text = summary_text + HTML::ListEnd();
 	    }
 	}
 
