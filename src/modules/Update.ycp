@@ -307,7 +307,7 @@ global boolean ProductsCompatible () {
 	    list<string> to_install = maplist (integer src,
 		Pkg::SourceGetCurrent (true),
 	    {
-		map<string,string> prod_info = Pkg::SourceProductData(src);
+		map<string,any> prod_info = Pkg::SourceProductData(src);
 		return prod_info["name"]:"";
 	    });
 	    // filter out empty products
