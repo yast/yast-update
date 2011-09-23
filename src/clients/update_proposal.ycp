@@ -214,13 +214,12 @@
 	    }
 
 	    if (!Update::onlyUpdateInstalled	// just consider already installed packages
-		&& (!ProductFeatures::GetBooleanFeature ("software",  "only_update_installed"))
-		{
-		    foreach (string pat, Product::patterns, {
-			y2milestone("Pre-select pattern %1", pat);
-			Pkg::ResolvableInstall( pat, `pattern );
-		    });
-		}
+		&& (!ProductFeatures::GetBooleanFeature ("software",  "only_update_installed")))
+	    {
+		foreach (string pat, Product::patterns, {
+		    y2milestone("Pre-select pattern %1", pat);
+		    Pkg::ResolvableInstall( pat, `pattern );
+		});
 	    }
 
 	    Packages::SelectProduct();
