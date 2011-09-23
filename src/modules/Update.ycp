@@ -615,21 +615,6 @@ global void IgnoreProductCompatibility () {
     }
 
 
-    /**
-     * Get all available base selections sorted in reverse order
-     * (highest ordered bases selection comes first).
-     */
-    global define list<string> GetBaseSelections ()
-    {
-	list<string> available_base_selections = sort (string x, string y, Pkg::GetSelections (`available, "base"), {
-	    map xmap = Pkg::SelectionData(x);
-	    map ymap = Pkg::SelectionData(y);
-	    return (xmap["order"]:"" > ymap["order"]:"");
-	});
-	y2milestone ("available_base_selections %1", available_base_selections);
-	return available_base_selections;
-    }
-
     string ReadInstalledDesktop() {
 	SCR::Execute (.target.bash, "/bin/mv -f /etc/sysconfig/windowmanager /etc/sysconfig/windowmanager.old");
 	SCR::Execute (.target.bash, "/bin/ln -s /mnt/etc/sysconfig/windowmanager /etc/sysconfig/windowmanager");
@@ -647,66 +632,6 @@ global void IgnoreProductCompatibility () {
 	    Pkg::ResolvableInstall (desktop, `pattern);
 	}
     }
-
-    /**
-     * Propose a selection for the update and save it's name in
-     * Update::selected_selection.
-     */
-    global define void ProposeSelection ()
-    {
-	selected_selection = "";
-
-	list available_selections = GetBaseSelections ();
-
-	// nulth try: teh default desktop
-
-	string desktop = ReadInstalledDesktop();
-	map wm2sel = $[
-	    "kde" : "default",
-	    "gnome" : "default-Gnome",
-	];
-	selected_selection = wm2sel[desktop]:"";
-
-	if (!contains (available_selections, selected_selection))
-	    selected_selection = "";
-
-	if (selected_selection != "")
-	{
-	    y2milestone ("using default desktop %1 to define selection: %2",
-		desktop, selected_selection);
-	    return;
-	}
-
-	// first try: installed one
-
-	list tmp1 = Pkg::GetSelections (`installed, "base");
-	if (tmp1 != nil && tmp1 != [])
-	    selected_selection = tmp1[0]:"";
-
-	if (!contains (available_selections, selected_selection))
-	    selected_selection = "";
-
-	if (selected_selection != "") {
-	    y2milestone ("using installed selection: %1", selected_selection);
-	    return;
-	}
-
-	// second try: available selection with highest order
-
-	if (size (available_selections) > 0)
-	    selected_selection = available_selections[0]:"";
-
-	if (selected_selection != "") {
-	    y2milestone ("using highest order selection: %1", selected_selection);
-	    return;
-	}
-
-	// error: no selection available
-
-	y2error ("no selection available");
-
-    }
-
 
     /**
      *

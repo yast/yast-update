@@ -25,35 +25,8 @@
     // screen title for update options
     string title = _("Update Options");
 
-    // create box with base selections, check if current selection really is available
-    term baseconfsbox = `VBox ();
-
-    // loop through available base selections, create radio button entry for every base selection
-    // preselect current selection
-
-    list<string> base_configurations = [];
-
-    if (Packages::using_patterns)
-    {
-	baseconfsbox = `PushButton (`id (`details), _("Select Patterns"));
-    }
-    else
-    {
-	// get available base selection sorted by reverse order (highest ordered base selection first)
-	list<string> available_base_selections = Update::GetBaseSelections ();
-	y2milestone ("available_base_selections %1, current_selection %2", available_base_selections, Update::selected_selection);
-	foreach (string selection, available_base_selections, {
-	    map selection_data = Pkg::SelectionData (selection);
-	    string selection_summary = selection_data["summary"]:"";
-	    boolean preselect = (selection == Update::selected_selection);
-	    baseconfsbox = add (baseconfsbox, `Left(`RadioButton(`id(selection),
-								 `opt(`notify, `autoShortcut),
-								 selection_summary,
-								 preselect)));
-	});
-	baseconfsbox = `RadioButtonGroup(`id(`baseconf), baseconfsbox);
-	base_configurations = available_base_selections;
-    }
+    // push button label
+    term baseconfsbox = `PushButton (`id (`details), _("Select Patterns"));
 
     // Checking: already selected addons or single selection?
 
@@ -157,12 +130,6 @@ packages during the update.</p>
     UI::ChangeWidget(`id(`upgrade), `Value, !Update::onlyUpdateInstalled);
     UI::ChangeWidget(`id(`notupgrade), `Value, Update::onlyUpdateInstalled);
 
-    // grey out radio buttons if only already installed packages should be updated
-
-    foreach (string sel, base_configurations, {
-	UI::ChangeWidget(`id(sel), `Enabled, !Update::onlyUpdateInstalled);
-    });
-
 //    UI::ChangeWidget(`id(`delete), `Value, Update::deleteOldPackages);
 
     any ret = nil;
@@ -174,16 +141,6 @@ packages during the update.</p>
 
 	if (ret == `abort && Popup::ConfirmAbort (`painless))
 	    break;
-
-	if (ret == `upgrade || ret == `notupgrade)
-	{
-	    boolean tmp = (boolean) UI::QueryWidget (`id(`upgrade), `Value);
-	    foreach (string sel, base_configurations, {
-		UI::ChangeWidget(`id(sel), `Enabled, tmp);
-	    });
-
-	    continue;
-	}
 
 	if (ret == `details)
 	{
@@ -205,20 +162,6 @@ packages during the update.</p>
 	    if (UI::QueryWidget (`id(`notupgrade), `Value) != Update::onlyUpdateInstalled)
 		something_changed = true;
 
-            if (Packages::using_patterns)
-	    {
-		y2milestone ("Using patterns");
-	    }
-	    else
-	    {
-		if ((boolean) UI::QueryWidget (`id(`upgrade), `Value) &&
-		    Update::selected_selection != UI::QueryWidget(`id(`baseconf), `CurrentButton))
-		    something_changed = true;
-	    }
-
-//	    if (UI::QueryWidget (`id(`delete), `Value ) != Update::deleteOldPackages)
-//		something_changed = true;
-
 	    if (something_changed && Packages::base_selection_modified)
 	    {
 		// yes/no question
@@ -239,22 +182,9 @@ packages during the update.</p>
 	Update::onlyUpdateInstalled = (boolean) UI::QueryWidget (`id(`notupgrade), `Value);
 //	Update::deleteOldPackages = (boolean) UI::QueryWidget (`id(`delete), `Value);
 
-	if (Packages::using_patterns)
+	if (b1 != Update::onlyUpdateInstalled || details_pressed)
 	{
-	    if (b1 != Update::onlyUpdateInstalled || details_pressed)
-	    {
-		Update::manual_interaction = true;
-	    }
-	}
-	else
-	{
-	    string s1 = Update::selected_selection;
-	    Update::selected_selection = (string) UI::QueryWidget(`id(`baseconf), `CurrentButton);
-
-	    if (b1 != Update::onlyUpdateInstalled || s1 != Update::selected_selection)
-	    {
-		Update::manual_interaction = true;
-	    }
+	    Update::manual_interaction = true;
 	}
     }
 
