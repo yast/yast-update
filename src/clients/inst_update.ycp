@@ -95,8 +95,8 @@ Based on the Selection:
 
 
     // help text for dialog "update options" 1/4
-    string helptext = _("<p>The update option differs between two modes. In
-either case, it is recommended to make a backup of your personal data.</p>
+    string helptext = _("<p>The update option offers two different modes. In
+either case, we recommend to make a backup of your personal data.</p>
 ");
 
     // help text for dialog "update options" 2/4, %1 is a product name
@@ -110,7 +110,7 @@ software selection.</p>
     helptext = helptext + _("<p><b>Only Installed Packages:</b> This selection
 only updates the packages already installed on your system. <i>Note:</i>
 New software in the predefined software selection, such as new YaST modules, is
-not available after the update. You might miss advertised features.</p>
+not available after the update. You might miss new features.</p>
 ");
 
     // help text for dialog "update options" 4/4

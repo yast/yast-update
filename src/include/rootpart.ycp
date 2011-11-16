@@ -327,7 +327,8 @@ on the selected partition."));
 		cont = Popup::ContinueCancel (
 // continue-cancel popup
 _("The architecture of the system installed in the selected partition
-is different than the one of this product."));
+is different from the one of this product.
+"));
 
 	    }
 	    if (! cont)
