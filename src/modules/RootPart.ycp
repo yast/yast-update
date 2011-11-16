@@ -443,7 +443,8 @@ define boolean RunFSCKonJFS (string mount_type, string device, string & error_me
 		    // %1 is a device name such as /dev/hda5
 		    _("The file system check of device %1 has failed.
 
-Would you like to continue in the mounting the device?"), device
+Do you want to continue mounting the device?
+"), device
 		),
 		Label::ContinueButton(),
 		// button
@@ -961,11 +962,12 @@ define boolean IsMounted (string mountpoint) {
 		// %2 with the recommended size
 		sformat (
 		    _("Your /boot partition is too small (%1 MB).
-We recommend a size not less than %2 MB. It might happen, that the
-new Kernel does not fit, so it would be safer to either enlarge that partition
-or not to use the /boot partition at all.
+We recommend a size of no less than %2 MB or else the new Kernel may not fit.
+It is safer to either enlarge the partition
+or not use a /boot partition at all.
 
-Would you like to continue updating the current system?"),
+Do you want to continue updating the current system?
+"),
 		    current_bs,
 		    suggested_bs
 		)
@@ -1037,9 +1039,10 @@ Would you like to continue updating the current system?"),
 %2
 
 If you are sure that the partition is not necessary for the
-update (it is not any system partition), click Continue.
+update (not a system partition), click Continue.
 To check or fix the mount options, click Specify Mount Options.
-To abort update, click Cancel."),
+To abort the update, click Cancel.
+"),
 				    spec, mount_err)
 				),
 				`VSpacing (1),

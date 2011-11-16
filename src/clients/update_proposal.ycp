@@ -332,8 +332,9 @@ some applications may not run properly.")))
 		    // TRANSLATORS: proposal error, %1 is the version of installed system
 		    // %2 is the version being installed
 		    _("Updating system to another version (%1 -> %2) is not supported on the running system.<br>
-Please, boot from the installation media and use a normal upgrade
-or disable software repositories of products with different versions."),
+Boot from the installation media and use a normal upgrade
+or disable software repositories of products with different versions.
+"),
 		    update_from, update_to
 		),
 		"warning_level" : `fatal,
@@ -406,10 +407,11 @@ or disable software repositories of products with different versions."),
 	SpaceCalculation::GetPartitionInfo();
 
 	// TRANSLATORS: proposal dialog help
-	string update_options_help = _("<p><b><big>Update Options</big></b>
-Here you can choose how your system is going to be updated.
-Choose whether only installed packages should be updated or whether new ones should be installed also 
-(the default selection), and whether unmaintained packages should be deleted.</p>");
+	string update_options_help = _("<p><b><big>Update Options</big></b> Select how your system will be updated.
+Choose if only installed packages should be updated or new ones should be
+installed as well (default). Decide whether unmaintained packages should be
+deleted.</p>
+");
 
 	ret = $[
 	    "preformatted_proposal" : HTML::ListStart() + summary_text + HTML::ListEnd(),
