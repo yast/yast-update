@@ -624,10 +624,41 @@ global void IgnoreProductCompatibility () {
 	return ret;
     }
 
+    // check if given package is installed in the system selected for update
+    // (currently mounted under /mnt)
+    boolean PackageInstalled (string package)
+    {
+      return SCR::Execute (.target.bash, sformat ("rpm -q %1 --root /mnt", package)) == 0;
+    }
+
     global void SetDesktopPattern() {
-	string desktop = ReadInstalledDesktop();
-	if (desktop == "kde" || desktop == "gnome")
+
+        string desktop = ReadInstalledDesktop();
+	if (contains (["kde", "kde4", "xfce", "lxde", "gnome", "startkde", "startkde4"], desktop))
 	{
+            // 'gnome'/'startkde' could be default values even if not installed,
+            // check the real state (bnc#737402)
+            if (desktop == "gnome")
+            {
+              if (!PackageInstalled ("gnome-session"))
+              {
+                y2milestone ("GNOME not present: not installing new desktop");
+                return;
+              }
+            }
+            else if (desktop == "startkde" || desktop == "startkde4")
+            {
+              if (PackageInstalled ("kdebase3-session") || PackageInstalled ("kdebase4-session"))
+              {
+                desktop   = "kde4";
+              }
+              else
+              {
+                y2milestone ("KDE not present: not installing new desktop");
+                return;
+              }
+            }
+
 	    y2milestone ("Selecting pattern to install: %1", desktop);
 	    Pkg::ResolvableInstall (desktop, `pattern);
 	}
