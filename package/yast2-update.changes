@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jan  5 08:23:40 CET 2012 - jsuchome@suse.cz
+
+- during update proposal, check if desktop is really installed 
+  (bnc#737402)
+- 2.17.23
+
+-------------------------------------------------------------------
 Fri Jul  1 15:13:01 CEST 2011 - locilka@suse.cz
 
 - better dialog label while searching for systems on disks
