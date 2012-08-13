@@ -1409,6 +1409,7 @@ Check the log file %1."), Directory::logdir + "/y2log");
 	    }
 
 	    read_fstab_and_cryptotab (fstab, crtab, root_device_current);
+            Storage::ChangeDmNamesFromCrypttab( Installation::destdir+"/etc/crypttab" );
 	    Update::GetProductName();
 
 	    if (FstabUsesKernelDeviceNameForHarddisks(fstab))
