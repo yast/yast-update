@@ -59,10 +59,6 @@ textdomain="update"
                         </source>
                     </postscript>
                 </module>
-                <module>
-	            <label>Clean Up</label>
-                    <name>inst_suseconfig</name>
-                </module>
 		<module>
 		    <label>Update System Configuration</label>
 		    <name>inst_finish</name>
