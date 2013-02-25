@@ -831,6 +831,7 @@ define string FindPartitionInFstab (list <map> & fstab, string mountpoint) {
 	// umount /var
 	if (fstab_has_separate_var) {
 	    SCR::Execute (.target.umount, Installation::destdir + "/var");
+	    activated = remove (activated, 0);
 	}
 
 	return true;

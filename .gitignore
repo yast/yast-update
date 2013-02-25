@@ -20,5 +20,10 @@ ltmain.sh
 missing
 mkinstalldirs
 stamp-h*
-update.pot
+*.pot
+*.ami
 Makefile.am.common
+*.bz2
+*.spec
+*.dep
+*.ybc
