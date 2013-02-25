@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 25 12:23:59 CET 2013 - jsuchome@suse.cz
+
+- do not unmout /var multiple times (bnc#805698)
+- 2.23.1
+
+-------------------------------------------------------------------
 Thu Feb 21 13:20:38 CET 2013 - jsuchome@suse.cz
 
 - remove references to obsoleted SuSEconfig (bnc#804936)
