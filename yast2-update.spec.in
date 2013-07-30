@@ -39,6 +39,8 @@ Conflicts:	yast2-pkg-bindings < 2.15.11
 # Storage::DeviceMatchFstab (#244117)
 Conflicts:	yast2-storage < 2.15.4
 
+Requires:       yast2-ruby-bindings >= 1.0.0
+
 Summary:	YaST2 - Update
 
 %package FACTORY
@@ -49,6 +51,8 @@ Requires:	yast2-update yast2
 # moved into yast2-update from yast2-installation
 # to remove dependency on yast2-storage
 Provides:	yast2-update:/usr/share/YaST2/clients/update.ycp
+
+Requires:       yast2-ruby-bindings >= 1.0.0
 
 Summary:	YaST2 - Update
 
@@ -71,19 +75,19 @@ Use this component if you wish to update your system.
 @ybindir@/*
 @moduledir@/*
 
-@clientdir@/inst_rootpart.ycp
-@clientdir@/inst_update.ycp
-@clientdir@/inst_backup.ycp
-@clientdir@/rootpart_proposal.ycp
-@clientdir@/update_proposal.ycp
-@clientdir@/packages_proposal.ycp
-@clientdir@/backup_proposal.ycp
-@clientdir@/inst_update_partition.ycp
-@clientdir@/inst_update_partition_auto.ycp
-@clientdir@/rootpart_check_keyboard.ycp
+@clientdir@/inst_rootpart.rb
+@clientdir@/inst_update.rb
+@clientdir@/inst_backup.rb
+@clientdir@/rootpart_proposal.rb
+@clientdir@/update_proposal.rb
+@clientdir@/packages_proposal.rb
+@clientdir@/backup_proposal.rb
+@clientdir@/inst_update_partition.rb
+@clientdir@/inst_update_partition_auto.rb
+@clientdir@/rootpart_check_keyboard.rb
 
 @yncludedir@/update
-@yncludedir@/update/rootpart.ycp
+@yncludedir@/update/rootpart.rb
 
 %doc @docdir@
 
@@ -92,5 +96,5 @@ Use this component if you wish to update your system.
 @desktopdir@/update.desktop
 %dir /usr/share/YaST2/control
 /usr/share/YaST2/control/update.xml
-@clientdir@/update.ycp
-@clientdir@/run_update.ycp
+@clientdir@/update.rb
+@clientdir@/run_update.rb
