@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug  5 14:32:09 CEST 2013 - jsuchome@suse.cz
+
+- leave kernel selection purely on dependencies during update
+  (port of bnc#582702)
+- 3.0.1
+
+-------------------------------------------------------------------
 Wed Jul 31 08:43:55 UTC 2013 - yast-devel@opensuse.org
 
 - converted from YCP to Ruby by YCP Killer

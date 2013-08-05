@@ -516,9 +516,6 @@ module Yast
         end
 
         Packages.SelectProduct
-        # bnc #382208
-        Packages.SelectKernelPackages
-
 
         # FATE #301990, Bugzilla #238488
         # Control the upgrade process better
