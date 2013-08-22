@@ -44,7 +44,7 @@ module Yast
       Yast.import "ModuleLoading"
       Yast.import "FileSystems"
       Yast.import "Update"
-      Yast.import "SuSERelease"
+      Yast.import "OSRelease"
       Yast.import "FileUtils"
       Yast.import "Arch"
       Yast.import "String"
@@ -1960,7 +1960,7 @@ module Yast
             end
 
             # Get installed release name
-            release = SuSERelease.ReleaseInformation(Installation.destdir)
+            release = OSRelease.ReleaseInformation(Installation.destdir)
             Builtins.y2debug("release: %1", release)
             if release == "?"
               # label for an unknown installed system
