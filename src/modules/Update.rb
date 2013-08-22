@@ -42,7 +42,7 @@ module Yast
       Yast.import "ProductFeatures"
       Yast.import "ProductControl"
       Yast.import "Stage"
-      Yast.import "SuSERelease"
+      Yast.import "OSRelease"
       Yast.import "Mode"
 
       # number of packages to install
@@ -137,45 +137,6 @@ module Yast
       ret
     end
 
-    # Returns whether old packages should be removed (defined in control file).
-    # True means - delete old RPMs when updating. (Functionality for FATE #301844).
-    #     // not supported by libzypp anymore
-    #
-    #     global boolean DeleteOldPackages () {
-    # 	// changes deleteOldPackages variable
-    # 	any default_dop_a = ProductFeatures::GetFeature ("software", "delete_old_packages");
-    #
-    # 	boolean default_dop = nil;
-    # 	if (default_dop_a == nil || default_dop_a == "") {
-    # 	    y2error ("software/delete_old_packages not defined");
-    # 	    return false;
-    # 	}
-    # 	if (is (default_dop_a, boolean)) default_dop = (boolean) default_dop_a;
-    #
-    # 	string installed_system = SuSERelease::ReleaseInformation (Installation::destdir);
-    # 	y2milestone ("Processing '%1' from '%2'", installed_system, Installation::destdir);
-    #
-    # 	if (installed_system == nil || installed_system == "") {
-    # 	    y2error ("Cannot find out installed system name");
-    # 	    return default_dop;
-    # 	}
-    #
-    # 	any reverse_dop_a = ProductFeatures::GetFeature ("software", "delete_old_packages_reverse_list");
-    # 	// No reverse rules defined
-    # 	if (reverse_dop_a == "") {
-    # 	    return default_dop;
-    # 	}
-    # 	// not a list or empty list
-    # 	list <string> reverse_dop = (list <string>) reverse_dop_a;
-    # 	if (reverse_dop == nil || reverse_dop == []) return default_dop;
-    #
-    # 	if (ListOfRegexpsMatchesProduct (reverse_dop, installed_system)) {
-    # 	    return (! default_dop);
-    # 	}
-    #
-    # 	return default_dop;
-    #     }
-
     # Returns whether upgrade process should only update installed packages or
     # also install new packages. True means - do not upgrade, only update packages.
     # (Functionality for FATE #301844).
@@ -195,7 +156,7 @@ module Yast
         default_ous = Convert.to_boolean(default_ous_a)
       end
 
-      installed_system = SuSERelease.ReleaseInformation(Installation.destdir)
+      installed_system = OSRelease.ReleaseInformation(Installation.destdir)
       Builtins.y2milestone(
         "Processing '%1' from '%2'",
         installed_system,
@@ -247,7 +208,7 @@ module Yast
         default_sdp = Convert.to_boolean(default_sdp_a)
       end
 
-      installed_system = SuSERelease.ReleaseInformation(Installation.destdir)
+      installed_system = OSRelease.ReleaseInformation(Installation.destdir)
       Builtins.y2milestone(
         "Processing '%1' from '%2'",
         installed_system,
@@ -283,7 +244,7 @@ module Yast
     # Returns whether the installed product is supported for upgrade.
     # (Functionality for FATE #301844).
     def IsProductSupportedForUpgrade
-      installed_system = SuSERelease.ReleaseInformation(Installation.destdir)
+      installed_system = OSRelease.ReleaseInformation(Installation.destdir)
       Builtins.y2milestone(
         "Processing '%1' from '%2'",
         installed_system,
@@ -520,8 +481,8 @@ module Yast
       # cannot use product information from package manager
       # for pre-zypp products
       # #153576
-      old_name = SuSERelease.ReleaseInformation(Installation.destdir)
-      Builtins.y2milestone("SuSERelease::ReleaseInformation: %1", old_name)
+      old_name = OSRelease.ReleaseInformation(Installation.destdir)
+      Builtins.y2milestone("OSRelease::ReleaseInformation: %1", old_name)
 
       # Remove 'Beta...' from product release
       if Builtins.regexpmatch(old_name, "Beta")
