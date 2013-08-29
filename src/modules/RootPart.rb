@@ -1208,18 +1208,20 @@ module Yast
         "hpfs",
         "vfat",
         "auto",
-        "proc"
       ]
 
       # mount sysfs first
-      ret = MountPartition("/sys", "sysfs", "sysfs")
-
-      if ret == nil
+      if MountPartition("/sys", "sysfs", "sysfs") == nil
         AddMountedPartition(
           { :type => "mount", :device => "sysfs", :mntpt => "/sys" }
         )
       end
 
+      if MountPartition("/proc", "proc", "proc") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "proc", :mntpt => "/proc" }
+        )
+      end
 
       success = true
 
