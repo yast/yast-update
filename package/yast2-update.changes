@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 29 12:50:24 UTC 2013 - jsrain@suse.cz
+
+- mount /proc even without fstab entry (bnc#834320)
+- 3.0.3
+
+-------------------------------------------------------------------
 Thu Aug 22 08:20:25 CEST 2013 - jsuchome@suse.cz
 
 - use OSRelease instead of obsolete SuSERelease (bnc#833955)
