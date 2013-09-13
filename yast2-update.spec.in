@@ -3,13 +3,7 @@
 @HEADER@
 Group:          System/YaST
 License:        GPL-2.0
-BuildRequires:	perl-XML-Writer yast2-devtools yast2-testsuite update-desktop-files
-# Stroage::ChangeDmNamesFromCrypttab
-BuildRequires:	yast2-storage >= 2.22.9
-# Packages::GetBaseSourceID
-BuildRequires:	yast2-packager >= 2.17.19
-BuildRequires:	yast2 >= 3.0.4
-# package not really needed to be installed but this breaks the building cycle
+BuildRequires:	yast2-devtools update-desktop-files
 
 # xmllint
 BuildRequires:	libxml2
