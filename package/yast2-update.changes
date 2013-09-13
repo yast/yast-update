@@ -4,6 +4,7 @@ Fri Sep 13 11:03:26 UTC 2013 - lslezak@suse.cz
 - removed obsolete BuildRequires (perl-XML-Writer, yast2-testsuite,
   yast2-storage, yast2-packager and yast2)
 - properly create update.glade link (the file was moved)
+- 3.0.4
 
 -------------------------------------------------------------------
 Thu Aug 29 12:50:24 UTC 2013 - jsrain@suse.cz
