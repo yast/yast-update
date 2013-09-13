@@ -24,4 +24,4 @@ update.pot
 Makefile.am.common
 *.ami
 doc/autodocs/*.html
-src/config/update.glade
+control/update.glade
