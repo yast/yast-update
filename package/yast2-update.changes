@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep 19 17:42:57 UTC 2013 - lslezak@suse.cz
+
+- do not use *.spec.in template, use *.spec file with RPM macros
+  instead
+- 3.1.0
+
+-------------------------------------------------------------------
 Fri Sep 13 11:03:26 UTC 2013 - lslezak@suse.cz
 
 - removed obsolete BuildRequires (perl-XML-Writer, yast2-testsuite,
