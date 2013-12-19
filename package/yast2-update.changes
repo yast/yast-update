@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Dec 18 12:44:15 UTC 2013 - lslezak@suse.cz
+
+- updated BuildRequires: RNG schema for control files has been
+  moved to yast2-installation-control package
+- use %yast_controldir RPM macro
+- move the *.glade link to Git (allow creating POT from clean Git
+  checkout without need to run "make")
+- 3.1.2
+
+-------------------------------------------------------------------
 Wed Nov 13 15:56:18 UTC 2013 - jreidinger@suse.com
 
 - Add explicit COPYING file

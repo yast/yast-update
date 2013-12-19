@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.1
+Version:        3.1.2
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -26,13 +26,13 @@ Source0:        %{name}-%{version}.tar.bz2
 Group:          System/YaST
 License:        GPL-2.0
 BuildRequires:	update-desktop-files
-BuildRequires:  yast2-devtools >= 3.1.10
+BuildRequires:  yast2-devtools >= 3.1.15
 
 # xmllint
-BuildRequires:	libxml2
+BuildRequires:	libxml2-tools
 
 # control.rng
-BuildRequires:	yast2-installation >= 2.17.44
+BuildRequires:	yast2-installation-control
 
 # Stroage::ChangeDmNamesFromCrypttab
 Requires:	yast2-storage >= 2.22.9
@@ -108,7 +108,7 @@ Use this component if you wish to update your system.
 %files FACTORY
 %defattr(-,root,root)
 %{yast_desktopdir}/update.desktop
-%dir /usr/share/YaST2/control
-/usr/share/YaST2/control/update.xml
+%dir %{yast_controldir}
+%{yast_controldir}/update.xml
 %{yast_clientdir}/update.rb
 %{yast_clientdir}/run_update.rb

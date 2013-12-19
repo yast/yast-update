@@ -2,11 +2,7 @@
 # Makefile.am for control
 #
 
-controldir = $(yast2dir)/control
-
-control_DATA = $(wildcard *.xml)
-
-EXTRA_DIST = $(control_DATA)
+dist_control_DATA = $(wildcard *.xml)
 
 check-local:
-	xmllint --relaxng $(controldir)/control.rng --noout $(control_DATA)
+	xmllint --relaxng $(controldir)/control.rng --noout $(dist_control_DATA)
