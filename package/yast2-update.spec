@@ -87,6 +87,7 @@ Use this component if you wish to update your system.
 %files
 %defattr(-,root,root)
 %{yast_ybindir}/*
+%dir %{yast_moduledir}
 %{yast_moduledir}/*
 
 %{yast_clientdir}/inst_rootpart.rb
@@ -100,6 +101,7 @@ Use this component if you wish to update your system.
 %{yast_clientdir}/inst_update_partition_auto.rb
 %{yast_clientdir}/rootpart_check_keyboard.rb
 
+%dir %{yast_yncludedir}
 %{yast_yncludedir}/update
 %{yast_yncludedir}/update/rootpart.rb
 
@@ -107,6 +109,7 @@ Use this component if you wish to update your system.
 
 %files FACTORY
 %defattr(-,root,root)
+%dir %{yast_desktopdir}
 %{yast_desktopdir}/update.desktop
 %dir %{yast_controldir}
 %{yast_controldir}/update.xml
