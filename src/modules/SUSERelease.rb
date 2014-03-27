@@ -88,5 +88,4 @@ module Yast
   end
 
   SUSERelease = SUSEReleaseClass.new
-  SUSERelease.main
 end
