@@ -34,6 +34,9 @@ BuildRequires:	libxml2-tools
 # control.rng
 BuildRequires:	yast2-installation-control
 
+# Needed for tests
+BuildRequires:  rubygem-rspec
+
 # Stroage::ChangeDmNamesFromCrypttab
 Requires:	yast2-storage >= 2.22.9
 # OSRelease
