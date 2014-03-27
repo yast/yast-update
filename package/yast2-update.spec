@@ -28,6 +28,7 @@ License:        GPL-2.0
 BuildRequires:	update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
+BuildRequires:  yast2
 
 # xmllint
 BuildRequires:	libxml2-tools
