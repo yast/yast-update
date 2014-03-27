@@ -27,11 +27,14 @@
 #
 # Purpose:		Update module
 #
-# $Id$
+
 require "yast"
 
 module Yast
   class UpdateClass < Module
+
+    include Yast::Logger
+
     def main
       Yast.import "Pkg"
 
@@ -43,6 +46,7 @@ module Yast
       Yast.import "ProductControl"
       Yast.import "Stage"
       Yast.import "OSRelease"
+      Yast.import "SUSERelease"
       Yast.import "Mode"
 
       # number of packages to install
@@ -156,7 +160,7 @@ module Yast
         default_ous = Convert.to_boolean(default_ous_a)
       end
 
-      installed_system = OSRelease.ReleaseInformation(Installation.destdir)
+      installed_system = installed_product
       Builtins.y2milestone(
         "Processing '%1' from '%2'",
         installed_system,
@@ -208,7 +212,7 @@ module Yast
         default_sdp = Convert.to_boolean(default_sdp_a)
       end
 
-      installed_system = OSRelease.ReleaseInformation(Installation.destdir)
+      installed_system = installed_product
       Builtins.y2milestone(
         "Processing '%1' from '%2'",
         installed_system,
@@ -244,7 +248,7 @@ module Yast
     # Returns whether the installed product is supported for upgrade.
     # (Functionality for FATE #301844).
     def IsProductSupportedForUpgrade
-      installed_system = OSRelease.ReleaseInformation(Installation.destdir)
+      installed_system = installed_product
       Builtins.y2milestone(
         "Processing '%1' from '%2'",
         installed_system,
@@ -481,7 +485,7 @@ module Yast
       # cannot use product information from package manager
       # for pre-zypp products
       # #153576
-      old_name = OSRelease.ReleaseInformation(Installation.destdir)
+      old_name = installed_product
       Builtins.y2milestone("OSRelease::ReleaseInformation: %1", old_name)
 
       # Remove 'Beta...' from product release
@@ -819,6 +823,28 @@ module Yast
       nil
     end
 
+    # Returns product installed on root partition mounted to Installation.destdir
+    # If not found, nil is returned
+    #
+    # @return [String] product name
+    def installed_product
+      begin
+        return OSRelease.ReleaseInformation(Installation.destdir)
+      rescue OSReleaseFileMissingError => e
+        log.info "Cannot read release information #{e.message}, trying SUSERelease"
+      end
+
+      begin
+        return SUSERelease.ReleaseInformation(Installation.destdir)
+      rescue SUSEReleaseFileMissingError => e
+        log.info "Cannot read release information: #{e.message}"
+      rescue IOError => e
+        log.error "Error reading SuSE-release in #{Installation.destdir}: #{e.message}"
+      end
+
+      return nil
+    end
+
     publish :variable => :packages_to_install, :type => "integer"
     publish :variable => :packages_to_update, :type => "integer"
     publish :variable => :packages_to_remove, :type => "integer"
@@ -850,6 +876,7 @@ module Yast
     publish :function => :GetBasePatterns, :type => "list <string> ()"
     publish :function => :SetDesktopPattern, :type => "void ()"
     publish :function => :Detach, :type => "void ()"
+    publish :function => :installed_product, :type => "string ()"
   end
 
   Update = UpdateClass.new
