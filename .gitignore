@@ -24,3 +24,6 @@ update.pot
 Makefile.am.common
 *.ami
 doc/autodocs/*.html
+/test-driver
+/test/*.log
+/test/*.trs
