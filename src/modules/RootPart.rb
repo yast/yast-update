@@ -1961,13 +1961,9 @@ module Yast
             end
 
             # Get installed release name
-            release = Update.installed_product
-            Builtins.y2debug("release: %1", release)
-            if release.nil?
-              # label for an unknown installed system
-              release = _("Unknown")
-            end
-            Ops.set(freshman, :name, release)
+            # TRANSLATORS: label for an unknown installed system
+            freshman[:name] = Update.installed_product || _("Unknown")
+            Builtins.y2debug("release: %1", freshman[:name])
 
             # Right architecture?
             Ops.set(
