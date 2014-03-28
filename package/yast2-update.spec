@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.2
+Version:        3.1.3
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -27,6 +27,9 @@ Group:          System/YaST
 License:        GPL-2.0
 BuildRequires:	update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
+BuildRequires:  yast2-ruby-bindings >= 1.0.0
+BuildRequires:  yast2 >= 3.1.28
+BuildRequires:  yast2-packager
 
 # xmllint
 BuildRequires:	libxml2-tools
@@ -34,10 +37,13 @@ BuildRequires:	libxml2-tools
 # control.rng
 BuildRequires:	yast2-installation-control
 
+# Needed for tests
+BuildRequires:  rubygem-rspec
+
 # Stroage::ChangeDmNamesFromCrypttab
 Requires:	yast2-storage >= 2.22.9
 # OSRelease
-Requires:	yast2 >= 3.0.4
+Requires:	yast2 >= 3.1.28
 Requires:	yast2-installation
 # Function SelectKernelPackages has been moved to Packages module (bnc #326269).
 Requires:	yast2-packager >= 2.17.27

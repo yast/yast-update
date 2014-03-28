@@ -2,7 +2,8 @@
 
 module_DATA = \
   modules/Update.rb \
-  modules/RootPart.rb
+  modules/RootPart.rb \
+  modules/SUSERelease.rb
 
 client_DATA = \
   clients/inst_rootpart.rb \

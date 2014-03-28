@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Mar 27 15:25:48 CET 2014 - locilka@suse.com
+
+- Re-added SUSERelease library to read product information from
+  /etc/SuSE-release (bnc#869091)
+- Using OSRelease (and then SUSERelease as a fallback) to
+  find out the name of the installed system (bnc#869091)
+- 3.1.3
+
+-------------------------------------------------------------------
 Wed Dec 18 12:44:15 UTC 2013 - lslezak@suse.cz
 
 - updated BuildRequires: RNG schema for control files has been
