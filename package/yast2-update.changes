@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 28 15:02:22 CET 2014 - locilka@suse.com
+
+- Fixed loading kernel modules while probing disks (bnc#869091)
+- 3.1.4
+
+-------------------------------------------------------------------
 Thu Mar 27 15:25:48 CET 2014 - locilka@suse.com
 
 - Re-added SUSERelease library to read product information from
