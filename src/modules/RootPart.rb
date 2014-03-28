@@ -2044,35 +2044,24 @@ module Yast
     def FindRootPartitions
       return if @didSearchForRootPartitions
 
-      ModuleLoading.Load(
-        "reiserfs",
-        "",
-        "Linux",
-        "Reiser FS",
-        Linuxrc.manual,
-        true
-      )
-      ModuleLoading.Load("jfs", "", "Linux", "JFS", Linuxrc.manual, true)
-      ModuleLoading.Load("xfs", "", "Linux", "XFS", Linuxrc.manual, true)
-      ModuleLoading.Load("ext3", "", "Linux", "Ext3", Linuxrc.manual, true)
-      ModuleLoading.Load("ext4", "", "Linux", "Ext4", Linuxrc.manual, true)
-      ModuleLoading.Load("btrfs", "", "Linux", "BtrFS", Linuxrc.manual, true)
-      ModuleLoading.Load("raid0", "", "Linux", "Raid 0", Linuxrc.manual, true)
-      ModuleLoading.Load("raid1", "", "Linux", "Raid 1", Linuxrc.manual, true)
-      ModuleLoading.Load("raid5", "", "Linux", "Raid 5", Linuxrc.manual, true)
-      ModuleLoading.Load("raid6", "", "Linux", "Raid 6", Linuxrc.manual, true)
-      ModuleLoading.Load("raid10", "", "Linux", "Raid 10", Linuxrc.manual, true)
-      ModuleLoading.Load(
-        "multipath",
-        "",
-        "Linux",
-        "Multipath",
-        Linuxrc.manual,
-        true
-      )
-      ModuleLoading.Load("dm-mod", "", "Linux", "DM", Linuxrc.manual, true)
-      SCR.Execute(path(".target.bash"), "/sbin/devmap_mknod.sh")
-      ModuleLoading.Load("dm-snapshot", "", "Linux", "DM", Linuxrc.manual, true)
+      modules_to_load = {
+        "reiserfs" => "Reiser FS",
+        "xfs" => "XFS",
+        "ext3" => "Ext3",
+        "ext4" => "Ext4",
+        "btrfs" => "BtrFS",
+        "raid0" => "Raid 0",
+        "raid1" => "Raid 1",
+        "raid5" => "Raid 5",
+        "raid6" => "Raid 6",
+        "raid10" => "Raid 10",
+        "dm-multipath" => "Multipath",
+        "dm-mod" => "DM",
+        "dm-snapshot" => "DM Snapshot",
+      }
+      modules_to_load.each do |module_to_load, show_name|
+        ModuleLoading.Load(module_to_load, "", "Linux", show_name, Linuxrc.manual, true)
+      end
 
       if Mode.test
         Storage.SetTargetMap(
