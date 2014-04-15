@@ -84,7 +84,6 @@ module Yast
 
       # Only an update, NOT an upgrade
       @onlyUpdateInstalled = nil
-      @defaultonlyUpdateInstalled = nil
 
       @selected_selection = ""
 
