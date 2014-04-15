@@ -84,6 +84,7 @@ module Yast
 
       # Only an update, NOT an upgrade
       @onlyUpdateInstalled = nil
+      @defaultonlyUpdateInstalled = nil
 
       @selected_selection = ""
 
@@ -420,6 +421,7 @@ module Yast
       #	y2milestone ("deleteOldPackages %1", deleteOldPackages);
 
       @onlyUpdateInstalled = OnlyUpdateInstalled()
+      @default_onlyUpdateInstalled = deep_copy(@onlyUpdateInstalled)
       Builtins.y2milestone("onlyUpdateInstalled %1", @onlyUpdateInstalled)
 
       @disallow_upgrade = false
@@ -857,6 +859,7 @@ module Yast
     publish :variable => :did_init2, :type => "boolean"
     publish :variable => :last_runlevel, :type => "integer"
     publish :variable => :onlyUpdateInstalled, :type => "boolean"
+    publish :variable => :default_onlyUpdateInstalled, :type => "boolean"
     publish :variable => :selected_selection, :type => "string"
     publish :variable => :products_incompatible, :type => "boolean"
     publish :variable => :updateBasePackages, :type => "boolean"
