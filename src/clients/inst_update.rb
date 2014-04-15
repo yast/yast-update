@@ -218,19 +218,29 @@ module Yast
         end
 
         if (@ret == :next || @ret == :ok) && Pkg.RestoreState(true)
-          @something_changed = false
-
-          if UI.QueryWidget(Id(:notupgrade), :Value) !=
-              Update.onlyUpdateInstalled
-            @something_changed = true
-          end
-
-          if @something_changed && Packages.base_selection_modified
-            # yes/no question
-            if !Popup.YesNo(
-                _("Do you really want\nto reset your detailed selection?")
+          new_onlyUpdateInstalled = UI.QueryWidget(Id(:notupgrade), :Value)
+          # Selection has changed
+          if Update.onlyUpdateInstalled != new_onlyUpdateInstalled
+            # BNC#873122
+            #   The default is 'do not onlyUpdateInstalled'
+            #   New status is 'do onlyUpdateInstalled'
+            if !Update.default_onlyUpdateInstalled && new_onlyUpdateInstalled
+              next unless Popup::AnyQuestion(
+                Label.WarningMsg,
+                # warning / question
+                _(
+                  "Changing the update method to 'Update packages only' might\n" +
+                  "lead into non-bootable or non-working system if you do not\n" +
+                  "adjust the list of packages yourself.\n\n" +
+                  "Really continue?"
+                ),
+                Label.YesButton,
+                Label.NoButton,
+                :focus_no
               )
-              next
+            elsif Packages.base_selection_modified
+              # yes/no question
+              next unless Popup.YesNo(_("Do you really want\nto reset your detailed selection?"))
             end
           end
         end
@@ -242,10 +252,7 @@ module Yast
         Update.did_init1 = false
 
         @b1 = Update.onlyUpdateInstalled
-        Update.onlyUpdateInstalled = Convert.to_boolean(
-          UI.QueryWidget(Id(:notupgrade), :Value)
-        )
-        #	Update::deleteOldPackages = (boolean) UI::QueryWidget (`id(`delete), `Value);
+        Update.onlyUpdateInstalled = UI.QueryWidget(Id(:notupgrade), :Value)
 
         if @b1 != Update.onlyUpdateInstalled || @details_pressed
           Update.manual_interaction = true
