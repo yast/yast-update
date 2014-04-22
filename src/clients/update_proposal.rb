@@ -28,6 +28,8 @@
 # $Id$
 module Yast
   class UpdateProposalClient < Client
+    include Yast::Logger
+
     def main
       Yast.import "Pkg"
       Yast.import "UI"
@@ -504,14 +506,9 @@ module Yast
         Builtins.foreach(restore) { |res| Pkg.ResolvableInstall(res, :product) }
         Update.SetDesktopPattern if !Update.onlyUpdateInstalled
 
-        if !Update.onlyUpdateInstalled && # just consider already installed packages
-            !ProductFeatures.GetBooleanFeature(
-              "software",
-              "only_update_installed"
-            )
-          Builtins.foreach(Product.patterns) do |pat|
-            Builtins.y2milestone("Pre-select pattern %1", pat)
-            Pkg.ResolvableInstall(pat, :pattern)
+        if !Update.OnlyUpdateInstalled
+          Packages.default_patterns.each do |pattern|
+            log.info "Pre-select pattern #{pattern}: " << Pkg.ResolvableInstall(pattern, :pattern)
           end
         end
 

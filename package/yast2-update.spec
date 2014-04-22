@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.5
+Version:        3.1.6
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -45,8 +45,9 @@ Requires:	yast2-storage >= 2.22.9
 # OSRelease
 Requires:	yast2 >= 3.1.28
 Requires:	yast2-installation
-# Function SelectKernelPackages has been moved to Packages module (bnc #326269).
-Requires:	yast2-packager >= 2.17.27
+
+# Packages.default_patterns
+Requires:	yast2-packager >= 3.1.10
 
 # moved into yast2-update from yast2-installation
 # to remove dependency on yast2-storage
