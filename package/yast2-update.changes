@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Apr 22 10:52:06 CEST 2014 - locilka@suse.com
+
+- Replaced old Product.patterns with new Packages.default_patterns
+  (bnc#873923)
+- 3.1.6
+
+-------------------------------------------------------------------
 Tue Apr 15 15:57:20 CEST 2014 - locilka@suse.com
 
 - Warning user that changing update mode from "patterns" to
