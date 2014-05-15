@@ -786,12 +786,12 @@ module Yast
       install_packages = selected_desktop.fetch("install_packages", "").split
       failed_packages = select_for_installation(:package, install_packages)
 
-      failed_patterns.empty? || Report.Error(
+      failed_patterns.empty? or Report.Error(
         _("Cannot select these patterns required for installation:\n%{patterns}") %
         {:patterns => failed_patterns.join("\n")}
       )
 
-      failed_packages.empty? || Report.Error(
+      failed_packages.empty? or Report.Error(
         _("Cannot select these packages required for installation:\n%{packages}") %
         {:packages => failed_packages.join("\n")}
       )
