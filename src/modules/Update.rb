@@ -751,7 +751,7 @@ module Yast
     def SetDesktopPattern
       upgrade_settings = ProductFeatures.GetFeature("software", "upgrade")
 
-      if upgrade_settings.nil? || !upgrade_settings.kind_of?(Hash) || !upgrade_settings.has_key?("window_managers")
+      if !upgrade_settings.kind_of?(Hash) || !upgrade_settings.has_key?("window_managers")
         log.info "Desktop upgrade is not handled by this product (settings: #{upgrade_settings})"
         return true
       end
@@ -763,19 +763,21 @@ module Yast
         return true
       end
 
-      selected_desktop = upgrade_settings["window_managers"].select do |wm|
+      selected_desktop = upgrade_settings["window_managers"].find do |wm|
         unless wm["sysconfig_wm"]
           log.error "'sysconfig_wm' must be defined in #{wm}"
           next
         end
         wm["sysconfig_wm"].strip == current_desktop
-      end.first
+      end
 
-      if selected_desktop.nil? || selected_desktop.empty?
+      if !selected_desktop
         log.info "No matching desktop found for #{current_desktop}"
         return true
       end
 
+      # If the current default desktop is not installed, it's a valid use case
+      # and we don't continue further
       return true unless packages_installed?(selected_desktop.fetch("check_packages", "").split)
 
       install_patterns = selected_desktop.fetch("install_patterns", "").split
