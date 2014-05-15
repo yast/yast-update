@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu May 15 09:17:19 CEST 2014 - locilka@suse.com
+
+- Added handling for desktop upgrade (bnc#874116). Moved from code
+  to control file as packages and patterns might have different
+  names in different prducts.
+- 3.1.8
+
+-------------------------------------------------------------------
 Fri May  2 12:36:53 UTC 2014 - jreidinger@suse.com
 
 - Fix internal error caused by wrong type passed as string append
