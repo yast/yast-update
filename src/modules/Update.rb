@@ -743,69 +743,60 @@ module Yast
       Builtins.maplist(patterns) { |p| Ops.get_string(p, "name", "") }
     end
 
-
-    def ReadInstalledDesktop
-      SCR.Execute(
-        path(".target.bash"),
-        "/bin/mv -f /etc/sysconfig/windowmanager /etc/sysconfig/windowmanager.old"
-      )
-      SCR.Execute(
-        path(".target.bash"),
-        "/bin/ln -s /mnt/etc/sysconfig/windowmanager /etc/sysconfig/windowmanager"
-      )
-      ret = Convert.to_string(
-        SCR.Read(path(".sysconfig.windowmanager.DEFAULT_WM"))
-      )
-      SCR.Execute(
-        path(".target.bash"),
-        "/bin/rm -f /etc/sysconfig/windowmanager"
-      )
-      SCR.Execute(
-        path(".target.bash"),
-        "/bin/mv -f /etc/sysconfig/windowmanager.old /etc/sysconfig/windowmanager"
-      )
-      ret
-    end
-
-    # check if given package is installed in the system selected for update
-    # (currently mounted under /mnt)
-    def PackageInstalled(package)
-      SCR.Execute(
-        path(".target.bash"),
-        Builtins.sformat("rpm -q %1 --root /mnt", package)
-      ) == 0
-    end
-
+    # Searches the mounted system ready for ugrade for current desktop
+    # and selects resolvables matching this desktop in new product as
+    # it is defined in control file software->upgrade->window_managers
+    #
+    # @return [Boolean] whether selecting resolvables have succeeded
     def SetDesktopPattern
-      desktop = ReadInstalledDesktop()
-      if Builtins.contains(
-          ["kde", "kde4", "xfce", "lxde", "gnome", "startkde", "startkde4"],
-          desktop
-        )
-        # 'gnome'/'startkde' could be default values even if not installed,
-        # check the real state (bnc#737402)
-        if desktop == "gnome"
-          if !PackageInstalled("gnome-session")
-            Builtins.y2milestone(
-              "GNOME not present: not installing new desktop"
-            )
-            return
-          end
-        elsif desktop == "startkde" || desktop == "startkde4"
-          if PackageInstalled("kdebase3-session") ||
-              PackageInstalled("kdebase4-session")
-            desktop = "kde4"
-          else
-            Builtins.y2milestone("KDE not present: not installing new desktop")
-            return
-          end
-        end
+      upgrade_settings = ProductFeatures.GetFeature("software", "upgrade")
 
-        Builtins.y2milestone("Selecting pattern to install: %1", desktop)
-        Pkg.ResolvableInstall(desktop, :pattern)
+      if !upgrade_settings.kind_of?(Hash) || !upgrade_settings.has_key?("window_managers")
+        log.info "Desktop upgrade is not handled by this product (settings: #{upgrade_settings})"
+        return true
       end
 
-      nil
+      current_desktop = installed_desktop
+
+      if current_desktop.nil? || current_desktop.empty?
+        log.warn "Cannot read default window manager from sysconfig"
+        return true
+      end
+
+      selected_desktop = upgrade_settings["window_managers"].find do |wm|
+        unless wm["sysconfig_wm"]
+          log.error "'sysconfig_wm' must be defined in #{wm}"
+          next
+        end
+        wm["sysconfig_wm"].strip == current_desktop
+      end
+
+      if !selected_desktop
+        log.info "No matching desktop found for #{current_desktop}"
+        return true
+      end
+
+      # If the current default desktop is not installed, it's a valid use case
+      # and we don't continue further
+      return true unless packages_installed?(selected_desktop.fetch("check_packages", "").split)
+
+      install_patterns = selected_desktop.fetch("install_patterns", "").split
+      failed_patterns = select_for_installation(:pattern, install_patterns)
+
+      install_packages = selected_desktop.fetch("install_packages", "").split
+      failed_packages = select_for_installation(:package, install_packages)
+
+      failed_patterns.empty? or Report.Error(
+        _("Cannot select these patterns required for installation:\n%{patterns}") %
+        {:patterns => failed_patterns.join("\n")}
+      )
+
+      failed_packages.empty? or Report.Error(
+        _("Cannot select these packages required for installation:\n%{packages}") %
+        {:packages => failed_packages.join("\n")}
+      )
+
+      failed_patterns.empty? && failed_packages.empty?
     end
 
     #
@@ -813,13 +804,6 @@ module Yast
       Pkg.TargetFinish
       @did_init1 = false
       @did_init2 = false
-
-      nil
-    end
-
-    def TextsUsedInFuture
-      # TRANSLATORS: check-box, it might happen that we need to downgrade some packages during update
-      aaa = _("Allow Package Downgrade")
 
       nil
     end
@@ -879,6 +863,79 @@ module Yast
     publish :function => :SetDesktopPattern, :type => "void ()"
     publish :function => :Detach, :type => "void ()"
     publish :function => :installed_product, :type => "string ()"
+
+  private
+
+    # Reads the currently selected default desktop from sysconfig
+    # and returns it
+    #
+    # @return [String] current default desktop
+    def installed_desktop
+      windowmanager_sysconfig = File.join(
+        Installation.destdir, "/etc/sysconfig/windowmanager"
+      )
+
+      if !FileUtils.Exists(windowmanager_sysconfig)
+        log.warn "Sysconfig file #{windowmanager_sysconfig} does not exist, " <<
+          "desktop upgrade will not be handled"
+        return nil
+      end
+
+      Misc.CustomSysconfigRead("DEFAULT_WM", "", windowmanager_sysconfig).strip
+    end
+
+    # Selects resolvables for installation and returns list of failed resolvables
+    #
+    # @param [Symbol] resolvable type
+    # @param [Array] list of resolvables for installation
+    # @return [Array] list of failed resolvables
+    def select_for_installation(resolvable_type, resolvables)
+      failed_resolvables = []
+      return failed_resolvables if resolvables.empty?
+
+      log.info "Selecting required #{resolvable_type}s #{resolvables}"
+
+      resolvables.each do |resolvable|
+        next if resolvable.nil? || resolvable.empty?
+
+        unless Pkg.ResolvableInstall(resolvable, resolvable_type)
+          failed_resolvables << resolvable
+          log.error "Cannot select #{resolvable_type} #{resolvable} for installation"
+        end
+      end
+
+      failed_resolvables
+    end
+
+    # check if given package is installed in the system selected for update
+    # (currently mounted under Installation.destdir)
+    #
+    # @param [String] package name
+    # @return [Boolean] whether the given package is installed
+    def package_installed?(package)
+      package_installed = SCR.Execute(
+        path(".target.bash"),
+        Builtins.sformat("rpm -q '#{package}' --root '#{Installation.destdir}'")
+      ) == 0
+
+      log.info "Package #{package} installed: #{package_installed}"
+      package_installed
+    end
+
+    # Returns whether all packages given as parameter are installed on the system
+    #
+    # @param [Array] list of packages
+    # @return [Boolean] whether all of packages are installed
+    def packages_installed?(packages)
+      desktop_installed = packages.all? do |package|
+        package_installed?(package)
+      end
+
+      log.info "Not all packages from list #{packages} are installed" unless desktop_installed
+
+      desktop_installed
+    end
+
   end
 
   Update = UpdateClass.new

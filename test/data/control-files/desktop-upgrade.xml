@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<productDefines xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <software>
+    <upgrade>
+      <window_managers config:type="list">
+        <window_manager>
+          <sysconfig_wm>sysconfig-desktop</sysconfig_wm>
+          <check_packages>check-package-1 check-package-2</check_packages>
+          <install_patterns>install-pattern-1 install-pattern-2</install_patterns>
+          <install_packages>install-package-1 install-package-2</install_packages>
+        </window_manager>
+      </window_managers>
+    </upgrade>
+  </software>
+</productDefines>
