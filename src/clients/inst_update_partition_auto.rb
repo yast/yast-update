@@ -59,7 +59,7 @@ module Yast
       # allow to specicfy the target on cmdline (e.g. if there are multiple systems)
       # ptoptions=TargetRoot target_root=<device> (bnc#875031)
       install_inf_target_system = Linuxrc.InstallInf("TargetRoot")
-      if not install_inf_target_system.nil?
+      if install_inf_target_system
         @target_system = install_inf_target_system
         @partitions = { @target_system => { :valid => true } }
         Builtins.y2milestone("Selecting system %1 specified in install.inf", @target_system);
