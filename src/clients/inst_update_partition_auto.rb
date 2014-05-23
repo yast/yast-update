@@ -56,6 +56,15 @@ module Yast
         Ops.get_boolean(p, :valid, false)
       end
 
+      # allow to specicfy the target on cmdline (e.g. if there are multiple systems)
+      # ptoptions=TargetRoot target_root=<device> (bnc#875031)
+      install_inf_target_system = Linuxrc.InstallInf("TargetRoot")
+      if install_inf_target_system
+        @target_system = install_inf_target_system
+        @partitions = { @target_system => { :valid => true } }
+        Builtins.y2milestone("Selecting system %1 specified in install.inf", @target_system);
+      end
+
       if Builtins.size(@partitions) == 1
         Builtins.y2milestone(
           "Auto-mounting system located at %1",
