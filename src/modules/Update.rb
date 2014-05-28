@@ -802,6 +802,21 @@ module Yast
 
     #
     def Detach
+      # release mounted devices
+      Pkg.SourceReleaseAll
+
+      # remove all repos except the initial installation repository
+      # to close the solv files and allow unmounting the target
+      repos_to_delete = Pkg.SourceGetCurrent(false)
+      repos_to_delete.delete(0)
+      log.info "Removing repositories: #{repos_to_delete}"
+
+      # the changes are not saved to the target system, the repositories
+      # are removed only from pkg-bindings
+      repos_to_delete.each do |repo_to_delete|
+        Pkg.SourceDelete(repo_to_delete)
+      end
+
       Pkg.TargetFinish
       @did_init1 = false
       @did_init2 = false

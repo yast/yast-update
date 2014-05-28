@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jul  1 06:38:02 UTC 2014 - lslezak@suse.cz
+
+- remove all repositories when going back to close the open solv
+  files and allow successful unmount when changing the target
+  partition to update (bnc#876677)
+- 3.1.18
+
+-------------------------------------------------------------------
 Mon Jun 30 14:32:39 UTC 2014 - jreidinger@suse.cz
 
 - Add also restore script to backup to make easier restoring 
