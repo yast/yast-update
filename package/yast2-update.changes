@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jun  6 13:35:01 UTC 2014 - lslezak@suse.cz
+
+- override the target distribution from the system, use the target
+  distribution from the base product so the service repositories
+  are compatible with the upgraded (future) product (bnc#881320)
+- 3.1.10
+
+-------------------------------------------------------------------
 Thu May 22 07:40:27 UTC 2014 - jsrain@suse.cz
 
 - allow to specify target for AutoYaST upgrade via boot

@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.9
+Version:        3.1.10
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -48,6 +48,9 @@ Requires:	yast2-installation
 
 # Packages.default_patterns
 Requires:	yast2-packager >= 3.1.10
+
+# Pkg.TargetInitializeOptions()
+Requires:       yast2-pkg-bindings >= 3.1.14
 
 # moved into yast2-update from yast2-installation
 # to remove dependency on yast2-storage
