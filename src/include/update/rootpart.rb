@@ -45,6 +45,7 @@ module Yast
       Yast.import "Installation"
       Yast.import "FileSystems"
       Yast.import "Mode"
+      Yast.import "Product"
     end
 
     # Returns boolean whether partition can be
@@ -418,8 +419,12 @@ module Yast
 
       # New partition has been mounted
       if flavor == :update_dialog && ret == :next
-        # Target load failed, #466803
-        if Pkg.TargetInitialize(Installation.destdir) != true
+        # override the current target distribution at the system and use
+        # the target distribution from the base product to make the new service
+        # repositories compatible with the base product at upgrade (bnc#881320)
+        if Pkg.TargetInitializeOptions(Installation.destdir,
+            "target_distro" => target_distribution) != true
+          # Target load failed, #466803
           Builtins.y2error("Pkg::TargetInitialize failed")
           if Popup.AnyQuestion(
               Label.ErrorMsg,
@@ -470,5 +475,17 @@ module Yast
 
       Convert.to_symbol(ret)
     end
+
+    def target_distribution
+      base_products = Product.FindBaseProducts
+
+      # empty target distribution disables service compatibility check in case
+      # the base product cannot be found
+      target_distro = base_products ? base_products.first["register_target"] : ""
+      log.info "Base product target distribution: #{target_distro}"
+
+      target_distro
+    end
+
   end
 end
