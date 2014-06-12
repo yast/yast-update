@@ -29,6 +29,7 @@
 #
 
 require "yast"
+require "fileutils"
 
 module Yast
   class UpdateClass < Module
@@ -830,6 +831,34 @@ module Yast
       return nil
     end
 
+    BACKUP_DIR = "var/adm/backup/system-upgrade"
+    # Creates backup with name based on `name` contaings everything
+    # matching globs in `paths`.
+    # @param name[String] name for backup file. Use bash friendly name ;)
+    # @note Can be called only after target root is mounted.
+    #
+    # @example to store repos file and credentials directory
+    #   Update.create_backup("repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
+    def create_backup(name, paths)
+      mounted_root = Installation.destdir
+
+      # ensure directory exists
+      ::FileUtils.mkdir_p(File.join(mounted_root, BACKUP_DIR))
+
+      target_file = File.join(mounted_root, BACKUP_DIR, "#{name}.tar.bz2")
+
+      paths_without_prefix = paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
+
+      command = "tar cjvf '#{target_file}'"
+      command << " -C '#{mounted_root}'"
+      # no shell escaping here, but we backup reasonable files and want to allow globs
+      command << " " + paths_without_prefix.join(" ")
+      res = SCR.Execute(path(".target.bash_output"),  command)
+      log.info "backup created with '#{command}' result: #{res}"
+
+      raise "Failed to create backup" if res["exit"] != 0
+    end
+
     publish :variable => :packages_to_install, :type => "integer"
     publish :variable => :packages_to_update, :type => "integer"
     publish :variable => :packages_to_remove, :type => "integer"
@@ -863,6 +892,7 @@ module Yast
     publish :function => :SetDesktopPattern, :type => "void ()"
     publish :function => :Detach, :type => "void ()"
     publish :function => :installed_product, :type => "string ()"
+    publish :function => :create_backup, :type => "void (string,list)"
 
   private
 

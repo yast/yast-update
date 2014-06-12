@@ -56,6 +56,44 @@ describe Yast::Update do
     end
   end
 
+  describe "#create_backup" do
+    before(:each) do
+      allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
+    end
+
+    it "create tarball including given name with all paths added" do
+      name = "test-backup"
+      paths = ["a", "b"]
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /^tar c.*#{name}.*tar.bz2.*a.*b/).
+        and_return({"exit" => 0})
+      Yast::Update.create_backup(name, paths)
+    end
+
+    it "strips leading '/' from paths" do
+      name = "test-backup"
+      paths = ["/path_with_slash", "path_without_slash"]
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), / path_with_slash/).
+        and_return({"exit" => 0})
+      Yast::Update.create_backup(name, paths)
+    end
+
+    it "do not store mount prefix in tarball" do
+      name = "test-backup"
+      paths = ["/path_with_slash"]
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /-C '\/mnt'/).
+        and_return({"exit" => 0})
+      Yast::Update.create_backup(name, paths)
+    end
+
+    it "raise exception if creating tarball failed" do
+      name = "test-backup"
+      paths = ["/path_with_slash"]
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /tar/).
+        and_return({"exit" => 1})
+      expect{Yast::Update.create_backup(name, paths)}.to raise_error
+    end
+  end
+
   describe "#SetDesktopPattern" do
     context "if there is no definition of window manager upgrade path in control file" do
       it "returns true as there is no upgrade path defined" do
