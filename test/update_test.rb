@@ -59,6 +59,7 @@ describe Yast::Update do
   describe "#create_backup" do
     before(:each) do
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
+      allow(::FileUtils).to receive(:mkdir_p)
     end
 
     it "create tarball including given name with all paths added" do
