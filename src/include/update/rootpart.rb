@@ -32,7 +32,7 @@ require "yast"
 
 module Yast
   module UpdateRootpartInclude
-    include Logger
+    include Yast::Logger
 
     def initialize_update_rootpart(include_target)
       Yast.import "UI"
