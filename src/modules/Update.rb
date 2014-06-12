@@ -29,6 +29,7 @@
 #
 
 require "yast"
+require "fileutils"
 
 module Yast
   class UpdateClass < Module
@@ -840,6 +841,10 @@ module Yast
     def create_backup(name, paths)
       time_stamp = Time.now.localtime.strftime("%Y%m%d-%H%M%S")
       mounted_root = Installation.destdir
+
+      # ensure directory exists
+      ::FileUtils.mkdir_p(File.join(mounted_root, BACKUP_DIR))
+
       target_file = File.join(mounted_root, BACKUP_DIR, "#{name}-#{time_stamp}.tar.bz2")
 
       paths_without_prefix = paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
