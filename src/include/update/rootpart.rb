@@ -28,8 +28,12 @@
 # Purpose:	Select root partition for update or booting.
 #		RootPart::rootPartitions must be filled before
 #		calling this module.
+require "yast"
+
 module Yast
   module UpdateRootpartInclude
+    include Logger
+
     def initialize_update_rootpart(include_target)
       Yast.import "UI"
       Yast.import "Pkg"
