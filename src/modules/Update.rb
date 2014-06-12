@@ -834,18 +834,18 @@ module Yast
     BACKUP_DIR = "var/adm/backup/system-upgrade"
     # Creates backup with name based on `name` contaings everything
     # matching globs in `paths`.
+    # @param name[String] name for backup file. Use bash friendly name ;)
     # @note Can be called only after target root is mounted.
     #
     # @example to store repos file and credentials directory
     #   Update.create_backup("repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
     def create_backup(name, paths)
-      time_stamp = Time.now.localtime.strftime("%Y%m%d-%H%M%S")
       mounted_root = Installation.destdir
 
       # ensure directory exists
       ::FileUtils.mkdir_p(File.join(mounted_root, BACKUP_DIR))
 
-      target_file = File.join(mounted_root, BACKUP_DIR, "#{name}-#{time_stamp}.tar.bz2")
+      target_file = File.join(mounted_root, BACKUP_DIR, "#{name}.tar.bz2")
 
       paths_without_prefix = paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
 
