@@ -846,7 +846,8 @@ module Yast
 
       command = "tar cjvf '#{target_file}'"
       command << " -C '#{mounted_root}'"
-      command << " " + paths_without_prefix.join(" ") # no shell escaping here, but we backup reasonable files and want to allow globs
+      # no shell escaping here, but we backup reasonable files and want to allow globs
+      command << " " + paths_without_prefix.join(" ")
       res = SCR.Execute(path(".target.bash_output"),  command)
       log.info "backup created with '#{command}' result: #{res}"
 
