@@ -1797,9 +1797,25 @@ module Yast
         # enter the mount points of the newly mounted partitions
         # in the target map of the storage module
         AddToTargetMap()
+        create_backup
       end
 
       success
+    end
+
+    # known configuration files that are changed during update, so we need to
+    # backup them to restore if something goes wrong (bnc#882039)
+    BACKUP_DIRS = {
+      "sw_mgmt" => [
+        "/etc/zypp/repos.d",
+        "/etc/zypp/services.d",
+        "/etc/zypp/credentials.d"
+      ]
+    }
+    def create_backup
+      BACKUP_DIRS.each_pair do |name, paths|
+        Update.create_backup(name, paths)
+      end
     end
 
     # Get architecture of an elf file.
