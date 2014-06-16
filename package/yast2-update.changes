@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jun 13 06:20:15 UTC 2014 - jreidinger@suse.com
+
+- create backup for software management (bnc#882039)
+- 3.1.13
+
+-------------------------------------------------------------------
 Thu Jun 12 14:48:57 UTC 2014 - jreidinger@suse.com
 
 - add method to create upgrade backup (bnc#882039)
