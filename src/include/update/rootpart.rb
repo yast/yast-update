@@ -348,8 +348,9 @@ module Yast
             freshman
           )
           if Ops.get_string(freshman, :name, "unknown") == "unknown"
-            cont = Popup.ContinueCancel(
-              # continue-cancel popup
+            cont = false
+            Popup.Error(
+              # error popup
               _(
                 "No installed system that can be upgraded with this product was found\non the selected partition."
               )
