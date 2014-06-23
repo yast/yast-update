@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jun 23 15:12:07 CEST 2014 - aschnell@suse.de
+
+- do not allow to continue if no upgradeable system was found
+  (bnc#883606)
+- 3.1.14
+
+-------------------------------------------------------------------
 Fri Jun 13 06:20:15 UTC 2014 - jreidinger@suse.com
 
 - create backup for software management (bnc#882039)
