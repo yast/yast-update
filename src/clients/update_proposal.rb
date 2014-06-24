@@ -153,7 +153,7 @@ module Yast
           }
         end
 
-        @warning_message = nil
+        @warning_message = ""
 
         # when labels don't match
         if !Stage.initial &&
@@ -179,34 +179,10 @@ module Yast
           )
         end
 
+        products = Pkg.ResolvableProperties("", :product, "")
         # stores the proposal text output
-        @summary_text = ""
-
-        @products = Update.SelectedProducts
-        @already_printed = []
-
-        Builtins.foreach(@products) do |one_product|
-          # never print duplicates, bugzilla #331560
-          # 'toset' could be used but we want to keep sorting
-          if Builtins.contains(@already_printed, one_product)
-            next
-          else
-            @already_printed = Builtins.add(@already_printed, one_product)
-          end
-          # TRANSLATORS: proposal summary item, %1 is a product name
-          @summary_text = Ops.add(
-            Ops.add(
-              Ops.add(@summary_text, "<li><b>"),
-              Builtins.sformat(_("Update to %1"), one_product)
-            ),
-            "</b></li>\n"
-          )
-        end if @products != nil
-
-        #	if (Update::deleteOldPackages) {
-        #	    // Proposal for removing packages which are not maintained any more
-        #	    summary_text = summary_text + "<li>" + _("Delete unmaintained packages") + "</li>\n";
-        #	}
+        @summary_text = Packages.product_update_summary(products)
+          .reduce(""){|acc, item| acc << "<li>#{item}</li>"}
 
         if Update.onlyUpdateInstalled
           # Proposal for backup during update
@@ -269,9 +245,12 @@ module Yast
           "help"                  => @update_options_help
         }
 
-        if @warning_message != nil
-          Ops.set(@ret, "warning", @warning_message)
-          Ops.set(@ret, "warning_level", :warning)
+        product_warning = Packages.product_update_warning(products)
+        @warning_message << product_warning["warning"] if product_warning["warning"]
+
+        if !@warning_message.empty?
+          @ret["warning"] = @warning_message
+          @ret["warning_level"] = product_warning["warning_level"] || :warning
         end
       elsif @func == "AskUser"
         @has_next = Ops.get_boolean(@param, "has_next", false)
