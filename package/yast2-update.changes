@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jun 25 11:10:44 UTC 2014 - lslezak@suse.cz
+
+- display product update summary and check for automatic product
+  removal at update proposal (bnc#883047)
+- 3.1.15
+
+-------------------------------------------------------------------
 Mon Jun 23 15:12:07 CEST 2014 - aschnell@suse.de
 
 - do not allow to continue if no upgradeable system was found
