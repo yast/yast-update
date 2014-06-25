@@ -181,8 +181,7 @@ module Yast
 
         products = Pkg.ResolvableProperties("", :product, "")
         # stores the proposal text output
-        @summary_text = Packages.product_update_summary(products)
-          .reduce(""){|acc, item| acc << "<li>#{item}</li>"}
+        @summary_text = Packages.product_update_summary(products).map{|item| "<li>#{item}</li>"}.join
 
         if Update.onlyUpdateInstalled
           # Proposal for backup during update
