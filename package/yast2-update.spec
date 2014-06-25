@@ -46,8 +46,8 @@ Requires:	yast2-storage >= 2.22.9
 Requires:	yast2 >= 3.1.28
 Requires:	yast2-installation
 
-# Packages.default_patterns
-Requires:	yast2-packager >= 3.1.10
+# product update summary
+Requires:	yast2-packager >= 3.1.24
 
 # Pkg.TargetInitializeOptions()
 Requires:       yast2-pkg-bindings >= 3.1.14
