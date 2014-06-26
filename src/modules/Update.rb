@@ -842,12 +842,18 @@ module Yast
     def create_backup(name, paths)
       mounted_root = Installation.destdir
 
+      # tar reports an error if a file does not exist.
+      # So we have to check this before.
+      existing_paths = paths.reject do |p|
+        p unless File.exists?(File.join(mounted_root, p))
+      end
+
       # ensure directory exists
       ::FileUtils.mkdir_p(File.join(mounted_root, BACKUP_DIR))
 
       target_file = File.join(mounted_root, BACKUP_DIR, "#{name}.tar.bz2")
 
-      paths_without_prefix = paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
+      paths_without_prefix = existing_paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
 
       command = "tar cjvf '#{target_file}'"
       command << " -C '#{mounted_root}'"
