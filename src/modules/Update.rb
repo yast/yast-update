@@ -844,9 +844,7 @@ module Yast
 
       # tar reports an error if a file does not exist.
       # So we have to check this before.
-      existing_paths = paths.reject do |p|
-        p unless File.exists?(File.join(mounted_root, p))
-      end
+      existing_paths = paths.select { |p| File.exist?(File.join(mounted_root, p)) }
 
       # ensure directory exists
       ::FileUtils.mkdir_p(File.join(mounted_root, BACKUP_DIR))
