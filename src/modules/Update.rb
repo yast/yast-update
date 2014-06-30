@@ -904,10 +904,12 @@ module Yast
       res = SCR.Execute(path(".target.bash_output"),  command)
       log.info "backup created with '#{command}' result: #{res}"
 
-      raise "Failed to create backup" if res["exit"] != 0
 
       # tarball can contain sensitive data, so prevent read to non-root
-      ::FileUtils.chmod(0600, tarball_path)
+      # do it for sure even if tar failed as it can contain partial content
+      ::FileUtils.chmod(0600, tarball_path) if File.exist?(tarball_path)
+
+      raise "Failed to create backup" if res["exit"] != 0
     end
 
     def create_restore_script(script_path, tarball_path, paths)
