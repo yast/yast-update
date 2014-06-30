@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jun 30 14:32:39 UTC 2014 - jreidinger@suse.cz
+
+- Add also restore script to backup to make easier restoring 
+  (bnc#882039)
+- 3.1.17
+
+-------------------------------------------------------------------
 Thu Jun 26 16:16:04 CEST 2014 - schubi@suse.de
 
 - Checking if the files exist which have to be backuped by the

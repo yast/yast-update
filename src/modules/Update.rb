@@ -842,25 +842,12 @@ module Yast
     def create_backup(name, paths)
       mounted_root = Installation.destdir
 
-      # tar reports an error if a file does not exist.
-      # So we have to check this before.
-      existing_paths = paths.select { |p| File.exist?(File.join(mounted_root, p)) }
+      tarball_path = File.join(BACKUP_DIR, "#{name}.tar.bz2")
+      root_tarball_path = File.join(mounted_root, tarball_path)
+      create_tarball(root_tarball_path, mounted_root, paths)
 
-      # ensure directory exists
-      ::FileUtils.mkdir_p(File.join(mounted_root, BACKUP_DIR))
-
-      target_file = File.join(mounted_root, BACKUP_DIR, "#{name}.tar.bz2")
-
-      paths_without_prefix = existing_paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
-
-      command = "tar cjvf '#{target_file}'"
-      command << " -C '#{mounted_root}'"
-      # no shell escaping here, but we backup reasonable files and want to allow globs
-      command << " " + paths_without_prefix.join(" ")
-      res = SCR.Execute(path(".target.bash_output"),  command)
-      log.info "backup created with '#{command}' result: #{res}"
-
-      raise "Failed to create backup" if res["exit"] != 0
+      script_path = File.join(mounted_root, BACKUP_DIR, "restore-#{name}.sh")
+      create_restore_script(script_path, tarball_path, paths)
     end
 
     publish :variable => :packages_to_install, :type => "integer"
@@ -899,6 +886,53 @@ module Yast
     publish :function => :create_backup, :type => "void (string,list)"
 
   private
+
+    def create_tarball(tarball_path, root, paths)
+      # tar reports an error if a file does not exist.
+      # So we have to check this before.
+      existing_paths = paths.select { |p| File.exist?(File.join(root, p)) }
+
+      # ensure directory exists
+      ::FileUtils.mkdir_p(File.dirname(tarball_path))
+
+      paths_without_prefix = existing_paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
+
+      command = "tar cjvf '#{tarball_path}'"
+      command << " -C '#{root}'"
+      # no shell escaping here, but we backup reasonable files and want to allow globs
+      command << " " + paths_without_prefix.join(" ")
+      res = SCR.Execute(path(".target.bash_output"),  command)
+      log.info "backup created with '#{command}' result: #{res}"
+
+
+      # tarball can contain sensitive data, so prevent read to non-root
+      # do it for sure even if tar failed as it can contain partial content
+      ::FileUtils.chmod(0600, tarball_path) if File.exist?(tarball_path)
+
+      raise "Failed to create backup" if res["exit"] != 0
+    end
+
+    def create_restore_script(script_path, tarball_path, paths)
+      paths_without_prefix = paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
+
+      # remove leading "/" from tarball to allow to run it from different root
+      tarball_path = tarball_path[1..-1] if tarball_path.start_with?("/")
+      script_content = <<EOF
+#! /bin/sh
+# change root to first parameter or use / as default
+# it is needed to allow restore in installation
+cd ${1:-/}
+#{paths_without_prefix.map{ |p| "rm -rf #{p}" }.join("\n")}
+
+tar xvf #{tarball_path} --overwrite
+# return back to original dir
+cd -
+EOF
+
+      File.write(script_path, script_content)
+      # allow execution of script
+      ::FileUtils.chmod(0744, script_path)
+    end
 
     # Reads the currently selected default desktop from sysconfig
     # and returns it

@@ -60,6 +60,11 @@ describe Yast::Update do
     before(:each) do
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
       allow(::FileUtils).to receive(:mkdir_p)
+      allow(::File).to receive(:write)
+      allow(::FileUtils).to receive(:chmod)
+      allow(::File).to receive(:exist?).and_return(true)
+      allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /^tar /).
+        and_return({"exit" => 0})
     end
 
     it "create tarball including given name with all paths added" do
@@ -86,12 +91,37 @@ describe Yast::Update do
       Yast::Update.create_backup(name, paths)
     end
 
+    it "change permission of tarball to be readable only for creator" do
+      name = "test-backup"
+      paths = ["a", "b"]
+      expect(::FileUtils).to receive(:chmod).with(0600, /test-backup\.tar.bz2/)
+
+      Yast::Update.create_backup(name, paths)
+    end
+
     it "raise exception if creating tarball failed" do
       name = "test-backup"
       paths = ["/path_with_slash"]
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /tar/).
         and_return({"exit" => 1})
       expect{Yast::Update.create_backup(name, paths)}.to raise_error
+    end
+
+    it "create restore script" do
+      name = "test-backup"
+      paths = ["a", "b"]
+      expect(File).to receive(:write)
+
+      Yast::Update.create_backup(name, paths)
+    end
+
+    it "set executable permission on restore script" do
+      name = "test-backup"
+      paths = ["a", "b"]
+
+      expect(::FileUtils).to receive(:chmod).with(0744, /restore-test-backup\.sh/)
+
+      Yast::Update.create_backup(name, paths)
     end
   end
 
