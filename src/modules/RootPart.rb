@@ -1797,6 +1797,7 @@ module Yast
         # enter the mount points of the newly mounted partitions
         # in the target map of the storage module
         AddToTargetMap()
+        Update.clean_backup
         create_backup
       end
 

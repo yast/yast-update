@@ -42,6 +42,7 @@ module Yast
       Yast.include self, "update/rootpart.rb"
 
       if RootPart.Mounted
+        Update.restore_backup
         Update.Detach
         RootPart.UnmountPartitions(false)
       end
