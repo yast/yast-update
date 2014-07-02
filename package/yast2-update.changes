@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul  2 10:15:10 UTC 2014 - jreidinger@suse.com
+
+- add cleaning of old backups and also restore backup if user
+  go back to root selection(bnc#882039)
+- 3.1.19
+
+-------------------------------------------------------------------
 Tue Jul  1 06:38:02 UTC 2014 - lslezak@suse.cz
 
 - remove all repositories when going back to close the open solv
