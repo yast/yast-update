@@ -855,6 +855,7 @@ module Yast
     # @example to store repos file and credentials directory
     #   Update.create_backup("repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
     def create_backup(name, paths)
+      log.info "Creating tarball for #{name} including #{paths}"
       mounted_root = Installation.destdir
 
       tarball_path = File.join(BACKUP_DIR, "#{name}.tar.bz2")
@@ -863,6 +864,26 @@ module Yast
 
       script_path = File.join(mounted_root, BACKUP_DIR, "restore-#{name}.sh")
       create_restore_script(script_path, tarball_path, paths)
+    end
+
+    # clean backup content. Usefull to clean up all content before creating new backup
+    def clean_backup
+      log.info "Cleaning backup dir"
+      mounted_root = Installation.destdir
+      ::FileUtils.rm_r(File.join(mounted_root, BACKUP_DIR),
+        :force => true, :secure => true)
+    end
+
+    # restores backup
+    def restore_backup
+      log.info "Restoring backup"
+      mounted_root = Installation.destdir
+      script_glob = File.join(mounted_root, BACKUP_DIR,"restore-*.sh")
+      ::Dir.glob(script_glob).each do |path|
+        cmd = "sh #{path} #{File.join("/", mounted_root)}"
+        res = SCR.Execute(path(".target.bash_output"), cmd)
+        log.info "Restoring with script #{cmd} result: #{res}"
+      end
     end
 
     publish :variable => :packages_to_install, :type => "integer"
@@ -899,6 +920,8 @@ module Yast
     publish :function => :Detach, :type => "void ()"
     publish :function => :installed_product, :type => "string ()"
     publish :function => :create_backup, :type => "void (string,list)"
+    publish :function => :clean_backup, :type => "void ()"
+    publish :function => :restore_backup, :type => "void ()"
 
   private
 

@@ -37,6 +37,7 @@ end
 describe Yast::Update do
   before(:each) do
     log.info "--- test ---"
+    allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
   end
 
   describe "#installed_product" do
@@ -58,7 +59,6 @@ describe Yast::Update do
 
   describe "#create_backup" do
     before(:each) do
-      allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
       allow(::FileUtils).to receive(:mkdir_p)
       allow(::File).to receive(:write)
       allow(::FileUtils).to receive(:chmod)
@@ -124,6 +124,27 @@ describe Yast::Update do
       Yast::Update.create_backup(name, paths)
     end
   end
+
+  describe "#clean_backup" do
+    it "removes backup directory with its content" do
+      expect(::FileUtils).to receive(:rm_r).with(/\/mnt.*system-upgrade.*/, anything())
+
+      Yast::Update.clean_backup
+    end
+  end
+
+  describe "#restore_backup" do
+    it "call all restore scripts in backup directory" do
+      expect(::Dir).to receive(:glob).and_return(["restore-a.sh", "restore-b.sh"])
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /sh .*restore-a.sh \/mnt/).
+        and_return({"exit" => 0})
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /sh .*restore-b.sh \/mnt/).
+        and_return({"exit" => 0})
+
+      Yast::Update.restore_backup
+    end
+  end
+
 
   describe "#SetDesktopPattern" do
     context "if there is no definition of window manager upgrade path in control file" do
