@@ -498,18 +498,20 @@ module Yast
         update_sum = Pkg.PkgUpdateAll(GetUpdateConf())
         Builtins.y2milestone("Update summary: %1", update_sum)
         Update.unknown_packages = Ops.get(update_sum, :ProblemListSze, 0)
-
-        sys_patterns = Packages.ComputeSystemPatternList
-        Builtins.foreach(sys_patterns) do |pat|
-          Pkg.ResolvableInstall(pat, :pattern)
-        end
-
-        if Pkg.PkgSolve(!Update.onlyUpdateInstalled)
-          Update.solve_errors = 0
-        else
-          Update.solve_errors = Pkg.PkgSolveErrors
-        end
       end
+
+      # preselect system patterns (including PackagesProposal patterns)
+      sys_patterns = Packages.ComputeSystemPatternList
+      Builtins.foreach(sys_patterns) do |pat|
+        Pkg.ResolvableInstall(pat, :pattern)
+      end
+
+      if Pkg.PkgSolve(!Update.onlyUpdateInstalled)
+        Update.solve_errors = 0
+      else
+        Update.solve_errors = Pkg.PkgSolveErrors
+      end
+
       # check product compatibility
       if !(Update.ProductsCompatible || Update.products_incompatible) || update_not_possible
         if Popup.ContinueCancel(
