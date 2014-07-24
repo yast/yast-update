@@ -504,7 +504,11 @@ module Yast
       sys_patterns = Packages.ComputeSystemPatternList
       sys_patterns.each {|pat| Pkg.ResolvableInstall(pat, :pattern)}
 
-      Update.solve_errors = Pkg.PkgSolve(!Update.onlyUpdateInstalled) ? 0 : Pkg.PkgSolveErrors
+      if Pkg.PkgSolve(!Update.onlyUpdateInstalled)
+        Update.solve_errors = 0
+      else
+        Update.solve_errors = Pkg.PkgSolveErrors
+      end
 
       # check product compatibility
       if !(Update.ProductsCompatible || Update.products_incompatible) || update_not_possible
