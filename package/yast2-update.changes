@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Jul 23 15:03:43 UTC 2014 - lslezak@suse.cz
+
+- update proposal: always select patterns to install, not only
+  once, needed to select patterns for newly added add-ons
+  (bnc#877012)
+- 3.1.20
+
+-------------------------------------------------------------------
 Wed Jul  2 10:15:10 UTC 2014 - jreidinger@suse.com
 
 - add cleaning of old backups and also restore backup if user
