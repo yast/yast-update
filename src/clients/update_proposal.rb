@@ -502,15 +502,9 @@ module Yast
 
       # preselect system patterns (including PackagesProposal patterns)
       sys_patterns = Packages.ComputeSystemPatternList
-      Builtins.foreach(sys_patterns) do |pat|
-        Pkg.ResolvableInstall(pat, :pattern)
-      end
+      sys_patterns.each {|pat| Pkg.ResolvableInstall(pat, :pattern)}
 
-      if Pkg.PkgSolve(!Update.onlyUpdateInstalled)
-        Update.solve_errors = 0
-      else
-        Update.solve_errors = Pkg.PkgSolveErrors
-      end
+      Update.solve_errors = Pkg.PkgSolve(!Update.onlyUpdateInstalled) ? 0 : Pkg.PkgSolveErrors
 
       # check product compatibility
       if !(Update.ProductsCompatible || Update.products_incompatible) || update_not_possible
