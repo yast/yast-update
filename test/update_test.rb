@@ -70,7 +70,7 @@ describe Yast::Update do
     it "create tarball including given name with all paths added" do
       name = "test-backup"
       paths = ["a", "b"]
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /^tar c.*#{name}.*tar.bz2.*a.*b/).
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /^tar c.*a.*b.*#{name}.tar.gz/).
         and_return({"exit" => 0})
       Yast::Update.create_backup(name, paths)
     end
@@ -94,7 +94,7 @@ describe Yast::Update do
     it "change permission of tarball to be readable only for creator" do
       name = "test-backup"
       paths = ["a", "b"]
-      expect(::FileUtils).to receive(:chmod).with(0600, /test-backup\.tar.bz2/)
+      expect(::FileUtils).to receive(:chmod).with(0600, /test-backup\.tar.gz/)
 
       Yast::Update.create_backup(name, paths)
     end

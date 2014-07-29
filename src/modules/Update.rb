@@ -858,7 +858,7 @@ module Yast
       log.info "Creating tarball for #{name} including #{paths}"
       mounted_root = Installation.destdir
 
-      tarball_path = File.join(BACKUP_DIR, "#{name}.tar.bz2")
+      tarball_path = File.join(BACKUP_DIR, "#{name}.tar.gz")
       root_tarball_path = File.join(mounted_root, tarball_path)
       create_tarball(root_tarball_path, mounted_root, paths)
 
@@ -935,10 +935,11 @@ module Yast
 
       paths_without_prefix = existing_paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
 
-      command = "tar cjvf '#{tarball_path}'"
-      command << " -C '#{root}'"
+      command = "tar cv -C '#{root}'"
       # no shell escaping here, but we backup reasonable files and want to allow globs
       command << " " + paths_without_prefix.join(" ")
+      # use parallel gzip for faster compression (uses all available CPU cores)
+      command << " | pigz - > '#{tarball_path}'"
       res = SCR.Execute(path(".target.bash_output"),  command)
       log.info "backup created with '#{command}' result: #{res}"
 

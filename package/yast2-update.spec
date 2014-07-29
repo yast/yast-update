@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.20
+Version:        3.1.21
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -62,6 +62,9 @@ Conflicts:	yast2-pkg-bindings < 2.15.11
 Conflicts:	yast2-storage < 2.15.4
 
 Requires:       yast2-ruby-bindings >= 1.0.0
+
+# use parallel gzip when crating backup (much faster)
+Requires:       pigz
 
 Summary:	YaST2 - Update
 

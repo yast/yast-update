@@ -1808,6 +1808,7 @@ module Yast
     # backup them to restore if something goes wrong (bnc#882039)
     BACKUP_DIRS = {
       "sw_mgmt" => [
+        "/var/lib/rpm",
         "/etc/zypp/repos.d",
         "/etc/zypp/services.d",
         "/etc/zypp/credentials.d"
