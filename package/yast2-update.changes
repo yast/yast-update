@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Mon Jul 28 14:12:31 UTC 2014 - lslezak@suse.cz
+
+- backup /var/lib/rpm at update to prevent from accidental
+  corruption (bnc#857639)
+- switch from bzip2 to gzip compression (slightly less compression
+  ratio, but much faster), use parallel gzip (pigz) for even
+  faster backup
+- 3.1.21
+
+-------------------------------------------------------------------
 Wed Jul 23 15:03:43 UTC 2014 - lslezak@suse.cz
 
 - update proposal: always select patterns to install, not only
