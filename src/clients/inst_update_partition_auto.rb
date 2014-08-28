@@ -84,7 +84,8 @@ module Yast
             _("A possibly incomplete installation has been detected.")
           )
           UmountMountedPartition()
-        elsif !(Pkg.TargetInitialize(Installation.destdir) && Pkg.TargetLoad)
+        elsif !(Pkg.TargetInitializeOptions(Installation.destdir,
+              "target_distro" => target_distribution) && Pkg.TargetLoad)
           Report.Error("Initializing the target system failed")
           UmountMountedPartition()
           Pkg.TargetFinish
