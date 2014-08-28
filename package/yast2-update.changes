@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug 28 09:11:15 UTC 2014 - lslezak@suse.cz
+
+- override the target distribution also in Autoyast autoupgrade
+  mode (bnc#892474)
+- 3.1.22
+
+-------------------------------------------------------------------
 Mon Jul 28 14:12:31 UTC 2014 - lslezak@suse.cz
 
 - backup /var/lib/rpm at update to prevent from accidental
