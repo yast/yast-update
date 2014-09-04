@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.22
+Version:        3.1.23
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -38,7 +38,7 @@ BuildRequires:	libxml2-tools
 BuildRequires:	yast2-installation-control
 
 # Needed for tests
-BuildRequires:  rubygem-rspec
+BuildRequires:  rubygem(rspec)
 
 # Stroage::ChangeDmNamesFromCrypttab
 Requires:	yast2-storage >= 2.22.9
