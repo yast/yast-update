@@ -95,17 +95,6 @@ module Yast
 
         init_stuff
 
-        if Update.products_incompatible
-          return {
-            # error message in proposal
-            "warning"       => _(
-              "The installed product is not compatible with the product on the installation media."
-            ),
-            "warning_level" => :fatal,
-            "raw_proposal"  => []
-          }
-        end
-
         # TRANSLATORS: unknown product (label)
         @update_from = _("Unknown product")
         if Ops.get_string(Installation.installedVersion, "show", "") != "" &&
@@ -130,6 +119,18 @@ module Yast
           @update_to = Ops.get_string(Installation.updateVersion, "show", "")
         elsif Ops.get_string(Installation.updateVersion, "version", "") != ""
           @update_to = Ops.get_string(Installation.updateVersion, "name", "")
+        end
+
+        if Update.products_incompatible
+          return {
+            # error message in proposal
+            "warning"       => _(
+              "The installed product (%{update_from}) is not compatible with " \
+              "the product on the installation media (%{update_to})."
+            ) % { :update_from => @update_from, :update_to => @update_to },
+            "warning_level" => :fatal,
+            "raw_proposal"  => []
+          }
         end
 
         # when versions don't match and upgrade is not allowed (running system)
