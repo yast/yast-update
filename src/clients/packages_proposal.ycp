@@ -155,7 +155,7 @@
         if (locked[`taboo]:0 > 0)
         {
             // summary text, %1 is a number of taboo packages (forbidden to install)
-	    tmp = add(tmp, HTML::Colorize(sformat(_("Taboo Packages: %1"), locked[`taboo]:0), "red"));
+	    tmp = add(tmp, HTML::Colorize(sformat(_("Tabooed Packages: %1"), locked[`taboo]:0), "red"));
         }
 
 	// proposal for packages during update, %1 is count of packages
