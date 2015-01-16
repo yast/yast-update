@@ -44,6 +44,43 @@
 	return ret;
     }
 
+    // count locked packages
+    define map<symbol, integer> locked_packages()
+    {
+        list<string> protected = [];
+        list<string> taboo = [];
+
+        list<map> packages = Pkg::ResolvableProperties("", `package, "");
+
+        // Pkg::ResolvableProperties returns all package instances (all versions),
+        // we have to ensure that a package is either in "taboo" or "protected"
+        // list (but never in both) and each package is counted only once
+        foreach(map package, packages, {
+            if (package["locked"]:false)
+            {
+                string name = package["name"]:"";
+
+                if (package["status"]:nil == `available && !contains(taboo, name) &&
+                    !contains(protected, name))
+                {
+                    taboo = add(taboo, name);
+                }
+
+                if (package["status"]:nil == `installed && !contains(protected, name))
+                {
+                    protected = add(protected, name);
+
+                    // remove from taboo if a different version is there
+                    taboo = filter(string taboo_name, taboo, { return taboo_name != name; });
+                }
+            }
+         });
+
+        y2milestone("Protected packages: %1", protected);
+        y2milestone("Taboo packages: %1", taboo);
+
+        return $[ `protected : size(protected), `taboo : size(taboo) ];
+    }
 
     if ( func == "MakeProposal" )
     {
@@ -107,6 +144,20 @@
 	// proposal for packages during update, %1 is count of packages
 	tmp = add (tmp, sformat (_("New Packages to Install: %1"),
 	    Update::packages_to_install));
+
+        map<symbol, integer> locked = locked_packages();
+        if (locked[`protected]:0 > 0)
+        {
+            // summary text, %1 is a number of protected packages,
+            // (kept in the current version, disabled for upgrade)
+	    tmp = add(tmp, HTML::Colorize(sformat(_("Protected Packages: %1"), locked[`protected]:0), "red"));
+        }
+        if (locked[`taboo]:0 > 0)
+        {
+            // summary text, %1 is a number of taboo packages (forbidden to install)
+	    tmp = add(tmp, HTML::Colorize(sformat(_("Tabooed Packages: %1"), locked[`taboo]:0), "red"));
+        }
+
 	// proposal for packages during update, %1 is count of packages
 	tmp = add (tmp, sformat (_("Packages to Remove: %1"),
 	    Update::packages_to_remove));
