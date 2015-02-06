@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb  6 15:30:08 UTC 2015 - lslezak@suse.cz
+
+- install the packages needed for accesing the installation
+  repository (bnc#916200)
+- 2.17.26
+
+-------------------------------------------------------------------
 Fri Jan 16 13:47:52 UTC 2015 - lslezak@suse.cz
 
 - display number of locked ("protected" and "taboo") packages in

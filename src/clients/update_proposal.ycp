@@ -214,6 +214,13 @@
 	    foreach (string res, restore, {
 	        Pkg::ResolvableInstall (res, `product);
 	    });
+
+            // make sure the packages needed for accessing the installation repository
+            // are installed, e.g. "cifs-mount" for SMB or "nfs-client" for NFS repositories
+            foreach (string pkg, Packages::sourceAccessPackages(), {
+              Pkg::ResolvableInstall(pkg, `package);
+            });
+
 	    if (! Update::onlyUpdateInstalled)
 	    {
 		    if (Packages::using_patterns)
