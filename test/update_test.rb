@@ -155,7 +155,7 @@ describe Yast::Update do
           expect(msg).to match(/upgrade is not handled by this product/i)
         end.and_call_original
 
-        expect(Yast::Update.SetDesktopPattern).to be_true
+        expect(Yast::Update.SetDesktopPattern).to eq(true)
       end
     end
 
@@ -168,7 +168,7 @@ describe Yast::Update do
           expect(msg).to match(/(Sysconfig file .* does not exist|cannot read default window manager)/i)
         end.twice.and_call_original
 
-        expect(Yast::Update.SetDesktopPattern).to be_true
+        expect(Yast::Update.SetDesktopPattern).to eq(true)
       end
     end
 
@@ -182,7 +182,7 @@ describe Yast::Update do
           expect(msg).to match(/no matching desktop found .* #{installed_desktop}/i)
         end.and_call_original
 
-        expect(Yast::Update.SetDesktopPattern).to be_true
+        expect(Yast::Update.SetDesktopPattern).to eq(true)
       end
     end
 
@@ -197,7 +197,7 @@ describe Yast::Update do
           expect(msg).to match(/(package .* installed: false|not all packages .* are installed)/i)
         end.twice.and_call_original
 
-        expect(Yast::Update.SetDesktopPattern).to be_true
+        expect(Yast::Update.SetDesktopPattern).to eq(true)
       end
     end
 
@@ -208,7 +208,7 @@ describe Yast::Update do
           Yast::Pkg.stub(:ResolvableInstall).with(kind_of(String), :pattern).and_return(false)
 
           expect(Yast::Report).to receive(:Error).with(/cannot select these patterns/i)
-          expect(Yast::Update.SetDesktopPattern).to be_false
+          expect(Yast::Update.SetDesktopPattern).to eq(false)
         end
       end
 
@@ -218,7 +218,7 @@ describe Yast::Update do
           Yast::Pkg.stub(:ResolvableInstall).with(kind_of(String), :package).and_return(false)
 
           expect(Yast::Report).to receive(:Error).with(/cannot select these packages/i)
-          expect(Yast::Update.SetDesktopPattern).to be_false
+          expect(Yast::Update.SetDesktopPattern).to eq(false)
         end
       end
 
@@ -226,7 +226,7 @@ describe Yast::Update do
         it "returns true" do
           default_SetDesktopPattern_stubs
 
-          expect(Yast::Update.SetDesktopPattern).to be_true
+          expect(Yast::Update.SetDesktopPattern).to eq(true)
         end
       end
     end
