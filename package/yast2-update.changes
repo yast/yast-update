@@ -2,7 +2,7 @@
 Fri Jan 16 13:47:52 UTC 2015 - lslezak@suse.cz
 
 - display number of locked ("protected" and "taboo") packages in
-  the package proposal summary (fate#318257)
+  the package proposal summary (fate#318257) (bnc#917896)
 - 2.17.25
 
 -------------------------------------------------------------------
