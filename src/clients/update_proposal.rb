@@ -25,7 +25,9 @@
 #
 # Purpose:	Let user choose update settings.
 #
-# $Id$
+
+require "cgi/util"
+
 module Yast
   class UpdateProposalClient < Client
     include Yast::Logger
@@ -209,14 +211,17 @@ module Yast
             "</li>\n"
           )
 
-          if @patterns != nil && Ops.greater_than(Builtins.size(@patterns), 0)
+          if @patterns != nil && !@patterns.empty?
             @summary_text = Ops.add(@summary_text, HTML.ListStart)
+
+            # sort the patterns
+            @patterns.sort! { |x, y| x["order"].to_i <=> y["order"].to_i }
 
             Builtins.foreach(@patterns) do |p|
               @summary_text = Ops.add(
                 Ops.add(
                   Ops.add(@summary_text, "<li>"),
-                  Ops.get_string(p, "summary", Ops.get_string(p, "name", ""))
+                  CGI.escapeHTML(Ops.get_string(p, "summary", Ops.get_string(p, "name", "")))
                 ),
                 "</li>\n"
               )
