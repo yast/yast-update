@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon May 18 14:42:15 UTC 2015 - lslezak@suse.cz
+
+- sort patterns in the upgrade summary to have stable output for
+  openQA tests (bsc#931295), escape the HTML tags
+- 3.1.28
+
+-------------------------------------------------------------------
 Mon Feb  9 16:18:41 UTC 2015 - lslezak@suse.cz
 
 - install the packages needed for accesing the installation
