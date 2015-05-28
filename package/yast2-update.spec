@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.28
+Version:        3.1.29
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -28,7 +28,7 @@ License:        GPL-2.0
 BuildRequires:	update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
-BuildRequires:  yast2 >= 3.1.28
+BuildRequires:  yast2 >= 3.1.126
 BuildRequires:  yast2-packager
 
 # xmllint
@@ -42,8 +42,8 @@ BuildRequires:  rubygem(rspec)
 
 # Stroage::ChangeDmNamesFromCrypttab
 Requires:	yast2-storage >= 2.22.9
-# OSRelease
-Requires:	yast2 >= 3.1.28
+# FSSnapshotStore
+Requires:	yast2 >= 3.1.126
 Requires:	yast2-installation
 
 # product update summary

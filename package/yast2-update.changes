@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May 28 11:16:30 UTC 2015 - jreidinger@suse.com
+
+- create pre update snapshot (fate#317900)
+- 3.1.29
+
+-------------------------------------------------------------------
 Mon May 18 14:42:15 UTC 2015 - lslezak@suse.cz
 
 - sort patterns in the upgrade summary to have stable output for
