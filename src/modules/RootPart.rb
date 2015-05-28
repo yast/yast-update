@@ -28,6 +28,8 @@
 #
 # $Id$
 require "yast"
+require "yast2/fs_snapshot"
+require "yast2/fs_snapshot_store"
 
 module Yast
   class RootPartClass < Module
@@ -1797,6 +1799,10 @@ module Yast
         # enter the mount points of the newly mounted partitions
         # in the target map of the storage module
         AddToTargetMap()
+        if Yast2::FsSnapshot.configured?
+          snapshot = Yast2::FsSnapshot.create_pre("before upgrade")
+          Yast2::FsSnapshotStore.save("upgrade", snapshot.number)
+        end
         Update.clean_backup
         create_backup
       end
