@@ -25,14 +25,15 @@
 #
 # Purpose:	Responsible for searching of root partitions and
 #		mounting of target partitions.
-#
-# $Id$
+
 require "yast"
 require "yast2/fs_snapshot"
 require "yast2/fs_snapshot_store"
 
 module Yast
   class RootPartClass < Module
+    NON_MODULAR_FS = ["proc", "sysfs"]
+
     def main
       Yast.import "UI"
 
@@ -84,8 +85,6 @@ module Yast
       @did_try_mount_partitions = false
 
       @already_checked_jfs_partitions = []
-
-      @non_modular_fs = ["proc", "sysfs"]
 
       # List of mounted partitions, activated swap partitions and loop devices.
       # Amongst other things used for reversing action if mode is changed from
@@ -565,7 +564,7 @@ module Yast
     # @param [String] device string device to mount
     # @param [String] mount_type string filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
-    def MountPartition(mount_point, device, mount_type)
+    def MountPartition(mount_point, device, mount_type, fsopts = "")
       if mount_type == ""
         # e.g. -> "reiserfs"
         mount_type = FileSystems.GetMountString(Storage.DetectFs(device), "")
@@ -575,7 +574,7 @@ module Yast
       if mount_type == ""
         Builtins.y2warning("Unknown filesystem, skipping modprobe...") 
         # #211916, sysfs, proc are not modular
-      elsif !Builtins.contains(@non_modular_fs, mount_type)
+      elsif !NON_MODULAR_FS.include?(mount_type)
         # #167976, was broken with "-t ", modprobe before adding it
         Builtins.y2milestone("Calling 'modprobe %1'", mount_type)
         SCR.Execute(path(".target.modprobe"), mount_type, "")
@@ -600,7 +599,13 @@ module Yast
         return error_message
       end
 
-      mount_type = Ops.add("-t ", mount_type) if mount_type != ""
+      mnt_opts = cleaned_mount_options(fsopts)
+
+      mnt_opts = "-o " + mnt_opts unless mnt_opts.empty?
+
+      mnt_opts << " -t #{mount_type}" if mount_type != ""
+
+      Builtins.y2milestone("mount options '#{mnt_opts}'")
 
       ret = Convert.to_boolean(
         SCR.Execute(
@@ -610,7 +615,7 @@ module Yast
             Ops.add(Installation.destdir, mount_point),
             Installation.mountlog
           ],
-          mount_type
+          mnt_opts
         )
       )
       if ret
@@ -631,10 +636,10 @@ module Yast
     # @param [String] device string device to mount
     # @param [String] mount_type string filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
-    def FsckAndMount(mount_point, device, mount_type)
+    def FsckAndMount(mount_point, device, mount_type, mntopts="")
       FSCKPartition(device)
 
-      ret = MountPartition(mount_point, device, mount_type)
+      ret = MountPartition(mount_point, device, mount_type, mntopts)
 
       if ret == nil
         AddMountedPartition(
@@ -1244,7 +1249,7 @@ module Yast
 
             mount_err = ""
             while mount_err != nil
-              mount_err = FsckAndMount(fspath, spec, mount_type)
+              mount_err = FsckAndMount(fspath, spec, mount_type, mntops)
               if mount_err != nil
                 Builtins.y2error(
                   "mounting %1 (type %2) on %3 failed",
@@ -1909,7 +1914,7 @@ module Yast
         end
 
         # mustn't be empty and must be modular
-        if mount_type != "" && !Builtins.contains(@non_modular_fs, mount_type)
+        if mount_type != "" && !NON_MODULAR_FS.include?(mount_type)
           SCR.Execute(path(".target.modprobe"), mount_type, "")
         end
         # mount (read-only) partition to Installation::destdir
@@ -2218,6 +2223,18 @@ module Yast
       end
 
       nil
+    end
+
+    IGNORED_OPTIONS = [
+      "ro", # in installation do not mount anything RO
+      "defaults", # special defaults options in fstab
+      /^locale=.*$/, #avoid locale for NTFS
+    ]
+
+    def cleaned_mount_options(mount_options)
+      elements = mount_options.split(",")
+      elements.delete_if { |e| IGNORED_OPTIONS.any? { |o| o === e } }
+      elements.join(",")
     end
 
     publish :variable => :selectedRootPartition, :type => "string"
