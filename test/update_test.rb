@@ -1,8 +1,6 @@
 #!/usr/bin/env rspec
 
-ENV["Y2DIR"] = File.join(File.expand_path(File.dirname(__FILE__)), "../src/")
-
-require "yast"
+require_relative "test_helper"
 
 Yast.import "Update"
 Yast.import "Installation"
