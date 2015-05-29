@@ -1,4 +1,5 @@
 TESTS = \
+  root_part_test.rb \
   suse_release_test.rb \
   update_test.rb
 

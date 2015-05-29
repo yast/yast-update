@@ -25,14 +25,15 @@
 #
 # Purpose:	Responsible for searching of root partitions and
 #		mounting of target partitions.
-#
-# $Id$
+
 require "yast"
 require "yast2/fs_snapshot"
 require "yast2/fs_snapshot_store"
 
 module Yast
   class RootPartClass < Module
+    NON_MODULAR_FS = ["proc", "sysfs"]
+
     def main
       Yast.import "UI"
 
@@ -84,8 +85,6 @@ module Yast
       @did_try_mount_partitions = false
 
       @already_checked_jfs_partitions = []
-
-      @non_modular_fs = ["proc", "sysfs"]
 
       # List of mounted partitions, activated swap partitions and loop devices.
       # Amongst other things used for reversing action if mode is changed from
@@ -575,7 +574,7 @@ module Yast
       if mount_type == ""
         Builtins.y2warning("Unknown filesystem, skipping modprobe...") 
         # #211916, sysfs, proc are not modular
-      elsif !Builtins.contains(@non_modular_fs, mount_type)
+      elsif !NON_MODULAR_FS.include?(mount_type)
         # #167976, was broken with "-t ", modprobe before adding it
         Builtins.y2milestone("Calling 'modprobe %1'", mount_type)
         SCR.Execute(path(".target.modprobe"), mount_type, "")
@@ -1909,7 +1908,7 @@ module Yast
         end
 
         # mustn't be empty and must be modular
-        if mount_type != "" && !Builtins.contains(@non_modular_fs, mount_type)
+        if mount_type != "" && !NON_MODULAR_FS.include?(mount_type)
           SCR.Execute(path(".target.modprobe"), mount_type, "")
         end
         # mount (read-only) partition to Installation::destdir
