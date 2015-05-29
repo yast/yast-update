@@ -564,7 +564,7 @@ module Yast
     # @param [String] device string device to mount
     # @param [String] mount_type string filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
-    def MountPartition(mount_point, device, mount_type)
+    def MountPartition(mount_point, device, mount_type, fsopts = "")
       if mount_type == ""
         # e.g. -> "reiserfs"
         mount_type = FileSystems.GetMountString(Storage.DetectFs(device), "")
@@ -599,7 +599,13 @@ module Yast
         return error_message
       end
 
-      mount_type = Ops.add("-t ", mount_type) if mount_type != ""
+      mnt_opts = cleaned_mount_options(fsopts)
+
+      mnt_opts = "-o " + mnt_opts unless mnt_opts.empty?
+
+      mnt_opts << " -t #{mount_type}" if mount_type != ""
+
+      Builtins.y2milestone("mount options '#{mnt_opts}'")
 
       ret = Convert.to_boolean(
         SCR.Execute(
@@ -609,7 +615,7 @@ module Yast
             Ops.add(Installation.destdir, mount_point),
             Installation.mountlog
           ],
-          mount_type
+          mnt_opts
         )
       )
       if ret
@@ -630,10 +636,10 @@ module Yast
     # @param [String] device string device to mount
     # @param [String] mount_type string filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
-    def FsckAndMount(mount_point, device, mount_type)
+    def FsckAndMount(mount_point, device, mount_type, mntopts="")
       FSCKPartition(device)
 
-      ret = MountPartition(mount_point, device, mount_type)
+      ret = MountPartition(mount_point, device, mount_type, mntopts)
 
       if ret == nil
         AddMountedPartition(
@@ -1243,7 +1249,7 @@ module Yast
 
             mount_err = ""
             while mount_err != nil
-              mount_err = FsckAndMount(fspath, spec, mount_type)
+              mount_err = FsckAndMount(fspath, spec, mount_type, mntops)
               if mount_err != nil
                 Builtins.y2error(
                   "mounting %1 (type %2) on %3 failed",
@@ -2217,6 +2223,18 @@ module Yast
       end
 
       nil
+    end
+
+    IGNORED_OPTIONS = [
+      "ro", # in installation do not mount anything RO
+      "defaults", # special defaults options in fstab
+      /^locale=.*$/, #avoid locale for NTFS
+    ]
+
+    def cleaned_mount_options(mount_options)
+      elements = mount_options.split(",")
+      elements.delete_if { |e| IGNORED_OPTIONS.any? { |o| o === e } }
+      elements.join(",")
     end
 
     publish :variable => :selectedRootPartition, :type => "string"

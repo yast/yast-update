@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri May 29 14:58:19 UTC 2015 - jreidinger@suse.com
+
+- mount properly subvolumes of upgraded system (fate#317900)
+- 3.1.30
+
+-------------------------------------------------------------------
 Thu May 28 11:16:30 UTC 2015 - jreidinger@suse.com
 
 - create pre update snapshot (fate#317900)
