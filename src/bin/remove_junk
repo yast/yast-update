@@ -1,13 +1,15 @@
 #!/bin/bash
 
+# remove old YaST directory from YaST1 era
 if test -d $1/var/lib/YaST ; then
     /bin/rm -fr $1/var/lib/YaST
 fi
 
 if test -d $1/var/lib/YaST2 ; then
-    /usr/bin/find $1/var/lib/YaST2 -name "*" -a -type f -a \( -name "users.ycp" -prune -o -exec rm -f -- {} \; \)
+  # place here files from dropped modules
 fi
 
+# remove old you stuff which can be quite big
 if test -d $1/var/lib/YaST2/you ; then
     /bin/rm -f $1/var/lib/YaST2/you/quickcheck
     /bin/rm -fr $1/var/lib/YaST2/you/{files,installed,mnt,scripts}
