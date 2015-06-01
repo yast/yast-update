@@ -5,7 +5,7 @@ if test -d $1/var/lib/YaST ; then
 fi
 
 if test -d $1/var/lib/YaST2 ; then
-    /usr/bin/find $1/var/lib/YaST2 -name "*" -a -type f -a \( -name "users.ycp" -prune -o -exec rm -f -- {} \; \)
+  # place here files from dropped modules
 fi
 
 if test -d $1/var/lib/YaST2/you ; then
