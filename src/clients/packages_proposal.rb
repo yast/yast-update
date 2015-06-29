@@ -28,6 +28,10 @@
 # $Id$
 module Yast
   class PackagesProposalClient < Client
+    include Yast::Logger
+
+    PACKAGER_LINK = "start_packager"
+
     def main
       Yast.import "Pkg"
       textdomain "update"
@@ -145,10 +149,11 @@ module Yast
           # the proposal for the packages requires manual invervention
           @ret = {
             "preformatted_proposal" => HTML.List(@tmp),
-            # warning text
+            "links"                 => [PACKAGER_LINK],
+            # TRANSLATORS: warning text, keep the HTML tags (<a href...>) untouched
             "warning"               => _(
-              "Cannot solve all conflicts. Manual intervention is required."
-            ),
+              "Cannot solve all conflicts. <a href=\"%s\">Manual intervention is required.</a>"
+            ) % PACKAGER_LINK,
             "warning_level"         => :blocker
           }
         elsif Ops.greater_than(Builtins.size(@warning), 0)
@@ -177,16 +182,11 @@ module Yast
         #
         # sequence = DummyMod::AskUser( has_next );
 
+        # NOTE: we always run the package selector, no need to check the
+        # @param["chosen_id"] value which determines the link clicked
         @result = call_packageselector
 
-        # FIXME: IT'S A MESS
-        # if (Pkg::PkgSolve (!Update::onlyUpdateInstalled))
-        #     Update::solve_errors = 0;
-        # else
-        #     Update::solve_errors = Pkg::PkgSolveErrors ();
-
         # Fill return map
-
         @ret = { "workflow_sequence" => @result }
       elsif @func == "Description"
         # Fill return map.
@@ -202,7 +202,8 @@ module Yast
         }
       end
 
-      deep_copy(@ret)
+      log.info "packages_proposal.rb result: #{@ret.inspect}"
+      @ret
     end
 
     def call_packageselector
@@ -224,7 +225,7 @@ module Yast
 
       ret
     end
-  end
+  end unless defined?(PackagesProposalClient)
 end
 
 Yast::PackagesProposalClient.new.main
