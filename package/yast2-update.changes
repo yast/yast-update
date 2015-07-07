@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jul  1 13:51:41 CEST 2015 - shundhammer@suse.de
+
+- Cleanup for snapshots made during installation (bnc#935923)
+- 3.1.33 
+
+-------------------------------------------------------------------
 Mon Jun 29 16:13:30 UTC 2015 - lslezak@suse.cz
 
 - UX: add a link to the dependency error message to make the
