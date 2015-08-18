@@ -34,7 +34,7 @@
     include "partitioning/custom_part_dialogs.ycp";
 
     // all supported filesystems
-    global list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs ];
+    global list possible_root_fs = [ `ext2, `ext3, `reiser, `xfs, `jfs, `btrfs ];
 
     // Selected root partition for the update or boot.
     global string selectedRootPartition = "";
