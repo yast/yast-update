@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Oct  5 08:49:01 CEST 2015 - locilka@suse.com
+
+- Added new test for Update.IsProductSupportedForUpgrade
+  (bsc#947398)
+- 3.1.34
+
+-------------------------------------------------------------------
 Wed Jul  1 13:51:41 CEST 2015 - shundhammer@suse.de
 
 - Cleanup for snapshots made during installation (bnc#935923)
