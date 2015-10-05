@@ -6,6 +6,7 @@ Yast.import "Update"
 Yast.import "Installation"
 Yast.import "ProductControl"
 Yast.import "ProductFeatures"
+Yast.import "ProductFeatures"
 Yast.import "FileUtils"
 Yast.import "Misc"
 Yast.import "SCR"
@@ -19,13 +20,18 @@ DATA_DIR = File.join(
   "data"
 )
 
-def default_product_control
+def default_product_control_desktop
   Yast::ProductControl.custom_control_file = File.join(DATA_DIR, "control-files", "desktop-upgrade.xml")
   Yast::ProductControl.Init
 end
 
+def default_product_control_system
+  Yast::ProductControl.custom_control_file = File.join(DATA_DIR, "control-files", "system-upgrade.xml")
+  Yast::ProductControl.Init
+end
+
 def default_SetDesktopPattern_stubs
-  default_product_control
+  default_product_control_desktop
   Yast::Update.stub(:installed_desktop).and_return("sysconfig-desktop")
   Yast::Update.stub(:packages_installed?).and_return(true)
   Yast::Pkg.stub(:ResolvableInstall).with(kind_of(String), :pattern).and_return(true)
@@ -159,7 +165,7 @@ describe Yast::Update do
 
     context "if there is no windowmanager sysconfig file present on the system selected for upgrade" do
       it "returns true as there is nothing to do" do
-        default_product_control
+        default_product_control_desktop
         Yast::FileUtils.stub(:Exists).with(/windowmanager/).and_return(false)
 
         expect(Yast::Y2Logger.instance).to receive(:warn) do |msg|
@@ -172,7 +178,7 @@ describe Yast::Update do
 
     context "if no upgrade path for the current windowmanager is defined" do
       it "returns true as there is nothing to do" do
-        default_product_control
+        default_product_control_desktop
         installed_desktop = "desktop-not-supported-for-upgrade"
         Yast::Update.stub(:installed_desktop).and_return(installed_desktop)
 
@@ -186,7 +192,7 @@ describe Yast::Update do
 
     context "if desktop packages are not installed" do
       it "returns true as there is nothing to upgrade" do
-        default_product_control
+        default_product_control_desktop
         Yast::Update.stub(:installed_desktop).and_return("sysconfig-desktop")
         Yast::SCR.stub(:Execute).and_return(0)
         Yast::SCR.stub(:Execute).with(kind_of(Yast::Path), /rpm -q/).and_return(-1)
@@ -228,6 +234,29 @@ describe Yast::Update do
         end
       end
     end
+  end
 
+  describe "#IsProductSupportedForUpgrade" do
+    it "returns whether upgrade of the installed system to the new product is supported" do
+      # uses stored product control file, test for bnc#947398
+      default_product_control_system
+
+      # Supported systems
+      allow(Yast::Update).to receive(:installed_product).and_return("openSUSE Leap 42.1 Milestone 2")
+      expect(Yast::Update.IsProductSupportedForUpgrade).to be(true)
+
+      allow(Yast::Update).to receive(:installed_product).and_return("openSUSE 13.1")
+      expect(Yast::Update.IsProductSupportedForUpgrade).to be(true)
+
+      allow(Yast::Update).to receive(:installed_product).and_return("openSUSE 12.2")
+      expect(Yast::Update.IsProductSupportedForUpgrade).to be(true)
+
+      # Unsupported systems
+      allow(Yast::Update).to receive(:installed_product).and_return("openSUSE 11.2")
+      expect(Yast::Update.IsProductSupportedForUpgrade).to be(false)
+
+      allow(Yast::Update).to receive(:installed_product).and_return("Some Other Linux 8.4")
+      expect(Yast::Update.IsProductSupportedForUpgrade).to be(false)
+    end
   end
 end
