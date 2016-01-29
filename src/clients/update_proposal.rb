@@ -528,6 +528,11 @@ module Yast
         Update.solve_errors = Pkg.PkgSolveErrors
       end
 
+      log.info "Update compatibility: " \
+        "Update.ProductsCompatible: #{Update.ProductsCompatible}, " \
+        "Update.products_incompatible: #{Update.products_incompatible}, " \
+        "update_not_possible: #{update_not_possible}"
+
       # check product compatibility
       if !(Update.ProductsCompatible || Update.products_incompatible) || update_not_possible
         if Popup.ContinueCancel(
