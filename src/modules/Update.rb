@@ -122,23 +122,20 @@ module Yast
     #-----------------------------------------------------------------------
 
     def ListOfRegexpsMatchesProduct(regexp_items, product)
-      regexp_items = deep_copy(regexp_items)
-      return false if regexp_items == nil || regexp_items == []
-      if product == nil
-        Builtins.y2error("Product is nil")
+      return false if regexp_items.nil? || regexp_items.empty?
+
+      if product.nil?
+        log.error "Product is nil"
         return false
       end
 
-      ret = false
-      Builtins.foreach(regexp_items) do |one_regexp|
-        if Builtins.regexpmatch(product, one_regexp)
-          Builtins.y2milestone(">%1< is matching >%2<", product, one_regexp)
-          ret = true
-          raise Break
-        end
+      ret = regexp_items.any? do |one_regexp|
+        match = Builtins.regexpmatch(product, one_regexp)
+        log.info ">#{product}< is matching >#{one_regexp}<" if match
+        match
       end
 
-      Builtins.y2milestone("Returning %1", ret)
+      log.info "A regexp matches the installed product: #{ret}"
       ret
     end
 

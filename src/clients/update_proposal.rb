@@ -474,10 +474,16 @@ module Yast
       if !Update.did_init1
         Update.did_init1 = true
 
+        # products to reselect after reset
         restore = []
-        selected = Pkg.ResolvableProperties("", :product, "")
-        Builtins.foreach(selected) do |s|
-          restore = Builtins.add(restore, Ops.get_string(s, "name", ""))
+
+        Pkg.ResolvableProperties("", :product, "").each do |product|
+          # only selected items but ignore the selections done by solver,
+          # during restoration they would be changed to be selected by YaST and they
+          # will be selected by solver again anyway
+          if product["status"] == :selected && product["transact_by"] != :solver
+            restore << product["name"]
+          end
         end
 
         Pkg.PkgApplReset
@@ -521,6 +527,11 @@ module Yast
       else
         Update.solve_errors = Pkg.PkgSolveErrors
       end
+
+      log.info "Update compatibility: " \
+        "Update.ProductsCompatible: #{Update.ProductsCompatible}, " \
+        "Update.products_incompatible: #{Update.products_incompatible}, " \
+        "update_not_possible: #{update_not_possible}"
 
       # check product compatibility
       if !(Update.ProductsCompatible || Update.products_incompatible) || update_not_possible
