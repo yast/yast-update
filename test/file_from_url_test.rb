@@ -17,6 +17,15 @@ describe Yast::Transfer::FileFromUrl do
     end
   end
 
+  # avoid BuildRequiring a package that we stub entirely anyway
+  Yast::Storage = nil
+  Yast::StorageDevices = nil
+  before do
+    allow(Yast).to receive(:import).and_call_original
+    allow(Yast).to receive(:import).with("Storage").and_return true
+    allow(Yast).to receive(:import).with("StorageDevices").and_return true
+  end
+
   subject { FileFromUrlTest.new }
 
   describe "#Get" do
