@@ -1,30 +1,32 @@
 #!/usr/bin/env rspec
 
-require_relative "../test_helper"
+require_relative "test_helper"
 
-Yast.import "AutoinstConfig"
+require "transfer/file_from_url"
 
-describe "Yast::AutoinstallIoInclude" do
-  class AutoinstallIoTest < Yast::Module
-    def initialize
-      Yast.include self, "autoinstall/io.rb"
+describe Yast::Transfer::FileFromUrl do
+  class FileFromUrlTest
+    include Yast::I18n
+    include Yast::Transfer::FileFromUrl
+
+    # adaptor for existing tests
+    def Get(scheme, host, urlpath, localfile)
+      get_file_from_url(scheme: scheme, host: host, urlpath: urlpath,
+                        localfile: localfile,
+                        urltok: {}, destdir: "/destdir")
     end
   end
 
-  subject { AutoinstallIoTest.new }
+  subject { FileFromUrlTest.new }
 
   describe "#Get" do
     before do
-      expect(Yast::AutoinstConfig).to receive(:urltok)
-        .and_return({})
       expect(Yast::WFM).to receive(:Read)
         .and_return("/tmp_dir")
       expect(Yast::WFM).to receive(:SCRGetDefault)
         .and_return(333)
       expect(Yast::WFM).to receive(:SCRGetName).with(333)
         .and_return("chroot=/mnt:scr")
-      expect(Yast::AutoinstConfig).to receive(:destdir)
-        .and_return("/destdir")
       expect(Yast::WFM).to receive(:Execute)
         .with(path(".local.mkdir"), "/destdir/tmp_dir/tmp_mount")
       # the local/target mess was last modified in
