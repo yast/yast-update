@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.35
+Version:        3.1.36
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -115,8 +115,12 @@ Use this component if you wish to update your system.
 %{yast_clientdir}/rootpart_check_keyboard.rb
 
 %dir %{yast_yncludedir}
-%{yast_yncludedir}/update
+%dir %{yast_yncludedir}/update
 %{yast_yncludedir}/update/rootpart.rb
+
+%dir %{yast_libdir}
+%dir %{yast_libdir}/transfer
+%{yast_libdir}/transfer/file_from_url.rb
 
 %doc %{yast_docdir}
 

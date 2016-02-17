@@ -23,6 +23,10 @@ yncludedir = @yncludedir@/update
 ynclude_DATA = \
   include/update/rootpart.rb
 
+ylibdir = @ylibdir@/transfer
+ylib_DATA = \
+  lib/transfer/file_from_url.rb
+
 ybin_SCRIPTS = \
   bin/update_users_groups \
   bin/remove_junk
@@ -30,6 +34,6 @@ ybin_SCRIPTS = \
 desktop_DATA = \
   desktop/update.desktop
 
-EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(ybin_SCRIPTS) $(desktop_DATA)
+EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(ylibdir) $(ybin_SCRIPTS) $(desktop_DATA)
 
 include $(top_srcdir)/Makefile.am.common
