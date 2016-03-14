@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Mar 14 10:27:34 UTC 2016 - igonzalezsosa@suse.com
+
+- Remove Yast::Transfer::FileFromUrl as it will be present
+  in yast2-installation (FATE#319716).
+- 3.1.37
+
+-------------------------------------------------------------------
 Tue Feb 16 14:53:11 UTC 2016 - mvidner@suse.com
 
 - Moved Yast::Transfer::FileFromUrl here from autoyast2.

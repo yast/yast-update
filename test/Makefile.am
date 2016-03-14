@@ -1,5 +1,4 @@
 TESTS = \
-  file_from_url_test.rb \
   root_part_test.rb \
   suse_release_test.rb \
   update_test.rb
