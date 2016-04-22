@@ -502,14 +502,22 @@ module Yast
           Pkg::ResolvableInstall(package, :package)
         end
 
+        Packages.SelectProduct
+
+        # upgrade based on patterns
         if !Update.OnlyUpdateInstalled
           Packages.default_patterns.each do |pattern|
             select_pattern_result = Pkg.ResolvableInstall(pattern, :pattern)
             log.info "Pre-select pattern #{pattern}: #{select_pattern_result}"
           end
-        end
 
-        Packages.SelectProduct
+          # preselect the default product patterns (FATE#320199)
+          # note: must be called *after* selecting the products
+          require "packager/product_patterns"
+          product_patterns = ProductPatterns.new
+          log.info "Selecting the default product patterns: #{product_patterns.names}"
+          product_patterns.select
+        end
 
         # FATE #301990, Bugzilla #238488
         # Control the upgrade process better

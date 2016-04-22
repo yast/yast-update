@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Apr 22 16:37:31 UTC 2016 - lslezak@suse.cz
+
+- Select the default product patterns in the pattern based upgrade
+  (FATE#320199)
+- 3.1.38
+
+-------------------------------------------------------------------
 Mon Mar 14 10:27:34 UTC 2016 - igonzalezsosa@suse.com
 
 - Remove Yast::Transfer::FileFromUrl as it will be present
