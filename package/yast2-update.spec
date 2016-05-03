@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.38
+Version:        3.1.39
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -46,8 +46,8 @@ Requires:	yast2-storage >= 2.22.9
 Requires:	yast2 >= 3.1.126
 Requires:	yast2-installation
 
-# product update summary
-Requires:	yast2-packager >= 3.1.24
+# packager/product_patterns.rb
+Requires:	yast2-packager >= 3.1.95
 
 # Pkg.TargetInitializeOptions()
 Requires:       yast2-pkg-bindings >= 3.1.14
