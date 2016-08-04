@@ -32,6 +32,7 @@ require "yast2/fs_snapshot_store"
 
 module Yast
   class RootPartClass < Module
+    include Logger
     NON_MODULAR_FS = ["proc", "sysfs"]
 
     def main
@@ -1899,6 +1900,7 @@ module Yast
         mount_type = Ops.get(mt_map, p_detect_fs, "")
 
         error_message = nil
+        log.debug("Running RunFSCKonJFS with mount_type: #{mount_type} and device: #{p_dev}")
         if !(
             error_message_ref = arg_ref(error_message);
             _RunFSCKonJFS_result = RunFSCKonJFS(
@@ -1910,23 +1912,31 @@ module Yast
             _RunFSCKonJFS_result
           )
           Ops.set(freshman, :valid, false)
+          log.debug("Returning not valid partition: #{freshman}")
           return deep_copy(freshman)
         end
 
         # mustn't be empty and must be modular
         if mount_type != "" && !NON_MODULAR_FS.include?(mount_type)
+          log.debug("Calling modprobe #{mount_type}")
           SCR.Execute(path(".target.modprobe"), mount_type, "")
         end
-        # mount (read-only) partition to Installation::destdir
+
+        log.debug("Removing #{p_dev}")
         Storage.RemoveDmMapsTo(p_dev)
-        if Convert.to_boolean(
-            SCR.Execute(
-              path(".target.mount"),
-              [p_dev, Installation.destdir, Installation.mountlog],
-              "-o ro"
-            )
+
+        # mount (read-only) partition to Installation::destdir
+        log.debug("Mounting #{[p_dev, Installation.destdir, Installation.mountlog].inspect}")
+        mount =
+          SCR.Execute(
+            path(".target.mount"),
+            [p_dev, Installation.destdir, Installation.mountlog],
+            "-o ro"
           )
+
+        if Convert.to_boolean(mount)
           # Is this a root partition, does /etc/fstab exists?
+          log.debug("Checking /etc/fstab in #{Installation.destdir}")
           if Ops.greater_than(
               SCR.Read(
                 path(".target.size"),
@@ -1983,6 +1993,7 @@ module Yast
                 Ops.get_string(fstab, [0, "spec"], "")
               )
             end
+
             if Mode.autoinst
               # we dont care about the other checks in autoinstallation
               SCR.Execute(path(".target.umount"), Installation.destdir)
@@ -2006,7 +2017,7 @@ module Yast
             # installed /bin/bash and the one from inst-sys are matching
             if Ops.get_string(freshman, :arch, "unknown") == instsys_arch
               Builtins.y2milestone("Architecture (%1) is valid", instsys_arch)
-              Ops.set(freshman, :arch_valid, true) 
+              Ops.set(freshman, :arch_valid, true)
 
               # both are PPC, bugzilla #249791
             elsif Builtins.contains(
@@ -2020,7 +2031,7 @@ module Yast
                 Ops.get_string(freshman, :arch, "unknown"),
                 instsys_arch
               )
-              Ops.set(freshman, :arch_valid, true) 
+              Ops.set(freshman, :arch_valid, true)
 
               # Architecture is not matching
             else
@@ -2060,7 +2071,7 @@ module Yast
         end
       end
 
-      Builtins.y2milestone("%1 %2", partition, freshman)
+      log.info("#{partition} #{freshman}")
 
       deep_copy(freshman)
     end
@@ -2071,6 +2082,8 @@ module Yast
     # Loads a bunch of kernel modules.
     # @return [void]
     def FindRootPartitions
+      log.debug("Finding root partitions")
+
       return if @didSearchForRootPartitions
 
       modules_to_load = {
@@ -2088,6 +2101,7 @@ module Yast
         "dm-mod" => "DM",
         "dm-snapshot" => "DM Snapshot",
       }
+
       modules_to_load.each do |module_to_load, show_name|
         ModuleLoading.Load(module_to_load, "", "Linux", show_name, Linuxrc.manual, true)
       end
@@ -2104,7 +2118,8 @@ module Yast
 
       #	Storage::ActivateEvms();
       target_map = Storage.GetOndiskTarget
-      Builtins.y2milestone("target_map: %1", target_map)
+
+      log.info("target_map: #{target_map}")
 
       # prepare progress-bar
       if UI.WidgetExists(Id("search_progress"))
@@ -2155,6 +2170,7 @@ module Yast
                 :label => "Label"
               }
             else
+              log.debug("Checking partition: #{partition}")
               freshman = CheckPartition(partition)
             end
 
@@ -2235,6 +2251,16 @@ module Yast
       elements = mount_options.split(",")
       elements.delete_if { |e| IGNORED_OPTIONS.any? { |o| o === e } }
       elements.join(",")
+    end
+
+    # Load saved data from given Hash
+    #
+    # @param [Hash<String => Object>]
+    def load_saved(data)
+      @activated             = data["activated"]
+      @selectedRootPartition = data["selected"]
+      @previousRootPartition = data["previous"]
+      @rootPartitions        = data["partitions"]
     end
 
     publish :variable => :selectedRootPartition, :type => "string"
