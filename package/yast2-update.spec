@@ -30,6 +30,7 @@ BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
 BuildRequires:  yast2 >= 3.1.126
 BuildRequires:  yast2-packager
+BuildRequires:  yast2-storage
 
 # xmllint
 BuildRequires:	libxml2-tools
@@ -117,6 +118,9 @@ Use this component if you wish to update your system.
 %dir %{yast_yncludedir}
 %{yast_yncludedir}/update
 %{yast_yncludedir}/update/rootpart.rb
+%{yast_libdir}/update/
+%{yast_libdir}/update/clients
+%{yast_libdir}/update/clients/inst_update_partition_auto.rb
 
 %doc %{yast_docdir}
 
