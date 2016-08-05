@@ -29,6 +29,7 @@
 #		calling this module.
 #
 # $Id:$
+
 require "yaml"
 
 module Yast
@@ -50,7 +51,7 @@ module Yast
 
       # In case of restarting after a installer update, we restore previous
       # data if exists (bsc#988287)
-      apply_data if Installation.restarting? && data_stored?
+      load_data if Installation.restarting? && data_stored?
 
       if RootPart.Mounted
         log.debug("RootPart is mounted, detaching Update & unmounting partitions")
@@ -61,7 +62,7 @@ module Yast
       RootPart.Detect
 
       # if there is only one suitable partition which can be mounted, use it without asking
-      @target_system ||= current_target_system
+      @target_system = current_target_system
 
       if @target_system
         log.info("Auto-mounting system located at #{@target_system}")
@@ -121,7 +122,7 @@ module Yast
 
     # Loads RootPart data from a dump yaml file and delete the file after that.
     # It also remember the current root selection as the target_system
-    def apply_data
+    def load_data
       data = YAML.load(File.read(DATA_PATH))
 
       log.debug("Loading data from dump file: #{data}")
@@ -139,6 +140,8 @@ module Yast
     #
     # @return [String] target root or nil
     def current_target_system
+      return @target_system if Installation.restarting?
+
       # allow to specicfy the target on cmdline (e.g. if there are multiple systems)
       # ptoptions=TargetRoot target_root=<device> (bnc#875031)
       target_root = Linuxrc.InstallInf("TargetRoot")
