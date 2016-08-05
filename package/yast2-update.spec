@@ -30,7 +30,6 @@ BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
 BuildRequires:  yast2 >= 3.1.126
 BuildRequires:  yast2-packager
-BuildRequires:  yast2-storage
 
 # xmllint
 BuildRequires:	libxml2-tools

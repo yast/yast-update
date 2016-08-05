@@ -14,6 +14,7 @@ describe Yast::InstUpdatePartitionAutoClient do
 
     before do
       stub_root_part
+      stub_const("Yast::FileSystems", double)
       allow(Yast::Update)
       allow(Yast::Installation).to receive(:restarting?) { restarting }
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
@@ -21,10 +22,7 @@ describe Yast::InstUpdatePartitionAutoClient do
       allow(Yast::Pkg).to receive(:TargetInitializeOptions)
       allow(Yast::Pkg).to receive(:TargetFinish)
       allow(Yast::Pkg).to receive(:TargetLoad).and_return(true)
-      allow(subject).to receive(:current_target_system).and_return(nil)
-      allow(subject).to receive(:RootPartitionDialog).and_return(:cancel)
-      allow(subject).to receive(:UmountMountedPartition)
-      allow(subject).to receive(:target_distribution).and_return("sle-12-x86_64")
+      stub_subject(subject)
     end
 
     context "when installation is restarting" do
