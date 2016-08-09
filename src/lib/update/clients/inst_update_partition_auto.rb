@@ -54,7 +54,7 @@ module Yast
       RootPart.Detect
 
       # if there is only one suitable partition which can be mounted, use it without asking
-      @target_system = current_target_system
+      @target_system = target_system_candidate if @target_system.to_s.empty?
 
       if @target_system
         log.info("Auto-mounting system located at #{@target_system}")
@@ -95,7 +95,7 @@ module Yast
 
   private
 
-    # @return <Boolean> true if dumped file data exists.
+    # @return [Boolean] true if dumped file data exists.
     def data_stored?
       ::File.exist?(DATA_PATH)
     end
@@ -130,10 +130,8 @@ module Yast
     # Obtains the target system from the install.inf file or use the current
     # partitions if there is only 1 valid.
     #
-    # @return [String] target root or nil
-    def current_target_system
-      return @target_system if Installation.restarting?
-
+    # @return [String, nil] target root or nil
+    def target_system_candidate
       # allow to specicfy the target on cmdline (e.g. if there are multiple systems)
       # ptoptions=TargetRoot target_root=<device> (bnc#875031)
       target_root = Linuxrc.InstallInf("TargetRoot")
@@ -143,12 +141,12 @@ module Yast
         return target_root
       end
 
-      @partitions = RootPart.rootPartitions.select do |name, partition|
+      partitions = RootPart.rootPartitions.select do |name, partition|
         target_root = name if partition[:valid]
         partition[:valid]
       end
 
-      @partitions.size == 1 ? target_root : nil
+      partitions.size == 1 ? target_root : nil
     end
   end
 end

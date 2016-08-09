@@ -2257,10 +2257,10 @@ module Yast
     #
     # @param [Hash<String => Object>]
     def load_saved(data)
-      @activated             = data["activated"]
-      @selectedRootPartition = data["selected"]
-      @previousRootPartition = data["previous"]
-      @rootPartitions        = data["partitions"]
+      @activated             = data["activated"]  || []
+      @selectedRootPartition = data["selected"]   || ""
+      @previousRootPartition = data["previous"]   || ""
+      @rootPartitions        = data["partitions"] || {}
     end
 
     publish :variable => :selectedRootPartition, :type => "string"

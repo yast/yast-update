@@ -28,11 +28,11 @@ describe Yast::InstUpdatePartitionAutoClient do
     context "when installation is restarting" do
       let(:restarting) { true }
 
-      it "loads data from data dump file if present" do
+      it "loads data if it was stored" do
         expect(subject).to receive(:data_stored?).and_return(true)
         expect(subject).to receive(:load_data)
 
-        expect(subject.main).to eql(:cancel)
+        subject.main
       end
     end
 
@@ -56,14 +56,14 @@ describe Yast::InstUpdatePartitionAutoClient do
     end
 
     it "obtains the current target system" do
-      expect(subject).to receive(:current_target_system).once
+      expect(subject).to receive(:target_system_candidate).once
 
       subject.main
     end
 
     context "when a target system can't be obtained" do
       before do
-        allow(subject).to receive(:current_target_system).and_return(nil)
+        allow(subject).to receive(:target_system_candidate).and_return(nil)
       end
 
       it "shows the partition dialog" do
@@ -75,7 +75,7 @@ describe Yast::InstUpdatePartitionAutoClient do
 
     context "when a target system can be obtained" do
       before do
-        allow(subject).to receive(:current_target_system).and_return("/dev/whatever")
+        allow(subject).to receive(:target_system_candidate).and_return("/dev/whatever")
       end
 
       it "sets the RootPart.selectedRootPartition with its value" do
@@ -96,7 +96,7 @@ describe Yast::InstUpdatePartitionAutoClient do
         end
 
         it "reports and Error" do
-          expect(Yast::Report).to receive(:Error).once
+          expect(Yast::Report).to receive(:Error).with(_("Failed to mount target system"))
 
           subject.main
         end
@@ -120,13 +120,13 @@ describe Yast::InstUpdatePartitionAutoClient do
           allow(subject).to receive(:store_data)
         end
 
-        context "when it detects a incomplete installation" do
+        context "when it detects an incomplete installation" do
           before do
             allow(Yast::RootPart).to receive(:IncompleteInstallationDetected).and_return(true)
           end
 
           it "reports an error" do
-            expect(Yast::Report).to receive(:Error).once
+            expect(Yast::Report).to receive(:Error).with("A possibly incomplete installation has been detected.")
 
             subject.main
           end
@@ -150,7 +150,7 @@ describe Yast::InstUpdatePartitionAutoClient do
           end
 
           it "reports and error" do
-            expect(Yast::Report).to receive(:Error).once
+            expect(Yast::Report).to receive(:Error).with("Initializing the target system failed")
 
             subject.main
           end
@@ -175,6 +175,7 @@ describe Yast::InstUpdatePartitionAutoClient do
           end
 
           it "saves current data" do
+            expect(subject).not_to receive(:RootPartitionDialog)
             expect(subject).to receive(:store_data)
 
             subject.main
@@ -193,14 +194,17 @@ describe Yast::InstUpdatePartitionAutoClient do
     context "when a selection in the root partition dialog is done successfully" do
       before do
         allow(subject).to receive(:RootPartitionDialog).and_return(:next)
-        allow(subject).to receive(:current_target_system).and_return(nil)
+        allow(subject).to receive(:target_system_candidate).and_return(nil)
       end
 
       it "stores current data" do
-        expect(subject).to receive(:RootPartitionDialog).and_return(:next)
         expect(subject).to receive(:store_data)
 
         subject.main
+      end
+
+      it "returns :next" do
+        expect(subject.main).to eql(:next)
       end
     end
   end
