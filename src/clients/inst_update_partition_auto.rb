@@ -29,75 +29,7 @@
 #		calling this module.
 #
 # $Id:$
-module Yast
-  class InstUpdatePartitionAutoClient < Client
-    def main
-      Yast.import "Pkg"
-      Yast.import "UI"
-      textdomain "update"
-
-      Yast.import "ProductControl"
-      Yast.import "RootPart"
-
-      Yast.include self, "update/rootpart.rb"
-
-      if RootPart.Mounted
-        Update.Detach
-        RootPart.UnmountPartitions(false)
-      end
-
-      RootPart.Detect
-      # if there is only one suitable partition which can be mounted, use it without asking
-      @target_system = ""
-
-
-      @partitions = Builtins.filter(RootPart.rootPartitions) do |name, p|
-        @target_system = name if Ops.get_boolean(p, :valid, false)
-        Ops.get_boolean(p, :valid, false)
-      end
-
-      # allow to specicfy the target on cmdline (e.g. if there are multiple systems)
-      # ptoptions=TargetRoot target_root=<device> (bnc#875031)
-      install_inf_target_system = Linuxrc.InstallInf("TargetRoot")
-      if install_inf_target_system
-        @target_system = install_inf_target_system
-        @partitions = { @target_system => { :valid => true } }
-        Builtins.y2milestone("Selecting system %1 specified in install.inf", @target_system);
-      end
-
-      if Builtins.size(@partitions) == 1
-        Builtins.y2milestone(
-          "Auto-mounting system located at %1",
-          @target_system
-        )
-        RootPart.selectedRootPartition = @target_system
-        RootPart.targetOk = RootPart.mount_target
-
-        # Not mounted correctly
-        if !RootPart.targetOk
-          # error report
-          Report.Error(_("Failed to mount target system"))
-          UmountMountedPartition() 
-          # Correctly mounted but incomplete installation found
-        elsif RootPart.IncompleteInstallationDetected(Installation.destdir)
-          Report.Error(
-            _("A possibly incomplete installation has been detected.")
-          )
-          UmountMountedPartition()
-        elsif !(Pkg.TargetInitializeOptions(Installation.destdir,
-              "target_distro" => target_distribution) && Pkg.TargetLoad)
-          Report.Error("Initializing the target system failed")
-          UmountMountedPartition()
-          Pkg.TargetFinish
-        else
-          return :next
-        end
-      end
-      @ret = RootPartitionDialog(:update_dialog)
-
-      @ret
-    end
-  end
-end
+require "yaml"
+require "update/clients/inst_update_partition_auto"
 
 Yast::InstUpdatePartitionAutoClient.new.main

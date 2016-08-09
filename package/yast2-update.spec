@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.40
+Version:        3.1.41
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -117,6 +117,9 @@ Use this component if you wish to update your system.
 %dir %{yast_yncludedir}
 %{yast_yncludedir}/update
 %{yast_yncludedir}/update/rootpart.rb
+%{yast_libdir}/update/
+%{yast_libdir}/update/clients
+%{yast_libdir}/update/clients/inst_update_partition_auto.rb
 
 %doc %{yast_docdir}
 
