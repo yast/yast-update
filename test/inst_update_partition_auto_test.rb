@@ -10,30 +10,16 @@ Yast.import "Installation"
 describe Yast::InstUpdatePartitionAutoClient do
 
   describe "#main" do
-    let(:restarting) { false }
-
     before do
       stub_root_part
       stub_const("Yast::FileSystems", double)
       allow(Yast::Update)
-      allow(Yast::Installation).to receive(:restarting?) { restarting }
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
       allow(Yast::Report).to receive(:error)
       allow(Yast::Pkg).to receive(:TargetInitializeOptions)
       allow(Yast::Pkg).to receive(:TargetFinish)
       allow(Yast::Pkg).to receive(:TargetLoad).and_return(true)
       stub_subject(subject)
-    end
-
-    context "when installation is restarting" do
-      let(:restarting) { true }
-
-      it "loads data if it was stored" do
-        expect(subject).to receive(:data_stored?).and_return(true)
-        expect(subject).to receive(:load_data)
-
-        subject.main
-      end
     end
 
     context "when root partition is mounted" do
@@ -117,7 +103,6 @@ describe Yast::InstUpdatePartitionAutoClient do
       context "when the target system is mounted successfully" do
         before do
           allow(Yast::RootPart).to receive(:mount_target).and_return(true)
-          allow(subject).to receive(:store_data)
         end
 
         context "when it detects an incomplete installation" do
@@ -174,13 +159,6 @@ describe Yast::InstUpdatePartitionAutoClient do
             allow(Yast::Pkg).to receive(:TargetInitializeOptions).and_return(true)
           end
 
-          it "saves current data" do
-            expect(subject).not_to receive(:RootPartitionDialog)
-            expect(subject).to receive(:store_data)
-
-            subject.main
-          end
-
           it "returns :next without shown selection dialog" do
             expect(subject).not_to receive(:RootPartitionDialog)
 
@@ -195,12 +173,6 @@ describe Yast::InstUpdatePartitionAutoClient do
       before do
         allow(subject).to receive(:RootPartitionDialog).and_return(:next)
         allow(subject).to receive(:target_system_candidate).and_return(nil)
-      end
-
-      it "stores current data" do
-        expect(subject).to receive(:store_data)
-
-        subject.main
       end
 
       it "returns :next" do
