@@ -15,6 +15,5 @@ module Helpers
     allow(subject).to receive(:target_distribution).and_return("sle-12-x86_64")
     allow(subject).to receive(:initialize_update_rootpart)
     allow(subject).to receive(:load_data)
-    allow(subject).to receive(:store_data)
   end
 end

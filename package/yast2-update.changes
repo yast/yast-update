@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Aug 26 08:54:40 UTC 2016 - kanderssen@suse.com
+
+- The update installer has been moved earlier in the workflow. We
+  don't need to store data to remember selected target/partitions
+  anymore. (bsc#988287)
+- 3.1.42
+
+-------------------------------------------------------------------
 Fri Aug  5 08:55:42 UTC 2016 - kanderssen@suse.com
 
 - Remember selected target/partitions after an installer update.
