@@ -76,8 +76,6 @@ module Yast
           UmountMountedPartition()
           Pkg.TargetFinish
         else
-          store_data
-
           return :next
         end
       end
