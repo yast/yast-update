@@ -1806,7 +1806,8 @@ module Yast
         # in the target map of the storage module
         AddToTargetMap()
         if Yast2::FsSnapshot.configured?
-          snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup: :number, important: true)
+          # TRANSLATORS: label for filesystem snapshot taken before system update
+          snapshot = Yast2::FsSnapshot.create_pre(_("before update"), cleanup: :number, important: true)
           Yast2::FsSnapshotStore.save("update", snapshot.number)
         end
         Update.clean_backup

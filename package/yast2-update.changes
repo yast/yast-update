@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep 29 08:02:43 UTC 2016 - igonzalezsosa@suse.com
+
+- Translate description of Snapper pre-update snapshot
+  (bsc#988700)
+- 3.1.43
+
+-------------------------------------------------------------------
 Fri Aug 26 08:54:40 UTC 2016 - kanderssen@suse.com
 
 - The update installer has been moved earlier in the workflow. We
