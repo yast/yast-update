@@ -41,6 +41,7 @@ BuildRequires:	yast2-installation-control
 BuildRequires:  rubygem(rspec)
 
 # Stroage::ChangeDmNamesFromCrypttab
+BuildRequires:	yast2-storage >= 2.22.9
 Requires:	yast2-storage >= 2.22.9
 # FSSnapshotStore
 Requires:	yast2 >= 3.1.126
