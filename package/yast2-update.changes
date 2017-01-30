@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 30 12:07:55 UTC 2017 - igonzalezsosa@suse.com
+
+- Allow YaST modules to add packages during upgrade (bsc#1009834)
+- 3.2.1
+
+-------------------------------------------------------------------
 Thu Jan  5 14:43:00 UTC 2017 - jreidinger@suse.com
 
 - Add storage to build dependencies as tests depends on it

@@ -40,6 +40,7 @@ module Yast
       Yast.import "Packages"
       Yast.import "SpaceCalculation"
       Yast.import "PackagesUI"
+      Yast.import "Packages"
 
       Yast.import "Update"
 
@@ -61,6 +62,9 @@ module Yast
 
         #	SpaceCalculation::ShowPartitionWarning ();
         @warning = SpaceCalculation.GetPartitionWarning
+
+        # Make an update proposal
+        Packages.proposal_for_update
 
         # Count statistics -->
         # Pkg::GetPackages()
@@ -145,26 +149,33 @@ module Yast
           )
         )
 
+        @ret = {
+          "preformatted_proposal" => HTML.List(@tmp),
+          "trigger" => {
+            "expect" => {
+              "class" => "Yast::Packages",
+              "method" => "PackagesProposalChanged"
+            },
+            "value" => false
+          }
+        }
+
         if Ops.greater_than(Update.solve_errors, 0)
           # the proposal for the packages requires manual invervention
-          @ret = {
-            "preformatted_proposal" => HTML.List(@tmp),
+          @ret.merge!({
             "links"                 => [PACKAGER_LINK],
             # TRANSLATORS: warning text, keep the HTML tags (<a href...>) untouched
             "warning"               => _(
               "Cannot solve all conflicts. <a href=\"%s\">Manual intervention is required.</a>"
             ) % PACKAGER_LINK,
             "warning_level"         => :blocker
-          }
+          })
         elsif Ops.greater_than(Builtins.size(@warning), 0)
           # the proposal for the packages requires manual intervention
-          @ret = {
-            "preformatted_proposal" => HTML.List(@tmp),
+          @ret.merge!({
             "warning"               => Builtins.mergestring(@warning, "<br>"),
             "warning_level"         => :warning
-          }
-        else
-          @ret = { "preformatted_proposal" => HTML.List(@tmp) }
+          })
         end
 
         Builtins.y2milestone(
