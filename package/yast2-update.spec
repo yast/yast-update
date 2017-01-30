@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.1.43
+Version:        3.1.44
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -29,7 +29,8 @@ BuildRequires:	update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
 BuildRequires:  yast2 >= 3.1.126
-BuildRequires:  yast2-packager
+# Packages#proposal_for_update
+BuildRequires:  yast2-packager >= 3.1.120
 
 # xmllint
 BuildRequires:	libxml2-tools
@@ -46,8 +47,8 @@ Requires:	yast2-storage >= 2.22.9
 Requires:	yast2 >= 3.1.126
 Requires:	yast2-installation
 
-# packager/product_patterns.rb
-Requires:	yast2-packager >= 3.1.95
+# Packages#proposal_for_update
+Requires:	yast2-packager >= 3.1.120
 
 # Pkg.TargetInitializeOptions()
 Requires:       yast2-pkg-bindings >= 3.1.14
