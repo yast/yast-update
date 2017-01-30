@@ -150,6 +150,7 @@ module Yast
         )
 
         @ret = {
+          "preformatted_proposal" => HTML.List(@tmp),
           "trigger" => {
             "expect" => {
               "class" => "Yast::Packages",
@@ -162,7 +163,6 @@ module Yast
         if Ops.greater_than(Update.solve_errors, 0)
           # the proposal for the packages requires manual invervention
           @ret.merge!({
-            "preformatted_proposal" => HTML.List(@tmp),
             "links"                 => [PACKAGER_LINK],
             # TRANSLATORS: warning text, keep the HTML tags (<a href...>) untouched
             "warning"               => _(
@@ -173,12 +173,9 @@ module Yast
         elsif Ops.greater_than(Builtins.size(@warning), 0)
           # the proposal for the packages requires manual intervention
           @ret.merge!({
-            "preformatted_proposal" => HTML.List(@tmp),
             "warning"               => Builtins.mergestring(@warning, "<br>"),
             "warning_level"         => :warning
           })
-        else
-          @ret.merge!({ "preformatted_proposal" => HTML.List(@tmp) })
         end
 
         Builtins.y2milestone(
