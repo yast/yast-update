@@ -43,10 +43,16 @@ module Yast
       Yast.import "Directory"
       Yast.import "Mode"
       Yast.import "Linuxrc"
+# storage-ng
+=begin
       Yast.import "Storage"
+=end
       Yast.import "Popup"
       Yast.import "ModuleLoading"
+# storage-ng
+=begin
       Yast.import "FileSystems"
+=end
       Yast.import "Update"
       Yast.import "FileUtils"
       Yast.import "Arch"
@@ -57,7 +63,10 @@ module Yast
       Yast.import "Stage"
       Yast.import "Wizard"
 
+# storage-ng
+=begin
       Yast.include self, "partitioning/custom_part_dialogs.rb"
+=end
 
 
       # Selected root partition for the update or boot.

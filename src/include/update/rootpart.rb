@@ -47,7 +47,10 @@ module Yast
       Yast.import "Report"
       Yast.import "Update"
       Yast.import "Installation"
+# storage-ng
+=begin
       Yast.import "FileSystems"
+=end
       Yast.import "Mode"
       Yast.import "Product"
     end
