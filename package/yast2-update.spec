@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.2.1
+Version:        3.3.0
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -41,9 +41,9 @@ BuildRequires:	yast2-installation-control
 # Needed for tests
 BuildRequires:  rubygem(rspec)
 
-# Stroage::ChangeDmNamesFromCrypttab
-BuildRequires:	yast2-storage >= 2.22.9
-Requires:	yast2-storage >= 2.22.9
+BuildRequires:	yast2-storage-ng
+# EnumMappings with MOUNT_BY_TYPE
+Requires:	yast2-storage-ng >= 0.1.12
 # FSSnapshotStore
 Requires:	yast2 >= 3.1.126
 Requires:	yast2-installation

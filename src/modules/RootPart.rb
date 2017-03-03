@@ -29,11 +29,15 @@
 require "yast"
 require "yast2/fs_snapshot"
 require "yast2/fs_snapshot_store"
+require "y2storage"
+require "y2storage/enum_mappings"
 
 module Yast
   class RootPartClass < Module
     include Logger
     NON_MODULAR_FS = ["proc", "sysfs"]
+    using Y2Storage::Refinements::DevicegraphLists
+    include Y2Storage::EnumMappings
 
     def main
       Yast.import "UI"
@@ -43,10 +47,16 @@ module Yast
       Yast.import "Directory"
       Yast.import "Mode"
       Yast.import "Linuxrc"
+# storage-ng
+=begin
       Yast.import "Storage"
+=end
       Yast.import "Popup"
       Yast.import "ModuleLoading"
+# storage-ng
+=begin
       Yast.import "FileSystems"
+=end
       Yast.import "Update"
       Yast.import "FileUtils"
       Yast.import "Arch"
@@ -57,7 +67,10 @@ module Yast
       Yast.import "Stage"
       Yast.import "Wizard"
 
+# storage-ng
+=begin
       Yast.include self, "partitioning/custom_part_dialogs.rb"
+=end
 
 
       # Selected root partition for the update or boot.
@@ -172,99 +185,6 @@ module Yast
       nil
     end
 
-
-    #
-    def AddToTargetMap
-      target_map = Storage.GetOndiskTarget
-      Builtins.y2milestone("On disk target map: %1", target_map)
-      tmp = Builtins.filter(@activated) do |e|
-        Ops.get_string(e, :type, "") == "mount"
-      end
-      Builtins.foreach(tmp) do |e|
-        Builtins.y2milestone(
-          "Setting partition data: Device: %1, MountPoint: %2",
-          Ops.get_string(e, :device, ""),
-          Ops.get_string(e, :mntpt, "")
-        )
-        target_map = Storage.SetPartitionData(
-          target_map,
-          Ops.get_string(e, :device, ""),
-          "mount",
-          Ops.get_string(e, :mntpt, "")
-        )
-        if Builtins.issubstring(
-            Ops.get_string(e, :device, ""),
-            "/dev/disk/by-id"
-          )
-          target_map = Storage.SetPartitionData(
-            target_map,
-            Ops.get_string(e, :device, ""),
-            "mountby",
-            :id
-          )
-        elsif Builtins.issubstring(Ops.get_string(e, :device, ""), "/dev/")
-          target_map = Storage.SetPartitionData(
-            target_map,
-            Ops.get_string(e, :device, ""),
-            "mountby",
-            :device
-          )
-        else
-          target_map = Storage.SetPartitionData(
-            target_map,
-            Ops.get_string(e, :device, ""),
-            "mountby",
-            :label
-          )
-        end
-      end
-      tmp = Builtins.filter(@activated) do |e|
-        Ops.get_string(e, :type, "") == "swap"
-      end
-      Builtins.foreach(tmp) do |e|
-        Builtins.y2milestone(
-          "Setting swap partition data: Device: %1",
-          Ops.get_string(e, :device, "")
-        )
-        target_map = Storage.SetPartitionData(
-          target_map,
-          Ops.get_string(e, :device, ""),
-          "mount",
-          "swap"
-        )
-        if Builtins.issubstring(
-            Ops.get_string(e, :device, ""),
-            "/dev/disk/by-id"
-          )
-          target_map = Storage.SetPartitionData(
-            target_map,
-            Ops.get_string(e, :device, ""),
-            "mountby",
-            :id
-          )
-        elsif Builtins.issubstring(Ops.get_string(e, :device, ""), "/dev/")
-          target_map = Storage.SetPartitionData(
-            target_map,
-            Ops.get_string(e, :device, ""),
-            "mountby",
-            :device
-          )
-        else
-          target_map = Storage.SetPartitionData(
-            target_map,
-            Ops.get_string(e, :device, ""),
-            "mountby",
-            :label
-          )
-        end
-      end
-      Builtins.y2milestone("Setting target map: %1", target_map)
-      Storage.SetTargetMap(target_map)
-
-      nil
-    end
-
-
     #
     def RemoveFromTargetMap
       target_map = Storage.GetTargetMap
@@ -373,21 +293,19 @@ module Yast
 
     # Check the filesystem of a partition.
     def FSCKPartition(partition)
-      if !Mode.test
-        detected_fs = Storage.DetectFs(partition)
-        if detected_fs == :ext2
-          # label, %1 is partition
-          out = Builtins.sformat(_("Checking partition %1"), partition)
-          UI.OpenDialog(Opt(:decorated), Label(out))
+      detected_fs = probed.partitions.with(name: partition).filesystems.first.to_s.to_sym
+      if detected_fs == :ext2
+        # label, %1 is partition
+        out = Builtins.sformat(_("Checking partition %1"), partition)
+        UI.OpenDialog(Opt(:decorated), Label(out))
 
-          Builtins.y2milestone("command: /sbin/e2fsck -y %1", partition)
-          SCR.Execute(
-            path(".target.bash"),
-            Ops.add("/sbin/e2fsck -y ", partition)
-          )
+        Builtins.y2milestone("command: /sbin/e2fsck -y %1", partition)
+        SCR.Execute(
+          path(".target.bash"),
+          Ops.add("/sbin/e2fsck -y ", partition)
+        )
 
-          UI.CloseDialog
-        end
+        UI.CloseDialog
       end
 
       nil
@@ -567,8 +485,14 @@ module Yast
     # @return [String] nil on success, error description on fail
     def MountPartition(mount_point, device, mount_type, fsopts = "")
       if mount_type == ""
-        # e.g. -> "reiserfs"
+        # storage-ng
+        # FIXME: knowing the fstab string for the filesystem type should be
+        # responsibility of the upcoming Y2Storage::FilesystemType (to be
+        # added as part of the "yast-storage-ng as a libstorage wrapper" change)
+        mount_type = probed.partitions.with(name: device).filesystems.first.to_s
+=begin
         mount_type = FileSystems.GetMountString(Storage.DetectFs(device), "")
+=end
       end
 
       # #223878, do not call modprobe with empty mount_type
@@ -674,6 +598,10 @@ module Yast
         return false
       end
 
+      # storage-ng
+      # This commented piece of code didn't make much sense anyways. After
+      # reaching this point, the method always returned true.
+=begin
       root = Ops.get(tmp, 0, {})
 
       if !Storage.DeviceRealDisk(Ops.get_string(root, "spec", ""))
@@ -681,6 +609,7 @@ module Yast
         # name so it can't be wrong, in theory.
         return true
       end
+=end
 
       true
     end
@@ -769,11 +698,15 @@ module Yast
       end
 
       # translate them
+      # storage-ng
+      new_names = old_names
+=begin
       new_names = Storage.GetTranslatedDevices(
         Installation.installedVersion,
         Installation.updateVersion,
         old_names
       )
+=end
 
       i = 0
 
@@ -1692,9 +1625,12 @@ module Yast
         read_fstab_and_cryptotab(fstab_ref, crtab_ref, root_device_current)
         fstab = fstab_ref.value
         crtab = crtab_ref.value
+        # storage-ng
+=begin
         Storage.ChangeDmNamesFromCrypttab(
           Ops.add(Installation.destdir, "/etc/crypttab")
         )
+=end
         Update.GetProductName
 
         if FstabUsesKernelDeviceNameForHarddisks(fstab)
@@ -1803,8 +1739,7 @@ module Yast
         @did_try_mount_partitions = true
       else
         # enter the mount points of the newly mounted partitions
-        # in the target map of the storage module
-        AddToTargetMap()
+        update_staging!
         if Yast2::FsSnapshot.configured?
           # TRANSLATORS: label for filesystem snapshot taken before system update
           snapshot = Yast2::FsSnapshot.create_pre(_("before update"), cleanup: :number, important: true)
@@ -1869,36 +1804,32 @@ module Yast
       ret
     end
 
-    # Check a root partition and return map with infomations (see
+    # Check a root partition and return map with information (see
     # variable rootPartitions).
     def CheckPartition(partition)
-      partition = deep_copy(partition)
+      filesystem = partition.has_encryption ? partition.encryption.filesystem : partition.filesystem
       freshman = {
-        :valid  => false,
-        :name   => "unknown",
-        :arch   => "unknown",
-        :label  => Ops.get_string(partition, "label", ""),
-        :fs     => Ops.get_symbol(partition, "detected_fs", :unknown),
-        :fstype => Ops.get_string(partition, "fstype", "unknown")
+        valid:  false,
+        name:   "unknown",
+        arch:   "unknown",
+        label:  filesystem.label,
+        fs:     filesystem.to_s.to_sym,
+        fstype: PARTITION_IDS.invert[partition.id] # this is the closes equivalent we have in storage-ng
       }
 
-      p_dev = Ops.get_string(partition, "device", "error")
-      p_fsid = Ops.get_integer(partition, "fsid", 0)
-      p_type = Ops.get_symbol(partition, "type", :primary)
-      p_detect_fs = Ops.get_symbol(partition, "detected_fs", :unknown)
+      p_dev = partition.name
+      p_fsid = partition.id
+      p_type = PARTITION_TYPES.invert[partition.type].to_sym
+      p_detect_fs = filesystem.to_s.to_sym
 
       # possible root FS
-      if Builtins.contains(FileSystems.possible_root_fs, p_detect_fs)
-        mt_map = {
-          :ext2   => "ext2",
-          :ext3   => "ext3",
-          :ext4   => "ext4",
-          :btrfs  => "btrfs",
-          :reiser => "reiserfs",
-          :xfs    => "xfs",
-          :jfs    => "jfs"
-        }
-        mount_type = Ops.get(mt_map, p_detect_fs, "")
+      # storage-ng
+      # FIXME: this kind of checks should be responsibility of the upcoming
+      # Y2Storage::FilesystemType (to be added as part of the
+      # "yast-storage-ng as a libstorage wrapper" change)
+      possible_root_fs = [:ext2, :ext3, :ext4, :btrfs, :reiser, :xfs]
+      if possible_root_fs.include?(p_detect_fs)
+        mount_type = p_detect_fs.to_s
 
         error_message = nil
         log.debug("Running RunFSCKonJFS with mount_type: #{mount_type} and device: #{p_dev}")
@@ -1912,9 +1843,9 @@ module Yast
             error_message = error_message_ref.value;
             _RunFSCKonJFS_result
           )
-          Ops.set(freshman, :valid, false)
+          freshman[:valid] = false
           log.debug("Returning not valid partition: #{freshman}")
-          return deep_copy(freshman)
+          return freshman
         end
 
         # mustn't be empty and must be modular
@@ -1923,8 +1854,11 @@ module Yast
           SCR.Execute(path(".target.modprobe"), mount_type, "")
         end
 
+        # storage-ng: not sure if we need to introduce something equivalent
+=begin
         log.debug("Removing #{p_dev}")
         Storage.RemoveDmMapsTo(p_dev)
+=end
 
         # mount (read-only) partition to Installation::destdir
         log.debug("Mounting #{[p_dev, Installation.destdir, Installation.mountlog].inspect}")
@@ -1965,29 +1899,12 @@ module Yast
               Builtins.y2warning("Cannot find / entry in fstab %1", fstab)
             end
 
-            Ops.set(
-              freshman,
-              :valid,
-              Ops.greater_than(
-                Builtins.size(Ops.get_string(fstab, [0, "spec"], "")),
-                0
-              ) &&
-                Storage.DeviceMatchFstab(
-                  p_dev,
-                  Ops.get_string(
-                    # bugzilla #304269
-                    # DeviceMatchFstab expects _old_ not _translated_ device
-                    fstab,
-                    [0, "spec_old"],
-                    Ops.get_string(fstab, [0, "spec"], "")
-                  )
-                )
-            )
+            freshman[:valid] = fstab_entry_matches?(fstab[0], p_dev)
 
             # Why this doesn't match?
             # Possible reasons:
             # - /var not mounted so hwinfo cannot translate device names
-            if Ops.get_boolean(freshman, :valid, false) != true
+            if !freshman[:valid]
               Builtins.y2warning(
                 "Device does not match fstab: '%1' vs. '%2'",
                 p_dev,
@@ -2107,20 +2024,7 @@ module Yast
         ModuleLoading.Load(module_to_load, "", "Linux", show_name, Linuxrc.manual, true)
       end
 
-      if Mode.test
-        Storage.SetTargetMap(
-          Convert.convert(
-            SCR.Read(path(".target.yast2"), "test_target_map.ycp"),
-            :from => "any",
-            :to   => "map <string, map>"
-          )
-        )
-      end
-
       #	Storage::ActivateEvms();
-      target_map = Storage.GetOndiskTarget
-
-      log.info("target_map: #{target_map}")
 
       # prepare progress-bar
       if UI.WidgetExists(Id("search_progress"))
@@ -2138,57 +2042,23 @@ module Yast
       @rootPartitions = {}
       @numberOfValidRootPartitions = 0
 
-      # all partitions on all devices
-      max_steps = 0
-      Builtins.foreach(target_map) do |device, description|
-        max_steps = Ops.add(
-          max_steps,
-          Builtins.size(Ops.get_list(description, "partitions", []))
-        )
-      end
+      # all formatted partitions on all devices
+      partitions = probed.filesystems.with { |fs| fs.to_s != "swap" }.partitions
 
       counter = 0
-      Builtins.foreach(target_map) do |device, description|
-        Builtins.foreach(Ops.get_list(description, "partitions", [])) do |partition|
-          counter = Ops.add(counter, 1)
-          if UI.WidgetExists(Id("search_progress"))
-            UI.ChangeWidget(
-              Id("search_pb"),
-              :Value,
-              Ops.divide(Ops.multiply(100, counter), max_steps)
-            )
-          end
-          # some partitions don't make sense at all
-          if Ops.get_symbol(partition, "detected_fs", :unknown) != :swap &&
-              Ops.get_symbol(partition, "type", :primary) != :extended
-            freshman = {}
-
-            if Mode.test
-              freshman = {
-                :valid => true,
-                :name  => "SuSE Linux 4.2",
-                :arch  => "i286",
-                :label => "Label"
-              }
-            else
-              log.debug("Checking partition: #{partition}")
-              freshman = CheckPartition(partition)
-            end
-
-            @rootPartitions = Builtins.add(
-              @rootPartitions,
-              Ops.get_string(partition, "device", "error"),
-              freshman
-            )
-
-            if Ops.get_boolean(freshman, :valid, false)
-              @numberOfValidRootPartitions = Ops.add(
-                @numberOfValidRootPartitions,
-                1
-              )
-            end
-          end
+      partitions.each_with_index do |partition, counter|
+        if UI.WidgetExists(Id("search_progress"))
+          percent = 100 * (counter + 1 / partitions.size)
+          UI.ChangeWidget(Id("search_pb"), :Value, percent)
         end
+
+        freshman = {}
+
+        log.debug("Checking partition: #{partition}")
+        freshman = CheckPartition(partition)
+
+        @rootPartitions[partition.name] = freshman
+        @numberOfValidRootPartitions += 1 if freshman[:valid]
       end
 
       # 100%
@@ -2284,6 +2154,61 @@ module Yast
     publish :function => :GetDistroArch, :type => "string ()"
     publish :function => :mount_target, :type => "boolean ()"
     publish :function => :Detect, :type => "void ()"
+
+  private
+
+    def probed
+      Y2Storage::StorageManager.instance.probed
+    end
+
+    def staging
+      Y2Storage::StorageManager.instance.staging
+    end
+
+    def fstab_entry_matches?(entry, dev)
+      return false unless entry["spec"]
+      probed.partitions.with(name: entry["spec"]).any?
+    end
+
+    def update_staging!
+      log.info "start update_staging"
+
+      partitions = @activated.select { |entry| entry[:type] == "mount" }
+      update_staging_partitions!(partitions)
+
+      partitions = @activated.select { |entry| entry[:type] == "swap" }
+      update_staging_partitions!(partitions, "swap")
+
+      log.info "end update_staging"
+    end
+
+    def update_staging_partitions!(activated_partitions, mountpoint = nil)
+      activated_partitions.each do |activated_partition|
+        dev = activated_partition[:device]
+        mountpoint ||= activated_partition[:mntpt]
+        update_staging_filesystem!(dev, mountpoint)
+      end
+    end
+
+    def update_staging_filesystem!(name, mountpoint)
+      log.info "Setting partition data: Device: #{name}, MountPoint: #{mountpoint}"
+
+      if name.include?("/dev/disk/by-id")
+        mount_by = "id"
+        filesystem = staging.partitions.with(id: name).filesystems.first
+      elsif name.include?("/dev/")
+        mount_by = "device"
+        filesystem = staging.partitions.with(name: name).filesystems.first
+      else
+        mount_by = "label"
+        filesystem = staging.filesystems.with(label: name).first
+      end
+
+      return unless filesystem
+
+      filesystem.add_mountpoint(mountpoint)
+      filesystem.mount_by = MOUNT_BY_TYPES[mount_by]
+    end
   end
 
   RootPart = RootPartClass.new

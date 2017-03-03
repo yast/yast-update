@@ -47,7 +47,10 @@ module Yast
       Yast.import "Report"
       Yast.import "Update"
       Yast.import "Installation"
+# storage-ng
+=begin
       Yast.import "FileSystems"
+=end
       Yast.import "Mode"
       Yast.import "Product"
     end
@@ -55,13 +58,18 @@ module Yast
     # Returns boolean whether partition can be
     # a Linux 'root' file system
     def CanBeLinuxRootFS(partition_fs)
-      if partition_fs == nil
+      if partition_fs.nil?
         Builtins.y2error("partition_fs not defined!")
         return false
       end
 
       # possible_root_fs contains list of supported FSs
-      Builtins.contains(FileSystems.possible_root_fs, partition_fs)
+      # storage-ng
+      # FIXME: this kind of checks should be responsibility of the upcoming
+      # Y2Storage::FilesystemType (to be added as part of the
+      # "yast-storage-ng as a libstorage wrapper" change)
+      possible_root_fs = [:ext2, :ext3, :ext4, :btrfs, :reiser, :xfs]
+      possible_root_fs.include?(partition_fs)
     end
 
     # flavor is either `update or `boot
