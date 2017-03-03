@@ -293,21 +293,19 @@ module Yast
 
     # Check the filesystem of a partition.
     def FSCKPartition(partition)
-      if !Mode.test
-        detected_fs = probed.partitions.with(name: partition).filesystems.first.to_s.to_sym
-        if detected_fs == :ext2
-          # label, %1 is partition
-          out = Builtins.sformat(_("Checking partition %1"), partition)
-          UI.OpenDialog(Opt(:decorated), Label(out))
+      detected_fs = probed.partitions.with(name: partition).filesystems.first.to_s.to_sym
+      if detected_fs == :ext2
+        # label, %1 is partition
+        out = Builtins.sformat(_("Checking partition %1"), partition)
+        UI.OpenDialog(Opt(:decorated), Label(out))
 
-          Builtins.y2milestone("command: /sbin/e2fsck -y %1", partition)
-          SCR.Execute(
-            path(".target.bash"),
-            Ops.add("/sbin/e2fsck -y ", partition)
-          )
+        Builtins.y2milestone("command: /sbin/e2fsck -y %1", partition)
+        SCR.Execute(
+          path(".target.bash"),
+          Ops.add("/sbin/e2fsck -y ", partition)
+        )
 
-          UI.CloseDialog
-        end
+        UI.CloseDialog
       end
 
       nil
@@ -2056,17 +2054,8 @@ module Yast
 
         freshman = {}
 
-        if Mode.test
-          freshman = {
-            valid: true,
-            name:  "SuSE Linux 4.2",
-            arch:  "i286",
-            label: "Label"
-          }
-        else
-          log.debug("Checking partition: #{partition}")
-          freshman = CheckPartition(partition)
-        end
+        log.debug("Checking partition: #{partition}")
+        freshman = CheckPartition(partition)
 
         @rootPartitions[partition.name] = freshman
         @numberOfValidRootPartitions += 1 if freshman[:valid]
