@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Mar  3 12:46:55 UTC 2017 - ancor@suse.com
+
+- storage-ng: detection of previous systems partially adapted.
+- Version temporarily bumped to 3.3.x to prioritize this branch
+- 3.3.0
+
+-------------------------------------------------------------------
 Mon Jan 30 12:07:55 UTC 2017 - igonzalezsosa@suse.com
 
 - Allow YaST modules to add packages during upgrade (bsc#1009834)
