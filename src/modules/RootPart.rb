@@ -1806,7 +1806,7 @@ module Yast
       ret
     end
 
-    # Check a root partition and return map with informations (see
+    # Check a root partition and return map with information (see
     # variable rootPartitions).
     def CheckPartition(partition)
       filesystem = partition.has_encryption ? partition.encryption.filesystem : partition.filesystem
@@ -2024,16 +2024,6 @@ module Yast
 
       modules_to_load.each do |module_to_load, show_name|
         ModuleLoading.Load(module_to_load, "", "Linux", show_name, Linuxrc.manual, true)
-      end
-
-      if Mode.test
-        Storage.SetTargetMap(
-          Convert.convert(
-            SCR.Read(path(".target.yast2"), "test_target_map.ycp"),
-            :from => "any",
-            :to   => "map <string, map>"
-          )
-        )
       end
 
       #	Storage::ActivateEvms();
