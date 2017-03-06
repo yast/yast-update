@@ -2185,8 +2185,8 @@ module Yast
     def update_staging_partitions!(activated_partitions, mountpoint = nil)
       activated_partitions.each do |activated_partition|
         dev = activated_partition[:device]
-        mountpoint ||= activated_partition[:mntpt]
-        update_staging_filesystem!(dev, mountpoint)
+        mntpt = mountpoint || activated_partition[:mntpt]
+        update_staging_filesystem!(dev, mntpt)
       end
     end
 
