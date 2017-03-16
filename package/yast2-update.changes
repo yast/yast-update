@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 16 11:28:34 UTC 2017 - jlopez@suse.com
+
+- storage-ng: add detection of previous systems using lvm. 
+
+-------------------------------------------------------------------
 Fri Mar  3 12:46:55 UTC 2017 - ancor@suse.com
 
 - storage-ng: detection of previous systems partially adapted.
