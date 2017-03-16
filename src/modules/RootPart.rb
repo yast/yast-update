@@ -1814,12 +1814,18 @@ module Yast
         arch:   "unknown",
         label:  filesystem.label,
         fs:     filesystem.to_s.to_sym,
-        fstype: PARTITION_IDS.invert[partition.id] # this is the closes equivalent we have in storage-ng
+        fstype: nil
       }
 
+      # storage-ng
+      # partitions param is a list of partitions and lvs. Value fstype
+      # only has sense for partitons.
+      # TODO: check if freshman[:fstype] is really used.
+
+      # this is the closes equivalent we have in storage-ng
+      freshman[:fstype] = PARTITION_IDS.invert[partition.id] if partition.respond_to?(:id)
+
       p_dev = partition.name
-      p_fsid = partition.id
-      p_type = PARTITION_TYPES.invert[partition.type].to_sym
       p_detect_fs = filesystem.to_s.to_sym
 
       # possible root FS
@@ -2042,8 +2048,9 @@ module Yast
       @rootPartitions = {}
       @numberOfValidRootPartitions = 0
 
-      # all formatted partitions on all devices
-      partitions = probed.filesystems.with { |fs| fs.to_s != "swap" }.partitions
+      # all formatted partitions and lvs on all devices
+      filesystems = probed.filesystems.with { |fs| fs.to_s != "swap" }
+      partitions = filesystems.partitions.to_a + filesystems.lvm_lvs.to_a
 
       counter = 0
       partitions.each_with_index do |partition, counter|
