@@ -1907,17 +1907,6 @@ module Yast
 
             freshman[:valid] = fstab_entry_matches?(fstab[0], p_dev)
 
-            # Why this doesn't match?
-            # Possible reasons:
-            # - /var not mounted so hwinfo cannot translate device names
-            if !freshman[:valid]
-              Builtins.y2warning(
-                "Device does not match fstab: '%1' vs. '%2'",
-                p_dev,
-                Ops.get_string(fstab, [0, "spec"], "")
-              )
-            end
-
             if Mode.autoinst
               # we dont care about the other checks in autoinstallation
               SCR.Execute(path(".target.umount"), Installation.destdir)
@@ -2173,8 +2162,14 @@ module Yast
     end
 
     def fstab_entry_matches?(entry, dev)
-      return false unless entry["spec"]
-      probed.partitions.with(name: entry["spec"]).any?
+      spec = entry["spec"]
+      return true if spec == dev
+
+      # Why this doesn't match?
+      # Possible reasons:
+      # - /var not mounted so hwinfo cannot translate device names
+      Builtins.y2warning("Device does not match fstab: '%1' vs. '%2'", dev, spec)
+      return false
     end
 
     def update_staging!
