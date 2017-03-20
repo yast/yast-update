@@ -1804,6 +1804,18 @@ module Yast
       ret
     end
 
+    # storage-ng
+    # this is the closes equivalent we have in storage-ng
+    def fstype(device)
+      if device.respond_to?(:id)
+        PARTITION_IDS.invert[device.id]
+      elsif device.is_a?(Storage::LvmLv)
+        "LV"
+      else
+        nil
+      end
+    end
+
     # Check a root partition and return map with information (see
     # variable rootPartitions).
     def CheckPartition(partition)
@@ -1814,16 +1826,8 @@ module Yast
         arch:   "unknown",
         label:  filesystem.label,
         fs:     filesystem.to_s.to_sym,
-        fstype: nil
+        fstype: fstype(partition)
       }
-
-      # storage-ng
-      # partitions param is a list of partitions and lvs. Value fstype
-      # only has sense for partitons.
-      # TODO: check if freshman[:fstype] is really used.
-
-      # this is the closes equivalent we have in storage-ng
-      freshman[:fstype] = PARTITION_IDS.invert[partition.id] if partition.respond_to?(:id)
 
       p_dev = partition.name
       p_detect_fs = filesystem.to_s.to_sym
