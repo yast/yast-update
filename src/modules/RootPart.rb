@@ -1909,7 +1909,7 @@ module Yast
               Builtins.y2warning("Cannot find / entry in fstab %1", fstab)
             end
 
-            freshman[:valid] = fstab_entry_matches?(fstab[0], p_dev)
+            freshman[:valid] = fstab_entry_matches?(fstab[0], filesystem)
 
             if Mode.autoinst
               # we dont care about the other checks in autoinstallation
@@ -2165,15 +2165,27 @@ module Yast
       Y2Storage::StorageManager.instance.staging
     end
 
-    def fstab_entry_matches?(entry, dev)
+    def fstab_entry_matches?(entry, filesystem)
       spec = entry["spec"]
-      return true if spec == dev
+      id, value = spec.include?("=") ? spec.split('=') : ["", spec]
+
+      device =
+        if id.casecmp("LABEL") == 0
+          filesystem.label
+        elsif id.casecmp("UUID") == 0
+          filesystem.uuid
+        else
+          filesystem.blk_devices[0].name
+        end
+
+      matches = value == device
 
       # Why this doesn't match?
       # Possible reasons:
       # - /var not mounted so hwinfo cannot translate device names
-      Builtins.y2warning("Device does not match fstab: '%1' vs. '%2'", dev, spec)
-      return false
+      log.warning("Device does not match fstab: #{device} vs. #{value}") unless matches
+      
+      matches
     end
 
     def update_staging!
