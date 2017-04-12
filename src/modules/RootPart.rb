@@ -30,14 +30,12 @@ require "yast"
 require "yast2/fs_snapshot"
 require "yast2/fs_snapshot_store"
 require "y2storage"
-require "y2storage/enum_mappings"
 
 module Yast
   class RootPartClass < Module
     include Logger
     NON_MODULAR_FS = ["proc", "sysfs"]
     using Y2Storage::Refinements::DevicegraphLists
-    include Y2Storage::EnumMappings
 
     def main
       Yast.import "UI"
@@ -1808,7 +1806,7 @@ module Yast
     # this is the closes equivalent we have in storage-ng
     def fstype(device)
       if device.respond_to?(:id)
-        PARTITION_IDS.invert[device.id]
+        Y2Storage::PartitionId.find(device.id).to_s
       elsif device.is_a?(Storage::LvmLv)
         "LV"
       else
@@ -2212,20 +2210,20 @@ module Yast
       log.info "Setting partition data: Device: #{name}, MountPoint: #{mountpoint}"
 
       if name.include?("/dev/disk/by-id")
-        mount_by = "id"
+        mount_by = Y2Storage::Filesystems::MountByType::ID
         filesystem = staging.partitions.with(id: name).filesystems.first
       elsif name.include?("/dev/")
-        mount_by = "device"
+        mount_by = Y2Storage::Filesystems::MountByType::DEVICE
         filesystem = staging.partitions.with(name: name).filesystems.first
       else
-        mount_by = "label"
+        mount_by = Y2Storage::Filesystems::MountByType::LABEL
         filesystem = staging.filesystems.with(label: name).first
       end
 
       return unless filesystem
 
       filesystem.add_mountpoint(mountpoint)
-      filesystem.mount_by = MOUNT_BY_TYPES[mount_by]
+      filesystem.mount_by = mount_by.to_i
     end
   end
 
