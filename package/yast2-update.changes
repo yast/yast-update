@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr 19 14:38:34 UTC 2017 - lslezak@suse.cz
+
+- Fixed parsing whitespace lines in the original /etc/fstab
+  (bsc#1030425)
+- 3.2.2
+
+-------------------------------------------------------------------
 Mon Jan 30 12:07:55 UTC 2017 - igonzalezsosa@suse.com
 
 - Allow YaST modules to add packages during upgrade (bsc#1009834)
