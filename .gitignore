@@ -27,3 +27,5 @@ doc/autodocs/*.html
 /test-driver
 /test/*.log
 /test/*.trs
+/doc/autodocs
+/.yardoc
