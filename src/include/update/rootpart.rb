@@ -63,12 +63,7 @@ module Yast
         return false
       end
 
-      # possible_root_fs contains list of supported FSs
-      # storage-ng
-      # FIXME: this kind of checks should be responsibility of the upcoming
-      # Y2Storage::FilesystemType (to be added as part of the
-      # "yast-storage-ng as a libstorage wrapper" change)
-      possible_root_fs = [:ext2, :ext3, :ext4, :btrfs, :reiser, :xfs]
+      possible_root_fs = Y2Storage::Filesystems::Type.root_filesystems().map { |x| x.to_sym }
       possible_root_fs.include?(partition_fs)
     end
 

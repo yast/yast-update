@@ -35,7 +35,6 @@ module Yast
   class RootPartClass < Module
     include Logger
     NON_MODULAR_FS = ["proc", "sysfs"]
-    using Y2Storage::Refinements::DevicegraphLists
 
     def main
       Yast.import "UI"
@@ -291,8 +290,8 @@ module Yast
 
     # Check the filesystem of a partition.
     def FSCKPartition(partition)
-      detected_fs = probed.partitions.with(name: partition).filesystems.first.to_s.to_sym
-      if detected_fs == :ext2
+      detected_fs = fstype_for_device(probed, partition)
+      if detected_fs == "ext2"
         # label, %1 is partition
         out = Builtins.sformat(_("Checking partition %1"), partition)
         UI.OpenDialog(Opt(:decorated), Label(out))
@@ -483,11 +482,16 @@ module Yast
     # @return [String] nil on success, error description on fail
     def MountPartition(mount_point, device, mount_type, fsopts = "")
       if mount_type == ""
-        # storage-ng
-        # FIXME: knowing the fstab string for the filesystem type should be
-        # responsibility of the upcoming Y2Storage::FilesystemType (to be
-        # added as part of the "yast-storage-ng as a libstorage wrapper" change)
-        mount_type = probed.partitions.with(name: device).filesystems.first.to_s
+
+        # FIXME
+        #
+        # Note that the code below will get passed unmodified fstab entries
+        # (like 'UUID=2f61fdb9-f82a-4052-8610-1eb090b82098') for device names
+        # and typically not match anything due to this.
+        #
+        # See also the comment in #update_staging_filesystem! below.
+        #
+        mount_type = fstype_for_device(probed, device) || ""
 =begin
         mount_type = FileSystems.GetMountString(Storage.DetectFs(device), "")
 =end
@@ -1804,10 +1808,10 @@ module Yast
 
     # storage-ng
     # this is the closes equivalent we have in storage-ng
-    def fstype(device)
-      if device.respond_to?(:id)
-        Y2Storage::PartitionId.find(device.id).to_s
-      elsif device.is_a?(Storage::LvmLv)
+    def device_type(device)
+      if device.is?(:partition)
+        device.id.to_s
+      elsif device.is?(:lvm_lv)
         "LV"
       else
         nil
@@ -1816,28 +1820,22 @@ module Yast
 
     # Check a root partition and return map with information (see
     # variable rootPartitions).
-    def CheckPartition(partition)
-      filesystem = partition.has_encryption ? partition.encryption.filesystem : partition.filesystem
+    def CheckPartition(filesystem)
+      device = filesystem.blk_devices[0]
+      p_dev = device.name
+
       freshman = {
         valid:  false,
         name:   "unknown",
         arch:   "unknown",
         label:  filesystem.label,
-        fs:     filesystem.to_s.to_sym,
-        fstype: fstype(partition)
+        fs:     filesystem.type.to_sym,
+        fstype: device_type(device)
       }
 
-      p_dev = partition.name
-      p_detect_fs = filesystem.to_s.to_sym
-
       # possible root FS
-      # storage-ng
-      # FIXME: this kind of checks should be responsibility of the upcoming
-      # Y2Storage::FilesystemType (to be added as part of the
-      # "yast-storage-ng as a libstorage wrapper" change)
-      possible_root_fs = [:ext2, :ext3, :ext4, :btrfs, :reiser, :xfs]
-      if possible_root_fs.include?(p_detect_fs)
-        mount_type = p_detect_fs.to_s
+      if Y2Storage::Filesystems::Type.root_filesystems.include?(filesystem.type)
+        mount_type = filesystem.type.to_s
 
         error_message = nil
         log.debug("Running RunFSCKonJFS with mount_type: #{mount_type} and device: #{p_dev}")
@@ -1887,7 +1885,7 @@ module Yast
               ),
               0
             )
-            Builtins.y2milestone("found fstab on %1", partition)
+            Builtins.y2milestone("found fstab on %1", p_dev)
 
             fstab = []
             crtab = []
@@ -1986,7 +1984,7 @@ module Yast
         end
       end
 
-      log.info("#{partition} #{freshman}")
+      log.info("#{filesystem} #{freshman}")
 
       deep_copy(freshman)
     end
@@ -2040,22 +2038,21 @@ module Yast
       @numberOfValidRootPartitions = 0
 
       # all formatted partitions and lvs on all devices
-      filesystems = probed.filesystems.with { |fs| fs.to_s != "swap" }
-      partitions = filesystems.partitions.to_a + filesystems.lvm_lvs.to_a
+      filesystems = probed.blk_filesystems.select { |fs| fs.type.to_sym != :swap }
 
       counter = 0
-      partitions.each_with_index do |partition, counter|
+      filesystems.each_with_index do |fs, counter|
         if UI.WidgetExists(Id("search_progress"))
-          percent = 100 * (counter + 1 / partitions.size)
+          percent = 100 * (counter + 1 / filesystems.size)
           UI.ChangeWidget(Id("search_pb"), :Value, percent)
         end
 
         freshman = {}
 
-        log.debug("Checking partition: #{partition}")
-        freshman = CheckPartition(partition)
+        log.debug("Checking filesystem: #{fs}")
+        freshman = CheckPartition(fs)
 
-        @rootPartitions[partition.name] = freshman
+        @rootPartitions[fs.blk_devices[0].name] = freshman
         @numberOfValidRootPartitions += 1 if freshman[:valid]
       end
 
@@ -2156,11 +2153,11 @@ module Yast
   private
 
     def probed
-      Y2Storage::StorageManager.instance.probed
+      Y2Storage::StorageManager.instance.y2storage_probed
     end
 
     def staging
-      Y2Storage::StorageManager.instance.staging
+      Y2Storage::StorageManager.instance.y2storage_staging
     end
 
     def fstab_entry_matches?(entry, filesystem)
@@ -2209,22 +2206,78 @@ module Yast
     def update_staging_filesystem!(name, mountpoint)
       log.info "Setting partition data: Device: #{name}, MountPoint: #{mountpoint}"
 
+      # storage-ng
+      #
+      # FIXME
+      #
+      # The code below does not work as one would expect as 'name' comes straight out of
+      # /etc/fstab and might look like 'UUID=2f61fdb9-f82a-4052-8610-1eb090b82098'.
+      #
+      # The only value of this seems to be for yast-bootloader to locate the
+      # root & boot devices.
+      #
+      # Note that this works magically atm because for the root device, the
+      # kernel device name is passed so the 'if' below actually matches.
+      #
+
       if name.include?("/dev/disk/by-id")
         mount_by = Y2Storage::Filesystems::MountByType::ID
-        filesystem = staging.partitions.with(id: name).filesystems.first
       elsif name.include?("/dev/")
         mount_by = Y2Storage::Filesystems::MountByType::DEVICE
-        filesystem = staging.partitions.with(name: name).filesystems.first
       else
-        mount_by = Y2Storage::Filesystems::MountByType::LABEL
-        filesystem = staging.filesystems.with(label: name).first
+        # existing code has the following lines here that don't make sense (afaics):
+        #
+        # mount_by = Y2Storage::Filesystems::MountByType::LABEL
+        # filesystem = staging.filesystems.with(label: name).first
       end
 
-      return unless filesystem
+      return unless mount_by
 
-      filesystem.add_mountpoint(mountpoint)
-      filesystem.mount_by = mount_by.to_i
+      filesystem = fs_by_devicename(staging, name)
+
+      if filesystem
+        filesystem.mountpoint = mountpoint
+        filesystem.mount_by = mount_by
+      end
+
     end
+
+    # Look up filesystem type for a device.
+    #
+    # Return nil if there's no such device or device doesn't have a filesystem.
+    #
+    # @param devicegraph [Devicegraph]
+    # @param devicename [String]
+    # @return [String, nil]
+    #
+    def fstype_for_device(devicegraph, devicename)
+      fs = fs_by_devicename(devicegraph, devicename)
+      fs.type.to_s if fs
+    end
+
+    # Look up filesystem object with matching device name.
+    #
+    # Return nil if there's no such device or the device doesn't have a
+    # filesystem.
+    #
+    # @param devicegraph [Devicegraph]
+    # @param devicename [String]
+    # @return [Y2Storage::Filesystems::BlkFilesystem, nil]
+    #
+    def fs_by_devicename(devicegraph, devicename)
+      fs = devicegraph.blk_filesystems.find do |fs|
+        fs.blk_devices.any? { |dev| dev.name == devicename }
+      end
+
+      # log a bit
+      graph = "?"
+      graph = "probed" if devicegraph.object_id == probed.object_id
+      graph = "staging#" + Y2Storage::StorageManager.instance.staging_revision.to_s if devicegraph.object_id == staging.object_id
+      log.info("fs_by_devicename(#{graph}, #{devicename}) = #{'sid#' + fs.sid.to_s if fs}")
+
+      fs
+    end
+
   end
 
   RootPart = RootPartClass.new
