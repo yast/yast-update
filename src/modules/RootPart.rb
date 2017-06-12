@@ -483,6 +483,8 @@ module Yast
     def MountPartition(mount_point, device, mount_type, fsopts = "")
       if mount_type == ""
 
+        # storage-ng
+        #
         # FIXME
         #
         # Note that the code below will get passed unmodified fstab entries
