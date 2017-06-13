@@ -2040,7 +2040,7 @@ module Yast
       @numberOfValidRootPartitions = 0
 
       # all formatted partitions and lvs on all devices
-      filesystems = probed.blk_filesystems.select { |fs| fs.type.to_sym != :swap }
+      filesystems = probed.blk_filesystems.reject { |fs| fs.type.is?(:swap) }
 
       counter = 0
       filesystems.each_with_index do |fs, counter|
@@ -2244,12 +2244,18 @@ module Yast
 
     end
 
+    # FIXME
+    #
+    # It would make more sense to return the fs type object directly but atm it
+    # integrates better with existing code to return a string.
+    #
     # Look up filesystem type for a device.
     #
     # Return nil if there's no such device or device doesn't have a filesystem.
     #
     # @param devicegraph [Devicegraph]
     # @param devicename [String]
+    #
     # @return [String, nil]
     #
     def fstype_for_device(devicegraph, devicename)
@@ -2271,7 +2277,7 @@ module Yast
         fs.blk_devices.any? { |dev| dev.name == devicename }
       end
 
-      # log a bit
+      # log which devicegraph we operate on
       graph = "?"
       graph = "probed" if devicegraph.object_id == probed.object_id
       graph = "staging#" + Y2Storage::StorageManager.instance.staging_revision.to_s if devicegraph.object_id == staging.object_id
