@@ -1836,7 +1836,7 @@ module Yast
       }
 
       # possible root FS
-      if Y2Storage::Filesystems::Type.root_filesystems.include?(filesystem.type)
+      if filesystem.type.root_ok?
         mount_type = filesystem.type.to_s
 
         error_message = nil

@@ -55,16 +55,26 @@ module Yast
       Yast.import "Product"
     end
 
-    # Returns boolean whether partition can be
-    # a Linux 'root' file system
+    # Check if partition_fs can be a Linux 'root' file system.
+    #
+    # @param partition_fs [Symbol]
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #    ok = CanBeLinuxRootFS(:ext4)
+    #
     def CanBeLinuxRootFS(partition_fs)
       if partition_fs.nil?
         Builtins.y2error("partition_fs not defined!")
         return false
       end
 
-      possible_root_fs = Y2Storage::Filesystems::Type.root_filesystems().map { |x| x.to_sym }
-      possible_root_fs.include?(partition_fs)
+      begin
+        Y2Storage::Filesystems::Type.new(partition_fs).root_ok?
+      rescue
+        false
+      end
     end
 
     # flavor is either `update or `boot
