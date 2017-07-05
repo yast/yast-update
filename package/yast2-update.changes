@@ -1,14 +1,25 @@
 -------------------------------------------------------------------
+Wed Jul  5 15:04:22 CEST 2017 - shundhammer@suse.de
+
+- Merged master to storage-ng branch
+- 3.4.0
+
+-------------------------------------------------------------------
 Thu Mar 16 11:28:34 UTC 2017 - jlopez@suse.com
 
 - storage-ng: add detection of previous systems using lvm. 
+
+-------------------------------------------------------------------
+Wed Apr 19 14:38:34 UTC 2017 - lslezak@suse.cz
+
+- Fixed parsing whitespace lines in the original /etc/fstab
+  (bsc#1030425)
 
 -------------------------------------------------------------------
 Fri Mar  3 12:46:55 UTC 2017 - ancor@suse.com
 
 - storage-ng: detection of previous systems partially adapted.
 - Version temporarily bumped to 3.3.x to prioritize this branch
-- 3.3.0
 
 -------------------------------------------------------------------
 Mon Jan 30 12:07:55 UTC 2017 - igonzalezsosa@suse.com

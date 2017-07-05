@@ -746,6 +746,8 @@ module Yast
       fstab_file = Ops.add(Installation.destdir, "/etc/fstab")
 
       if FileUtils.Exists(fstab_file)
+        # Note: this is a copy from etc_fstab.scr file (yast2.rpm),
+        # keep the files in sync!
         SCR.RegisterAgent(
           path(".target.etc.fstab"),
           term(
@@ -753,7 +755,8 @@ module Yast
             term(
               :Description,
               term(:File, fstab_file),
-              "#\n", # Comment
+              # tab and space is a workaround for white space only lines (bsc#1030425)
+              "#\n\t ",	# Comment
               false, # read-only
               term(
                 :List,

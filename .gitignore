@@ -23,7 +23,8 @@ stamp-h*
 update.pot
 Makefile.am.common
 *.ami
-doc/autodocs/*.html
+doc
+.yardoc
 /test-driver
 /test/*.log
 /test/*.trs
