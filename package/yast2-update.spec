@@ -41,9 +41,9 @@ BuildRequires:	yast2-installation-control
 # Needed for tests
 BuildRequires:  rubygem(rspec)
 
-BuildRequires:	yast2-storage-ng
-# EnumMappings with MOUNT_BY_TYPE
-Requires:	yast2-storage-ng >= 0.1.12
+BuildRequires:	yast2-storage-ng >= 0.1.32
+# New versions of StorageManager#probed and StorageManager#staging
+Requires:	yast2-storage-ng >= 0.1.32
 # FSSnapshotStore
 Requires:	yast2 >= 3.1.126
 Requires:	yast2-installation
