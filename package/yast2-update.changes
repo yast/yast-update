@@ -1,31 +1,37 @@
 -------------------------------------------------------------------
-Mon Jul 24 15:52:26 UTC 2017 - ancor@suse.com
+Mon Aug 14 10:22:00 UTC 2017 - ancor@suse.com
+
+- Merged storage-ng branch (fate#318196).
+- Note: all changes below with this date belong to the merge.
+- 3.3.0
+
+-------------------------------------------------------------------
+Mon Aug 14 10:22:00 UTC 2017 - ancor@suse.com
 
 - storage-ng: adapted calls to temporary y2storage_* methods, since
   they were finally removed from Y2Storage::StorageManager.
 
 -------------------------------------------------------------------
-Wed Jul  5 15:04:22 CEST 2017 - shundhammer@suse.de
+Mon Aug 14 10:22:00 UTC 2017 - shundhammer@suse.de
 
 - Merged master to storage-ng branch
-- 3.4.0
+
+-------------------------------------------------------------------
+Mon Aug 14 10:22:00 UTC 2017 - jlopez@suse.com
+
+- storage-ng: add detection of previous systems using lvm.
+
+-------------------------------------------------------------------
+Mon Aug 14 10:22:00 UTC 2017 - ancor@suse.com
+
+- storage-ng: detection of previous systems partially adapted.
 
 -------------------------------------------------------------------
 Wed Apr 19 14:38:34 UTC 2017 - lslezak@suse.cz
 
 - Fixed parsing whitespace lines in the original /etc/fstab
   (bsc#1030425)
-
--------------------------------------------------------------------
-Thu Mar 16 11:28:34 UTC 2017 - jlopez@suse.com
-
-- storage-ng: add detection of previous systems using lvm.
-
--------------------------------------------------------------------
-Fri Mar  3 12:46:55 UTC 2017 - ancor@suse.com
-
-- storage-ng: detection of previous systems partially adapted.
-- Version temporarily bumped to 3.3.x to prioritize this branch
+- 3.2.2
 
 -------------------------------------------------------------------
 Mon Jan 30 12:07:55 UTC 2017 - igonzalezsosa@suse.com
