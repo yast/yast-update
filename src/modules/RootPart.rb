@@ -265,8 +265,10 @@ module Yast
 
       # now remove the mount points of the mounted partitions
       # in the target map of the storage module
-      #  RemoveFromTargetMap() if !keep_in_target
       #
+      # RemoveFromTargetMap() if !keep_in_target
+      #
+      # storage-ng
       staging.filesystems.map { |f| f.mountpoint = nil } if !keep_in_target
 
       # clear activated list
