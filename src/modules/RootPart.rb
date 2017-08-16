@@ -1714,16 +1714,15 @@ module Yast
 
               Builtins.y2milestone("fstab %1", fstab)
 
-              if reiserfs_in_fstab?(fstab)
-                reiserfs_entries = fstab.find_all {|e| e["vfstype"].include? "reiser" }
-                mount_points = reiserfs_entries.map {|e| e["file"] }.join("\n")
+              reiserfs_entries = fstab.select { |e| e["vfstype"].include? "reiser" }
 
+              if !reiserfs_entries.empty?
                 message =
                   Builtins.sformat(
-                    _("The mount points listed below are using reiserfs that is not supported anymore:\n\n%1\n\n" \
+                    _("The mount points listed below are using ReiserFS that is not supported anymore:\n\n%1\n\n" \
                       "Before upgrade you should migrate all your data to other filesystem.\n" \
                       "More details can be found in the release notes."),
-                    mount_points
+                    reiserfs_entries.map { |e| e["file"] }.join("\n")
                   )
 
                 success = false
@@ -2202,10 +2201,6 @@ module Yast
       log.warning("Device does not match fstab: #{device} vs. #{value}") unless matches
 
       matches
-    end
-
-    def reiserfs_in_fstab?(fstab)
-      fstab.any? { |e| e["vfstype"].include? "reiser"}
     end
 
     def update_staging!

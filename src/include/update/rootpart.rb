@@ -363,11 +363,11 @@ module Yast
 
           if freshman[:fs] == :reiserfs
             cont = false
-            Report.Error(_("Reiserfs is not supported anymore.\n" \
+            Report.Error(_("ReiserFS is not supported anymore.\n" \
                             "Please migrate your data to other " \
-                            "filesystem before perform the upgrade.\n\n" \
+                            "filesystem before performing the upgrade.\n\n" \
                             "More details can be found in the release notes."))
-          elsif Ops.get_string(freshman, :name, "unknown") == "unknown"
+          elsif (freshman[:name] || "unknown") == "unknown"
             cont = false
             Popup.Error(
               # error popup
