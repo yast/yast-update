@@ -265,8 +265,9 @@ module Yast
 
       # now remove the mount points of the mounted partitions
       # in the target map of the storage module
-      RemoveFromTargetMap() if !keep_in_target
-
+      #  RemoveFromTargetMap() if !keep_in_target
+      #
+      staging.filesystems.map { |f| f.mountpoint = nil } if !keep_in_target
 
       # clear activated list
       @activated = []
@@ -476,7 +477,7 @@ module Yast
 
 
     # Mount partition on specified mount point
-    # @param [String] mount_point string mount point to monut the partition at
+    # @param [String] mount_point string mount point to mount the partition at
     # @param [String] device string device to mount
     # @param [String] mount_type string filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
@@ -1711,7 +1712,20 @@ module Yast
 
               Builtins.y2milestone("fstab %1", fstab)
 
-              if !(
+              if reiserfs_in_fstab?(fstab)
+                reiserfs_entries = fstab.find_all {|e| e["vfstype"].include? "reiser" }
+                mount_points = reiserfs_entries.map {|e| e["file"] }.join("\n")
+
+                message =
+                  Builtins.sformat(
+                    _("The mount points listed below are using reiserfs that is not supported anymore:\n\n%1\n\n" \
+                      "Before upgrade you should migrate all your data to other filesystem.\n" \
+                      "More details can be found in the release notes."),
+                    mount_points
+                  )
+
+                success = false
+              elsif !(
                   message_ref = arg_ref(message);
                   _MountFSTab_result = MountFSTab(fstab, message_ref);
                   message = message_ref.value;
@@ -2184,8 +2198,12 @@ module Yast
       # Possible reasons:
       # - /var not mounted so hwinfo cannot translate device names
       log.warning("Device does not match fstab: #{device} vs. #{value}") unless matches
-      
+
       matches
+    end
+
+    def reiserfs_in_fstab?(fstab)
+      fstab.any? { |e| e["vfstype"].include? "reiser"}
     end
 
     def update_staging!

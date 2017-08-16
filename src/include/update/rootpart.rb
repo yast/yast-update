@@ -368,6 +368,13 @@ module Yast
                 "No installed system that can be upgraded with this product was found\non the selected partition."
               )
             )
+          elsif freshman[:fs] == :reiserfs
+            cont = false
+            Report.Error(_("Reiserfs is not supported anymore.\n" \
+                            "Please migrate your data to other " \
+                            "filesystem before perform the upgrade.\n\n" \
+                            "More details can be found in the release notes."))
+
           elsif !DoArchitecturesMatch(
               Ops.get_string(freshman, :arch, ""),
               RootPart.GetDistroArch
@@ -397,7 +404,7 @@ module Yast
               # error report
               Report.Error(_("Failed to mount target system"))
               UmountMountedPartition()
-              next 
+              next
 
               # Correctly mounted but incomplete installation found
             elsif RootPart.IncompleteInstallationDetected(Installation.destdir)
