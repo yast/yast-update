@@ -265,8 +265,11 @@ module Yast
 
       # now remove the mount points of the mounted partitions
       # in the target map of the storage module
-      RemoveFromTargetMap() if !keep_in_target
-
+      #
+      # RemoveFromTargetMap() if !keep_in_target
+      #
+      # storage-ng
+      staging.filesystems.map { |f| f.mountpoint = nil } if !keep_in_target
 
       # clear activated list
       @activated = []
@@ -476,7 +479,7 @@ module Yast
 
 
     # Mount partition on specified mount point
-    # @param [String] mount_point string mount point to monut the partition at
+    # @param [String] mount_point string mount point to mount the partition at
     # @param [String] device string device to mount
     # @param [String] mount_type string filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
@@ -1586,7 +1589,6 @@ module Yast
       MountVarPartition(var_partition_current)
     end
 
-
     # Mounting root-partition; reading fstab and mounting read partitions
     def MountPartitions(root_device_current)
       Builtins.y2milestone("mount partitions: %1", root_device_current)
@@ -1711,7 +1713,23 @@ module Yast
 
               Builtins.y2milestone("fstab %1", fstab)
 
-              if !(
+              reiserfs_entries =
+                fstab.select { |e| e["vfstype"] == Y2Storage::Filesystems::Type::REISERFS.to_s }
+
+              # Removed ReiserFS support for system upgrade (fate#323394).
+              if !reiserfs_entries.empty?
+                message =
+                  Builtins.sformat(
+                    _("The mount points listed below are using ReiserFS that " \
+                      "is not supported anymore:\n\n%1\n\n"                    \
+                      "Before upgrade you should migrate all "                 \
+                      "your data to another filesystem.\n"
+                    ),
+                    reiserfs_entries.map { |e| e["file"] }.join("\n")
+                  )
+
+                success = false
+              elsif !(
                   message_ref = arg_ref(message);
                   _MountFSTab_result = MountFSTab(fstab, message_ref);
                   message = message_ref.value;
@@ -2184,7 +2202,7 @@ module Yast
       # Possible reasons:
       # - /var not mounted so hwinfo cannot translate device names
       log.warning("Device does not match fstab: #{device} vs. #{value}") unless matches
-      
+
       matches
     end
 

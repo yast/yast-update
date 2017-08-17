@@ -360,7 +360,14 @@ module Yast
             selected,
             freshman
           )
-          if Ops.get_string(freshman, :name, "unknown") == "unknown"
+
+          # Removed ReiserFS support for system upgrade (fate#323394).
+          if freshman[:fs] == :reiserfs
+            cont = false
+            Report.Error(_("ReiserFS is not supported anymore.\n" \
+                            "Please migrate your data to another " \
+                            "filesystem before performing the upgrade.\n\n"))
+          elsif (freshman[:name] || "unknown") == "unknown"
             cont = false
             Popup.Error(
               # error popup
@@ -397,7 +404,7 @@ module Yast
               # error report
               Report.Error(_("Failed to mount target system"))
               UmountMountedPartition()
-              next 
+              next
 
               # Correctly mounted but incomplete installation found
             elsif RootPart.IncompleteInstallationDetected(Installation.destdir)
