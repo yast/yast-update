@@ -1589,7 +1589,6 @@ module Yast
       MountVarPartition(var_partition_current)
     end
 
-
     # Mounting root-partition; reading fstab and mounting read partitions
     def MountPartitions(root_device_current)
       Builtins.y2milestone("mount partitions: %1", root_device_current)
@@ -1714,14 +1713,18 @@ module Yast
 
               Builtins.y2milestone("fstab %1", fstab)
 
-              reiserfs_entries = fstab.select { |e| e["vfstype"].include? "reiser" }
+              reiserfs_entries =
+                fstab.select { |e| e["vfstype"] == Y2Storage::Filesystems::Type::REISERFS.to_s }
 
+              # Removed ReiserFS support for system upgrade (fate#323394).
               if !reiserfs_entries.empty?
                 message =
                   Builtins.sformat(
-                    _("The mount points listed below are using ReiserFS that is not supported anymore:\n\n%1\n\n" \
-                      "Before upgrade you should migrate all your data to other filesystem.\n" \
-                      "More details can be found in the release notes."),
+                    _("The mount points listed below are using ReiserFS that " \
+                      "is not supported anymore:\n\n%1\n\n"                    \
+                      "Before upgrade you should migrate all "                 \
+                      "your data to another filesystem.\n"
+                    ),
                     reiserfs_entries.map { |e| e["file"] }.join("\n")
                   )
 

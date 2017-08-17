@@ -361,12 +361,12 @@ module Yast
             freshman
           )
 
+          # Removed ReiserFS support for system upgrade (fate#323394).
           if freshman[:fs] == :reiserfs
             cont = false
             Report.Error(_("ReiserFS is not supported anymore.\n" \
-                            "Please migrate your data to other " \
-                            "filesystem before performing the upgrade.\n\n" \
-                            "More details can be found in the release notes."))
+                            "Please migrate your data to another " \
+                            "filesystem before performing the upgrade.\n\n"))
           elsif (freshman[:name] || "unknown") == "unknown"
             cont = false
             Popup.Error(
