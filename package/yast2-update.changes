@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 17 12:14:04 UTC 2017 - knut.anderssen@suse.com
+
+- Fixed a typo calling a Logger method (bsc#1054236).
+- 3.3.2
+
+-------------------------------------------------------------------
 Wed Aug 16 11:44:44 UTC 2017 - knut.anderssen@suse.com
 
 - Do not allow to upgrade if the target system uses reiserfs
