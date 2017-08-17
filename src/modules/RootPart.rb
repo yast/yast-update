@@ -2183,6 +2183,13 @@ module Yast
       Y2Storage::StorageManager.instance.staging
     end
 
+    # It returns true if the given fstab entry matches with the given device
+    # filesystem or false if not.
+    #
+    # @param entry [String]
+    # @param filesystem [Y2Storage::Filesystems::BlkFilesystem]
+    #
+    # @return [Boolean]
     def fstab_entry_matches?(entry, filesystem)
       spec = entry["spec"]
       id, value = spec.include?("=") ? spec.split('=') : ["", spec]
@@ -2201,7 +2208,7 @@ module Yast
       # Why this doesn't match?
       # Possible reasons:
       # - /var not mounted so hwinfo cannot translate device names
-      log.warning("Device does not match fstab: #{device} vs. #{value}") unless matches
+      log.warn("Device does not match fstab: #{device} vs. #{value}") unless matches
 
       matches
     end
