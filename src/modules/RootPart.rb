@@ -1833,7 +1833,7 @@ module Yast
     # this is the closes equivalent we have in storage-ng
     def device_type(device)
       if device.is?(:partition)
-        device.id.to_s
+        device.id.to_human_string
       elsif device.is?(:lvm_lv)
         "LV"
       else
