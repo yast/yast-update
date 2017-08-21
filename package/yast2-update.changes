@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug 21 10:14:50 UTC 2017 - ancor@suse.com
+
+- Use translatable and human-friendly format to display the
+  partition id during a system upgrade (part of fate#318196).
+- 3.3.3
+
+-------------------------------------------------------------------
 Thu Aug 17 12:14:04 UTC 2017 - knut.anderssen@suse.com
 
 - Fixed a typo calling a Logger method (bsc#1054236).
