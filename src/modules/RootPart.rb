@@ -1713,19 +1713,21 @@ module Yast
 
               Builtins.y2milestone("fstab %1", fstab)
 
-              reiserfs_entries =
-                fstab.select { |e| e["vfstype"] == Y2Storage::Filesystems::Type::REISERFS.to_s }
+              legacy_filesystems =
+                Y2Storage::Filesystems::Type.legacy_home_filesystems.map(&:to_s)
+
+              legacy_entries = fstab.select { |e| legacy_filesystems.include?(e["vfstype"]) }
 
               # Removed ReiserFS support for system upgrade (fate#323394).
-              if !reiserfs_entries.empty?
+              if !legacy_entries.empty?
                 message =
                   Builtins.sformat(
-                    _("The mount points listed below are using ReiserFS that " \
-                      "is not supported anymore:\n\n%1\n\n"                    \
+                    _("The mount points listed below are using legacy filesystems " \
+                      "that are not supported anymore:\n\n%1\n\n"                    \
                       "Before upgrade you should migrate all "                 \
                       "your data to another filesystem.\n"
                     ),
-                    reiserfs_entries.map { |e| e["file"] }.join("\n")
+                    legacy_entries.map { |e| "#{e["file"]} (#{e["vfstype"]})" }.join("\n")
                   )
 
                 success = false
@@ -1857,7 +1859,7 @@ module Yast
       }
 
       # possible root FS
-      if filesystem.type.root_ok?
+      if filesystem.type.root_ok? || filesystem.type.legacy_root?
         mount_type = filesystem.type.to_s
 
         error_message = nil

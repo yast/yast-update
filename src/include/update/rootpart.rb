@@ -77,6 +77,28 @@ module Yast
       end
     end
 
+    # Check if partitions_fs was a valid filesystem for '/' mount point
+    #
+    # @param partition_fs [Symbol]
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #    ok = legacy_filesystem?(:reiserfs)
+    #
+    def legacy_filesystem?(partition_fs)
+      if partition_fs.nil?
+        Builtins.y2error("partition_fs not defined!")
+        return false
+      end
+
+      begin
+        Y2Storage::Filesystems::Type.new(partition_fs).legacy_root?
+      rescue
+        false
+      end
+    end
+
     # flavor is either `update or `boot
     def make_partition_list(withall, flavor)
       part_list = []
@@ -101,7 +123,7 @@ module Yast
           # unknown system
           if system == "unknown"
             if part_fs != nil
-              if CanBeLinuxRootFS(part_fs)
+              if CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)
                 # Table item (unknown system)
                 system = _("Unknown Linux")
               else
@@ -125,7 +147,7 @@ module Yast
 
           # is a linux fs, can be a root fs, has a fs name
           if part_fs != nil && Ops.get(i, :fstype) != nil &&
-              CanBeLinuxRootFS(part_fs) &&
+              (CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)) &&
               part_fs_name != nil
             fs = Builtins.sformat(
               _("%1 (%2)"),
