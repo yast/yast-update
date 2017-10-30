@@ -1938,6 +1938,8 @@ module Yast
               return deep_copy(freshman)
             end
 
+            freshman[:valid] = false if !Update.IsProductSupportedForUpgrade
+
             # Get installed release name
             # TRANSLATORS: label for an unknown installed system
             freshman[:name] = Update.installed_product || _("Unknown")
