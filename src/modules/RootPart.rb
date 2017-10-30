@@ -1946,57 +1946,41 @@ module Yast
             Builtins.y2debug("release: %1", freshman[:name])
 
             # Right architecture?
-            Ops.set(
-              freshman,
-              :arch,
-              GetArchOfELF(Ops.add(Installation.destdir, "/bin/bash"))
-            )
+            freshman[:arch] = GetArchOfELF(Installation.destdir + "/bin/bash")
             instsys_arch = GetArchOfELF("/bin/bash")
 
             # `arch_valid, see bugzilla #288201
             # installed /bin/bash and the one from inst-sys are matching
-            if Ops.get_string(freshman, :arch, "unknown") == instsys_arch
+            if freshman[:arch] == instsys_arch
               Builtins.y2milestone("Architecture (%1) is valid", instsys_arch)
-              Ops.set(freshman, :arch_valid, true)
+              freshman[:arch_valid] = true
 
               # both are PPC, bugzilla #249791
-            elsif Builtins.contains(
-                ["ppc", "ppc64"],
-                Ops.get_string(freshman, :arch, "unknown")
-              ) &&
-                Builtins.contains(["ppc", "ppc64"], instsys_arch)
+            elsif ["ppc", "ppc64"].include?(freshman[:arch]) &&
+                ["ppc", "ppc64"].include?(instsys_arch)
               Builtins.y2milestone(
                 "Architecture for partition %1 is %2, upgrading %3",
-                p_dev,
-                Ops.get_string(freshman, :arch, "unknown"),
-                instsys_arch
+                p_dev, freshman[:arch], instsys_arch
               )
-              Ops.set(freshman, :arch_valid, true)
+              freshman[:arch_valid] = true
 
               # Architecture is not matching
             else
               Builtins.y2milestone(
                 "Architecture for partition %1 is %2, upgrading %3",
-                p_dev,
-                Ops.get_string(freshman, :arch, "unknown"),
-                instsys_arch
+                p_dev, freshman[:arch], instsys_arch
               )
-              Ops.set(freshman, :arch_valid, false)
+              freshman[:arch_valid] = false
             end
 
-            # If architecture is not matching, the whole partition is considered to be wrong
-            if Ops.get_boolean(freshman, :arch_valid, false) != true
-              Builtins.y2milestone(
-                "Architecture is not valid -> the whole partition is not valid"
-              )
-              Ops.set(freshman, :valid, false)
+            if !freshman[:arch_valid]
+              log.info "Architecture is not valid -> the whole partition is not valid"
+              freshman[:valid] = false
             end
 
             if IncompleteInstallationDetected(Installation.destdir)
-              Builtins.y2milestone(
-                "Incomplete installation detected, partition is not valid"
-              )
-              Ops.set(freshman, :valid, false)
+              log.info "Incomplete installation detected, partition is not valid"
+              freshman[:valid] = false
             end
 
             Builtins.y2milestone(
