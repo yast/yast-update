@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        3.3.4
+Version:        4.0.0
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build

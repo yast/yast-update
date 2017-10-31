@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Oct 31 14:51:13 UTC 2017 - mvidner@suse.com
+
+- Filter upgradable products in the partition selector already
+  (FATE#323163).
+- 4.0.0
+
+-------------------------------------------------------------------
 Tue Aug 22 10:59:42 UTC 2017 - knut.anderssen@suse.com
 
 - Show legacy root filesystems in the list of systems to upgrade
