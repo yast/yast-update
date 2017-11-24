@@ -1593,13 +1593,12 @@ module Yast
       # detect pam_mount encrypted homes
       pam_mount_path = Installation.destdir + "/etc/security/pam_mount.conf.xml"
       return false unless File.exists? pam_mount_path
-      Builtins.y2milestone("Detected pam_mount.conf, checking existence of ecrypted home dirs")
+      Builtins.y2milestone("Detected pam_mount.conf, checking existence of encrypted home dirs")
       pam_mount_conf = SCR.Read(path(".anyxml"), pam_mount_path);
-      volumes = pam_mount_conf["pam_mount"][0]["volume"] || nil
+      pam = pam_mount_conf.fetch("pam_mount", [])[0]
+      volumes = pam && pam["volume"]
       Builtins.y2milestone("Detected encrypted volumes: %1", volumes)
-      return false if volumes.nil?
-      return false if volumes.empty?
-      return true
+      !(volumes.nil? || volumes.empty?)
     end
 
     # Mounting root-partition; reading fstab and mounting read partitions
@@ -1681,17 +1680,13 @@ module Yast
             _(
               "Some home directories in the system on %1 are encrypted. This release does not\n" +
                 "support cryptconfig any longer and those home directories will not be accessible\n" +
-                "after upgade. In order to access these home directories, they need to be decrypted\n" +
+                "after upgrade. In order to access these home directories, they need to be decrypted\n" +
                 "before performing upgrade.\n" +
                 "You can consider encrypting whole volume via LUKS."
             ),
             root_device_current
           )
-          if Mode.autoupgrade
-            Popup.TimedWarning(warning, 10)
-          else
-            Popup.Warning(warning)
-          end
+          Report.Warning(warning)
         end
 
         if Builtins.size(fstab) == 0
