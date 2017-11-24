@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov 24 06:51:50 UTC 2017 - jsrain@suse.cz
+
+- Display warning if system uses cryptconfig encrypted home
+  directories (fate#323541)
+- 4.0.1
+
+-------------------------------------------------------------------
 Tue Oct 31 14:51:13 UTC 2017 - mvidner@suse.com
 
 - Filter upgradable products in the partition selector already
