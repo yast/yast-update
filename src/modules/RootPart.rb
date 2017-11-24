@@ -1589,6 +1589,19 @@ module Yast
       MountVarPartition(var_partition_current)
     end
 
+    def has_pam_mount
+      # detect pam_mount encrypted homes
+      pam_mount_path = Installation.destdir + "/etc/security/pam_mount.conf.xml"
+      return false unless File.exists? pam_mount_path
+      Builtins.y2milestone("Detected pam_mount.conf, checking existence of ecrypted home dirs")
+      pam_mount_conf = SCR.Read(path(".anyxml"), pam_mount_path);
+      volumes = pam_mount_conf["pam_mount"][0]["volume"] || nil
+      Builtins.y2milestone("Detected encrypted volumes: %1", volumes)
+      return false if volumes.nil?
+      return false if volumes.empty?
+      return true
+    end
+
     # Mounting root-partition; reading fstab and mounting read partitions
     def MountPartitions(root_device_current)
       Builtins.y2milestone("mount partitions: %1", root_device_current)
@@ -1653,6 +1666,24 @@ module Yast
                 "not reliable for the update since kernel-device names are unfortunately not\n" +
                 "persistent. It is strongly recommended to start the old system and change the\n" +
                 "mount-by method to any other method for all partitions."
+            ),
+            root_device_current
+          )
+          if Mode.autoupgrade
+            Popup.TimedWarning(warning, 10)
+          else
+            Popup.Warning(warning)
+          end
+        end
+
+        if has_pam_mount
+          warning = Builtins.sformat(
+            _(
+              "Some home directories in the system on %1 are encrypted. This release does not\n" +
+                "support cryptconfig any longer and those home directories will not be accessible\n" +
+                "after upgade. In order to access these home directories, they need to be decrypted\n" +
+                "before performing upgrade.\n" +
+                "You can consider encrypting whole volume via LUKS."
             ),
             root_device_current
           )
