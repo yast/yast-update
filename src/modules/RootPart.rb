@@ -1173,6 +1173,12 @@ module Yast
         )
       end
 
+      if MountPartition("/run", "tmpfs", "tmpfs") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "tmpfs", :mntpt => "/run" }
+        )
+      end
+
       success = true
 
       raidMounted = false
