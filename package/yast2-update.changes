@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Dec 11 06:39:52 UTC 2017 - igonzalezsosa@suse.com
+
+- Mount /mnt/run as tmpfs during upgrade (bsc#1071745)
+- 4.0.2
+
+-------------------------------------------------------------------
 Fri Nov 24 06:51:50 UTC 2017 - jsrain@suse.cz
 
 - Display warning if system uses cryptconfig encrypted home
