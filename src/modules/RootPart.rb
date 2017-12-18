@@ -65,6 +65,9 @@ module Yast
       Yast.import "Wizard"
 
 # storage-ng
+# This include allows to use DlgUpdateCryptFs, which has not equivalent in
+# yast-storage-ng. So the whole method invoking DlgUpdateCryptFs should be
+# checked (it's hopefully useless now).
 =begin
       Yast.include self, "partitioning/custom_part_dialogs.rb"
 =end
@@ -1858,7 +1861,7 @@ module Yast
     end
 
     # storage-ng
-    # this is the closes equivalent we have in storage-ng
+    # this is the closest equivalent we have in storage-ng
     def device_type(device)
       if device.is?(:partition)
         device.id.to_human_string
