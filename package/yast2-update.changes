@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Dec 18 16:32:10 UTC 2017 - ancor@suse.com
+
+- Use udev names, in addition to kernel device names, to match
+  partitions (part of the fix for bsc#1073254).
+- 4.0.2
+
+-------------------------------------------------------------------
 Fri Nov 24 06:51:50 UTC 2017 - jsrain@suse.cz
 
 - Display warning if system uses cryptconfig encrypted home

@@ -65,6 +65,9 @@ module Yast
       Yast.import "Wizard"
 
 # storage-ng
+# This include allows to use DlgUpdateCryptFs, which has not equivalent in
+# yast-storage-ng. So the whole method invoking DlgUpdateCryptFs should be
+# checked (it's hopefully useless now).
 =begin
       Yast.include self, "partitioning/custom_part_dialogs.rb"
 =end
@@ -1858,7 +1861,7 @@ module Yast
     end
 
     # storage-ng
-    # this is the closes equivalent we have in storage-ng
+    # this is the closest equivalent we have in storage-ng
     def device_type(device)
       if device.is?(:partition)
         device.id.to_human_string
@@ -2208,21 +2211,19 @@ module Yast
       spec = entry["spec"]
       id, value = spec.include?("=") ? spec.split('=') : ["", spec]
 
-      device =
+      device_strings =
         if id.casecmp("LABEL") == 0
-          filesystem.label
+          [filesystem.label]
         elsif id.casecmp("UUID") == 0
-          filesystem.uuid
+          [filesystem.uuid]
         else
-          filesystem.blk_devices[0].name
+          blk_dev = filesystem.blk_devices[0]
+          [blk_dev.name] + blk_dev.udev_full_all
         end
 
-      matches = value == device
+      matches = device_strings.include?(value)
 
-      # Why this doesn't match?
-      # Possible reasons:
-      # - /var not mounted so hwinfo cannot translate device names
-      log.warn("Device does not match fstab: #{device} vs. #{value}") unless matches
+      log.warn("Device does not match fstab: #{value} not in #{device_strings}") unless matches
 
       matches
     end
