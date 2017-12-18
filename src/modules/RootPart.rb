@@ -2211,21 +2211,19 @@ module Yast
       spec = entry["spec"]
       id, value = spec.include?("=") ? spec.split('=') : ["", spec]
 
-      device =
+      device_strings =
         if id.casecmp("LABEL") == 0
-          filesystem.label
+          [filesystem.label]
         elsif id.casecmp("UUID") == 0
-          filesystem.uuid
+          [filesystem.uuid]
         else
-          filesystem.blk_devices[0].name
+          blk_dev = filesystem.blk_devices[0]
+          [blk_dev.name] + blk_dev.udev_full_all
         end
 
-      matches = value == device
+      matches = device_strings.include?(value)
 
-      # Why this doesn't match?
-      # Possible reasons:
-      # - /var not mounted so hwinfo cannot translate device names
-      log.warn("Device does not match fstab: #{device} vs. #{value}") unless matches
+      log.warn("Device does not match fstab: #{value} not in #{device_strings}") unless matches
 
       matches
     end
