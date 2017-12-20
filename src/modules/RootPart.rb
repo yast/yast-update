@@ -44,16 +44,8 @@ module Yast
       Yast.import "Directory"
       Yast.import "Mode"
       Yast.import "Linuxrc"
-# storage-ng
-=begin
-      Yast.import "Storage"
-=end
       Yast.import "Popup"
       Yast.import "ModuleLoading"
-# storage-ng
-=begin
-      Yast.import "FileSystems"
-=end
       Yast.import "Update"
       Yast.import "FileUtils"
       Yast.import "Arch"
@@ -266,12 +258,7 @@ module Yast
         end
       end
 
-      # now remove the mount points of the mounted partitions
-      # in the target map of the storage module
-      #
-      # RemoveFromTargetMap() if !keep_in_target
-      #
-      # storage-ng
+      # now remove the mount points in the target system
       staging.filesystems.map { |f| f.mountpoint = nil } if !keep_in_target
 
       # clear activated list
@@ -607,19 +594,6 @@ module Yast
         found_partition.value = "none"
         return false
       end
-
-      # storage-ng
-      # This commented piece of code didn't make much sense anyways. After
-      # reaching this point, the method always returned true.
-=begin
-      root = Ops.get(tmp, 0, {})
-
-      if !Storage.DeviceRealDisk(Ops.get_string(root, "spec", ""))
-        # There's nothing I can check.  Anyway, it's not mounted per device
-        # name so it can't be wrong, in theory.
-        return true
-      end
-=end
 
       true
     end
