@@ -2210,22 +2210,38 @@ module Yast
     def fstab_entry_matches?(entry, filesystem)
       spec = entry["spec"]
       id, value = spec.include?("=") ? spec.split('=') : ["", spec]
+      id.downcase!
 
-      device_strings =
-        if id.casecmp("LABEL") == 0
-          [filesystem.label]
-        elsif id.casecmp("UUID") == 0
-          [filesystem.uuid]
-        else
-          blk_dev = filesystem.blk_devices[0]
-          [blk_dev.name] + blk_dev.udev_full_all
-        end
+      if ["label", "uuid"].include?(id)
+        dev_string = id == "label" ? filesystem.label : filesystem.uuid
+        return true if dev_string == value
 
-      matches = device_strings.include?(value)
+        log.warn("Device does not match fstab (#{id}): #{dev_string} vs. #{value}")
+        false
+      else
+        name_matches_device?(value, filesystem.blk_devices[0])
+      end
+    end
 
-      log.warn("Device does not match fstab: #{value} not in #{device_strings}") unless matches
+    # Checks whether the given device name matches the given block device
+    #
+    # @param name [String] can be a kernel name like "/dev/sda1" or any symbolic
+    #   link below the /dev directory
+    # @param blk_dev [Y2Storage::BlkDevice]
+    # @return [Boolean]
+    def name_matches_device?(name, blk_dev)
+      # First try the cheapest alternative: matching against the names directly
+      # handled by libstorage-ng
+      known_dev_names = [blk_dev.name] + blk_dev.udev_full_all
+      return true if known_dev_names.include?(name)
 
-      matches
+      # If the previous didn't match, there is still a chance using the slower
+      # .find_by_any_name in the probed devicegraph
+      found = Y2Storage::BlkDevice.find_by_any_name(probed, name)
+      return true if found && found.sid == blk_dev.sid
+
+      log.warn("Device does not match fstab (name): #{blk_dev.name} not equivalent to #{name}")
+      false
     end
 
     def update_staging!

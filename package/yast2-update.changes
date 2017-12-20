@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Dec 19 17:27:41 UTC 2017 - ancor@suse.com
+
+- When matching partitions, also use udev names that have been
+  discarded by libstorage-ng (bsc#1073254).
+- 4.0.3
+
+-------------------------------------------------------------------
 Mon Dec 18 16:32:10 UTC 2017 - ancor@suse.com
 
 - Use udev names, in addition to kernel device names, to match
