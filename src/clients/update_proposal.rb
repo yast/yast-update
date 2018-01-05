@@ -46,6 +46,7 @@ module Yast
 
       Yast.import "Installation"
       Yast.import "Popup"
+      Yast.import "Report"
       Yast.import "ProductFeatures"
       Yast.import "Product"
       Yast.import "FileUtils"
@@ -186,51 +187,6 @@ module Yast
         # stores the proposal text output
         @summary_text = Packages.product_update_summary(products).map{|item| "<li>#{item}</li>"}.join
 
-        if Update.onlyUpdateInstalled
-          # Proposal for backup during update
-          @summary_text = Ops.add(
-            Ops.add(
-              Ops.add(@summary_text, "<li>"),
-              _("Only update installed packages")
-            ),
-            "</li>\n"
-          )
-        else
-          @patterns = Pkg.ResolvableProperties("", :pattern, "")
-          @patterns = Builtins.filter(@patterns) do |p|
-            Ops.get(p, "status") == :selected &&
-              Ops.get_boolean(p, "user_visible", true) &&
-              Ops.get_string(p, "summary", Ops.get_string(p, "name", "")) != ""
-          end
-          # proposal string
-          @summary_text = Ops.add(
-            Ops.add(
-              Ops.add(@summary_text, "<li>"),
-              _("Update based on patterns")
-            ),
-            "</li>\n"
-          )
-
-          if @patterns != nil && !@patterns.empty?
-            @summary_text = Ops.add(@summary_text, HTML.ListStart)
-
-            # sort the patterns
-            @patterns.sort! { |x, y| x["order"].to_i <=> y["order"].to_i }
-
-            Builtins.foreach(@patterns) do |p|
-              @summary_text = Ops.add(
-                Ops.add(
-                  Ops.add(@summary_text, "<li>"),
-                  CGI.escapeHTML(Ops.get_string(p, "summary", Ops.get_string(p, "name", "")))
-                ),
-                "</li>\n"
-              )
-            end
-
-            @summary_text = Ops.add(@summary_text, HTML.ListEnd)
-          end
-        end
-
         # recalculate the disk space usage data
         SpaceCalculation.GetPartitionInfo
 
@@ -258,22 +214,9 @@ module Yast
           @ret["warning_level"] = product_warning["warning_level"] || :warning
         end
       elsif @func == "AskUser"
-        @has_next = Ops.get_boolean(@param, "has_next", false)
-
-        # call some function that displays a user dialog
-        # or a sequence of dialogs here:
-        #
-        # sequence = DummyMod::AskUser( has_next );
-
-        @result = Convert.to_symbol(
-          WFM.CallFunction("inst_update", [true, @has_next])
-        )
-
-        Update.did_init1 = false if @result == :next
-
-        # Fill return map
-
-        @ret = { "workflow_sequence" => @result }
+	# With proper control file, this should never be reached
+        Report.Error(_("The update summary is read only and cannot be changed."))
+        @ret = { "workflow_sequence" => :back }
       elsif @func == "Description"
         # Fill return map.
         #
@@ -462,7 +405,7 @@ module Yast
         RootPart.previousRootPartition = RootPart.selectedRootPartition
 
         # check whether update is possible
-        # reset deleteOldPackages and onlyUpdateInstalled in respect to the selected system
+        # reset configuration in respect to the selected system
         Update.Reset
         if !Update.IsProductSupportedForUpgrade
           Builtins.y2milestone("Upgrade is not supported")
@@ -494,7 +437,6 @@ module Yast
         Update.DropObsoletePackages
 
         Builtins.foreach(restore) { |res| Pkg.ResolvableInstall(res, :product) }
-        Update.SetDesktopPattern if !Update.onlyUpdateInstalled
 
         # make sure the packages needed for accessing the installation repository
         # are installed, e.g. "cifs-mount" for SMB or "nfs-client" for NFS repositories
@@ -503,21 +445,6 @@ module Yast
         end
 
         Packages.SelectProduct
-
-        # upgrade based on patterns
-        if !Update.OnlyUpdateInstalled
-          Packages.default_patterns.each do |pattern|
-            select_pattern_result = Pkg.ResolvableInstall(pattern, :pattern)
-            log.info "Pre-select pattern #{pattern}: #{select_pattern_result}"
-          end
-
-          # preselect the default product patterns (FATE#320199)
-          # note: must be called *after* selecting the products
-          require "packager/product_patterns"
-          product_patterns = ProductPatterns.new
-          log.info "Selecting the default product patterns: #{product_patterns.names}"
-          product_patterns.select
-        end
 
         # FATE #301990, Bugzilla #238488
         # Control the upgrade process better
@@ -530,7 +457,7 @@ module Yast
       sys_patterns = Packages.ComputeSystemPatternList
       sys_patterns.each {|pat| Pkg.ResolvableInstall(pat, :pattern)}
 
-      if Pkg.PkgSolve(!Update.onlyUpdateInstalled)
+      if Pkg.PkgSolve(false)
         Update.solve_errors = 0
       else
         Update.solve_errors = Pkg.PkgSolveErrors

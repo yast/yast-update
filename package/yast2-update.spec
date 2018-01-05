@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.0.3
+Version:        4.0.4
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -106,7 +106,6 @@ Use this component if you wish to update your system.
 %{yast_moduledir}/*
 
 %{yast_clientdir}/inst_rootpart.rb
-%{yast_clientdir}/inst_update.rb
 %{yast_clientdir}/inst_backup.rb
 %{yast_clientdir}/rootpart_proposal.rb
 %{yast_clientdir}/update_proposal.rb

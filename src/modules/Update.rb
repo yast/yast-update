@@ -83,9 +83,6 @@ module Yast
 
       @last_runlevel = -1
 
-      # Only an update, NOT an upgrade
-      @onlyUpdateInstalled = nil
-
       @selected_selection = ""
 
       @products_incompatible = false
@@ -137,58 +134,6 @@ module Yast
 
       log.info "A regexp matches the installed product: #{ret}"
       ret
-    end
-
-    # Returns whether upgrade process should only update installed packages or
-    # also install new packages. True means - do not upgrade, only update packages.
-    # (Functionality for FATE #301844).
-    def OnlyUpdateInstalled
-      # changes onlyUpdateInstalled variable
-      default_ous_a = ProductFeatures.GetFeature(
-        "software",
-        "only_update_selected"
-      )
-
-      default_ous = nil
-      if default_ous_a == nil || default_ous_a == ""
-        Builtins.y2error("software/only_update_selected not defined")
-        return false
-      end
-      if Ops.is_boolean?(default_ous_a)
-        default_ous = Convert.to_boolean(default_ous_a)
-      end
-
-      installed_system = installed_product
-      Builtins.y2milestone(
-        "Processing '%1' from '%2'",
-        installed_system,
-        Installation.destdir
-      )
-
-      if installed_system == nil || installed_system == ""
-        Builtins.y2error("Cannot find out installed system name")
-        return default_ous
-      end
-
-      reverse_ous_a = ProductFeatures.GetFeature(
-        "software",
-        "only_update_selected_reverse_list"
-      )
-      # No reverse rules defined
-      return default_ous if reverse_ous_a == ""
-      # not a list or empty list
-      reverse_ous = Convert.convert(
-        reverse_ous_a,
-        :from => "any",
-        :to   => "list <string>"
-      )
-      return default_ous if reverse_ous == nil || reverse_ous == []
-
-      if ListOfRegexpsMatchesProduct(reverse_ous, installed_system)
-        return !default_ous
-      end
-
-      default_ous
     end
 
     # Returns whether upgrade process should silently downgrade packages if needed.
@@ -416,10 +361,6 @@ module Yast
 
       #	deleteOldPackages = DeleteOldPackages();
       #	y2milestone ("deleteOldPackages %1", deleteOldPackages);
-
-      @onlyUpdateInstalled = OnlyUpdateInstalled()
-      @default_onlyUpdateInstalled = deep_copy(@onlyUpdateInstalled)
-      Builtins.y2milestone("onlyUpdateInstalled %1", @onlyUpdateInstalled)
 
       @disallow_upgrade = false
 
@@ -894,14 +835,11 @@ module Yast
     publish :variable => :did_init1, :type => "boolean"
     publish :variable => :did_init2, :type => "boolean"
     publish :variable => :last_runlevel, :type => "integer"
-    publish :variable => :onlyUpdateInstalled, :type => "boolean"
-    publish :variable => :default_onlyUpdateInstalled, :type => "boolean"
     publish :variable => :selected_selection, :type => "string"
     publish :variable => :products_incompatible, :type => "boolean"
     publish :variable => :updateBasePackages, :type => "boolean"
     publish :variable => :packagesInstalled, :type => "integer"
     publish :variable => :manual_interaction, :type => "boolean"
-    publish :function => :OnlyUpdateInstalled, :type => "boolean ()"
     publish :function => :SilentlyDowngradePackages, :type => "boolean ()"
     publish :function => :IsProductSupportedForUpgrade, :type => "boolean ()"
     publish :function => :SelectedProducts, :type => "list <string> ()"

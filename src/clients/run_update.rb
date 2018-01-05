@@ -48,7 +48,6 @@ module Yast
       Mode.SetMode("update")
 
       Update.disallow_upgrade = true
-      Update.onlyUpdateInstalled = true
       #    Update::deleteOldPackages = false;
 
       ProductControl.custom_control_file = "/usr/share/YaST2/control/update.xml"
