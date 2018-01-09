@@ -2204,14 +2204,7 @@ module Yast
     # @param blk_dev [Y2Storage::BlkDevice]
     # @return [Boolean]
     def name_matches_device?(name, blk_dev)
-      # First try the cheapest alternative: matching against the names directly
-      # handled by libstorage-ng
-      known_dev_names = [blk_dev.name] + blk_dev.udev_full_all
-      return true if known_dev_names.include?(name)
-
-      # If the previous didn't match, there is still a chance using the slower
-      # .find_by_any_name in the probed devicegraph
-      found = Y2Storage::BlkDevice.find_by_any_name(probed, name)
+      found = staging.find_by_any_name(name)
       return true if found && found.sid == blk_dev.sid
 
       log.warn("Device does not match fstab (name): #{blk_dev.name} not equivalent to #{name}")
