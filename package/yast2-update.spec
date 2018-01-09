@@ -42,8 +42,8 @@ BuildRequires:	yast2-installation-control
 BuildRequires:  rubygem(rspec)
 
 BuildRequires:	yast2-storage-ng >= 3.3.4
-# Y2Storage::BlkDevice.find_by_any_name
-Requires:	yast2-storage-ng >= 4.0.59
+# Y2Storage::Devicegraph#find_by_any_name
+Requires:	yast2-storage-ng >= 4.0.67
 # FSSnapshotStore
 Requires:	yast2 >= 3.1.126
 Requires:	yast2-installation
