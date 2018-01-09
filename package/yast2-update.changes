@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jan  9 07:09:57 UTC 2018 - ancor@suse.com
+
+- When matching partitions, rely on the new
+  Y2Storage::Devicegraph#find_by_any_name (bsc#1073254).
+- 4.0.5
+
+-------------------------------------------------------------------
 Fri Jan  5 07:33:52 UTC 2018 - jsrain@suse.cz
 
 - upgrade the system always via equivalent of 'zypper dup'
