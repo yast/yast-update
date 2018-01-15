@@ -1608,16 +1608,6 @@ module Yast
       ret_bool = nil == FsckAndMount("/", root_device_current, "") if !Mode.test
 
       if ret_bool
-        # read the keyboard settings now, so that it used when
-        # typing passwords for encrypted partitions
-        # Calling a script because otherwise this module would depend on yast2-country
-        if Stage.initial
-          WFM.call(
-            "rootpart_check_keyboard",
-            [{ "destdir" => Installation.destdir }]
-          )
-        end
-
         fstab_ref = arg_ref(fstab)
         crtab_ref = arg_ref(crtab)
         read_fstab_and_cryptotab(fstab_ref, crtab_ref, root_device_current)

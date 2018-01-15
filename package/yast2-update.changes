@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jan 15 09:56:47 UTC 2018 - jreidinger@suse.com
+
+- remove obsolete rootpart_check_keyboard client that allows having
+  different keyboard in update env and on target disk (related to
+  bsc#1075828)
+- 4.0.6
+
+-------------------------------------------------------------------
 Tue Jan  9 07:09:57 UTC 2018 - ancor@suse.com
 
 - When matching partitions, rely on the new
