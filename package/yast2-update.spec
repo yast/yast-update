@@ -113,7 +113,6 @@ Use this component if you wish to update your system.
 %{yast_clientdir}/backup_proposal.rb
 %{yast_clientdir}/inst_update_partition.rb
 %{yast_clientdir}/inst_update_partition_auto.rb
-%{yast_clientdir}/rootpart_check_keyboard.rb
 
 %dir %{yast_yncludedir}
 %{yast_yncludedir}/update

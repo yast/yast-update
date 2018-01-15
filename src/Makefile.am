@@ -11,7 +11,6 @@ client_DATA = \
   clients/rootpart_proposal.rb \
   clients/update.rb \
   clients/inst_update_partition.rb \
-  clients/rootpart_check_keyboard.rb \
   clients/packages_proposal.rb \
   clients/update_proposal.rb \
   clients/inst_backup.rb \
