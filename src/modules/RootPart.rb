@@ -142,7 +142,7 @@ module Yast
       if what == :name
         # Name is known
         if Ops.get_string(i, what, "") != ""
-          return Ops.get_string(i, what, "") 
+          return Ops.get_string(i, what, "")
 
           # Linux partition, but no root FS found
         elsif Builtins.contains(
@@ -150,7 +150,7 @@ module Yast
             Ops.get_symbol(i, :fs, :nil)
           )
           # label - name of sustem to update
-          return _("Unknown Linux System") 
+          return _("Unknown Linux System")
 
           # Non-Linux
         else
@@ -259,7 +259,7 @@ module Yast
       end
 
       # now remove the mount points in the target system
-      staging.filesystems.map { |f| f.mountpoint = nil } if !keep_in_target
+      remove_mount_points(staging) unless keep_in_target
 
       # clear activated list
       @activated = []
@@ -451,7 +451,7 @@ module Yast
             # button
             _("&Skip Mounting"),
             details
-          ) 
+          )
           # succeeded
         else
           # add device into the list of already checked partitions (with exit status 0);
@@ -494,7 +494,7 @@ module Yast
 
       # #223878, do not call modprobe with empty mount_type
       if mount_type == ""
-        Builtins.y2warning("Unknown filesystem, skipping modprobe...") 
+        Builtins.y2warning("Unknown filesystem, skipping modprobe...")
         # #211916, sysfs, proc are not modular
       elsif !NON_MODULAR_FS.include?(mount_type)
         # #167976, was broken with "-t ", modprobe before adding it
@@ -1077,7 +1077,7 @@ module Yast
 
       # Size of the /boot partition is satisfactory
       if Ops.greater_or_equal(bootsize, min_suggested_bootsize)
-        return true 
+        return true
 
         # Less than a hero
       else
@@ -1465,7 +1465,7 @@ module Yast
             Builtins.y2milestone("Manual mount (/var) successful")
             manual_mount_successful = true
             break
-          end 
+          end
           # `cancel
         else
           Builtins.y2warning(
@@ -2164,6 +2164,15 @@ module Yast
       Y2Storage::StorageManager.instance.staging
     end
 
+    # Remove mount point from all filesystems
+    #
+    # @param devicegraph [Y2Storage::Devicegraph]
+    def remove_mount_points(devicegraph)
+      devicegraph.filesystems.each do |filesystem|
+        filesystem.remove_mount_point unless filesystem.mount_point.nil?
+      end
+    end
+
     # It returns true if the given fstab entry matches with the given device
     # filesystem or false if not.
     #
@@ -2254,8 +2263,8 @@ module Yast
       filesystem = fs_by_devicename(staging, name)
 
       if filesystem
-        filesystem.mountpoint = mountpoint
-        filesystem.mount_by = mount_by
+        filesystem.mount_path = mountpoint
+        filesystem.mount_point.mount_by = mount_by
       end
 
     end
