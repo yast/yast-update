@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar  8 09:25:38 UTC 2018 - lslezak@suse.cz
+
+- Automatically save a solver test case when the product summary
+  contains a warning for easier debugging (related to bsc#1084248)
+- 4.0.10
+
+-------------------------------------------------------------------
 Fri Feb  9 14:52:57 UTC 2018 - jlopez@suse.com
 
 - Adapt to new MountPoint API (part of fate#318196).

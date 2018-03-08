@@ -86,7 +86,7 @@ module Yast
           @cnt_installed,
           @cnt_removed
         )
-        Builtins.y2milestone("Removed: %1", @removed)
+        log.info("Removed packages: #{@removed.sort}")
 
         @installed_m = Builtins.listmap(@installed) { |p| { p => true } }
         @selected_m = Builtins.listmap(@selected) { |p| { p => true } }

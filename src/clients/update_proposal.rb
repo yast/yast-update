@@ -213,6 +213,8 @@ module Yast
           @ret["warning"] = @warning_message
           @ret["warning_level"] = product_warning["warning_level"] || :warning
         end
+        # save the solver test case with details for later debugging
+        Pkg.CreateSolverTestCase("/var/log/YaST2/solver-upgrade-proposal") if @ret["warning"]
       elsif @func == "AskUser"
 	# With proper control file, this should never be reached
         Report.Error(_("The update summary is read only and cannot be changed."))
