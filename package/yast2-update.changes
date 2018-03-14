@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Mar 14 15:42:22 UTC 2018 - lslezak@suse.cz
+
+- Properly restore the original installation repositories when
+  going back to the partition selection dialog (related to
+  bsc#1080979)
+- Remove the very old and unused stuff (dead code, unsupported
+  file systems, ...)
+- 4.0.11
+
+-------------------------------------------------------------------
 Thu Mar  8 09:25:38 UTC 2018 - lslezak@suse.cz
 
 - Automatically save a solver test case when the product summary
