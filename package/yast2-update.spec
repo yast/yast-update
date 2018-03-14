@@ -101,7 +101,6 @@ Use this component if you wish to update your system.
 
 %files
 %defattr(-,root,root)
-%{yast_ybindir}/*
 %dir %{yast_moduledir}
 %{yast_moduledir}/*
 
