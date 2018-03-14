@@ -2,7 +2,7 @@
 
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
-#
+# Copyright (c) 2018 SUSE LLC, All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of version 2 of the GNU General Public License as published by the
@@ -28,9 +28,11 @@
 #		RootPart::rootPartitions must be filled before
 #		calling this module.
 #
-# $Id$
+
 module Yast
   class InstUpdatePartitionClient < Client
+    include Yast::Logger
+
     def main
       Yast.import "UI"
       Yast.import "Pkg"
@@ -38,8 +40,17 @@ module Yast
 
       Yast.import "ProductControl"
       Yast.import "RootPart"
+      Yast.import "GetInstArgs"
 
       Yast.include self, "update/rootpart.rb"
+
+      if Yast::GetInstArgs.going_back
+        # if going back restore the initial installation repositories
+        restore_installation_repos
+      else
+        # if going forward save the installation repos for later
+        save_installation_repos
+      end
 
       if RootPart.Mounted
         Update.restore_backup
@@ -60,6 +71,33 @@ module Yast
       end
 
       @ret
+    end
+
+  private
+
+    # restore the repository setup from the saved config
+    def restore_installation_repos
+      log.info("Restoring the initial repository setup")
+
+      # drop the currently loaded repositories
+      Yast::Pkg.SourceFinishAll
+      # move the target from "/mnt" to "/"
+      Yast::Pkg.TargetFinish
+      Yast::Pkg.TargetInitialize("/")
+      # load the previous repositories from the inst-sys ("/")
+      Yast::Pkg.SourceRestore
+      Yast::Pkg.SourceLoad
+
+      restored = Yast::Pkg.SourceGetCurrent(false).map do |r|
+        Yast::Pkg.SourceGeneralData(r)["url"]
+      end
+      log.info("Restored repositories: #{restored}")
+    end
+
+    # save the current repository setup
+    def save_installation_repos
+      log.info("Storing a backup of the current repository setup")
+      Yast::Pkg.SourceSaveAll
     end
   end
 end
