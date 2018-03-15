@@ -21,10 +21,6 @@ yncludedir = @yncludedir@/update
 ynclude_DATA = \
   include/update/rootpart.rb
 
-ybin_SCRIPTS = \
-  bin/update_users_groups \
-  bin/remove_junk
-
 desktop_DATA = \
   desktop/update.desktop
 
@@ -32,6 +28,6 @@ ylibclientdir = "${yast2dir}/lib/update/clients"
 ylibclient_DATA = \
   lib/update/clients/inst_update_partition_auto.rb
 
-EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(ybin_SCRIPTS) $(desktop_DATA) $(ylibclient_DATA)
+EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(desktop_DATA) $(ylibclient_DATA)
 
 include $(top_srcdir)/Makefile.am.common

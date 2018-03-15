@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.0.10
+Version:        4.0.11
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -101,7 +101,6 @@ Use this component if you wish to update your system.
 
 %files
 %defattr(-,root,root)
-%{yast_ybindir}/*
 %dir %{yast_moduledir}
 %{yast_moduledir}/*
 

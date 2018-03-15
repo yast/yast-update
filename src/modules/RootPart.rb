@@ -1127,11 +1127,8 @@ module Yast
         "ext3",
         "ext4",
         "btrfs",
-        "minix",
-        "reiserfs",
         "jfs",
         "xfs",
-        "xiafs",
         "hpfs",
         "vfat",
         "auto",
@@ -1151,8 +1148,6 @@ module Yast
       end
 
       success = true
-
-      raidMounted = false
 
       Builtins.foreach(fstab) do |mounts|
         vfstype = Ops.get_string(mounts, "vfstype", "")
@@ -2004,7 +1999,6 @@ module Yast
       return if @didSearchForRootPartitions
 
       modules_to_load = {
-        "reiserfs" => "Reiser FS",
         "xfs" => "XFS",
         "ext3" => "Ext3",
         "ext4" => "Ext4",
