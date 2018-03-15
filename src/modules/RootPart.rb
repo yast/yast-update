@@ -469,27 +469,16 @@ module Yast
 
 
     # Mount partition on specified mount point
-    # @param [String] mount_point string mount point to mount the partition at
-    # @param [String] device string device to mount
-    # @param [String] mount_type string filesystem type to be specified while mounting
+    # @param mount_point [String] path to mount the partition at
+    # @param device [String] device to mount, in the format of the first field of fstab
+    # @param mount_type [String] filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
     def MountPartition(mount_point, device, mount_type, fsopts = "")
       if mount_type == ""
 
-        # storage-ng
-        #
-        # FIXME
-        #
-        # Note that the code below will get passed unmodified fstab entries
-        # (like 'UUID=2f61fdb9-f82a-4052-8610-1eb090b82098') for device names
-        # and typically not match anything due to this.
-        #
-        # See also the comment in #update_staging_filesystem! below.
-        #
+        # Note that "device" comes from the unmodified fstab entry so it can be
+        # something like 'UUID=2f61fdb9-f82a-4052-8610-1eb090b82098'.
         mount_type = fstype_for_device(probed, device) || ""
-=begin
-        mount_type = FileSystems.GetMountString(Storage.DetectFs(device), "")
-=end
       end
 
       # #223878, do not call modprobe with empty mount_type
@@ -2257,6 +2246,8 @@ module Yast
       false
     end
 
+    # The only value of this seems to be for yast-bootloader to locate the
+    # root & boot devices.
     def update_staging!
       log.info "start update_staging"
 
@@ -2280,40 +2271,16 @@ module Yast
     def update_staging_filesystem!(name, mountpoint)
       log.info "Setting partition data: Device: #{name}, MountPoint: #{mountpoint}"
 
-      # storage-ng
-      #
-      # FIXME
-      #
-      # The code below does not work as one would expect as 'name' comes straight out of
+      # Take into account that 'name' comes straight out of
       # /etc/fstab and might look like 'UUID=2f61fdb9-f82a-4052-8610-1eb090b82098'.
-      #
-      # The only value of this seems to be for yast-bootloader to locate the
-      # root & boot devices.
-      #
-      # Note that this works magically atm because for the root device, the
-      # kernel device name is passed so the 'if' below actually matches.
-      #
-
-      if name.include?("/dev/disk/by-id")
-        mount_by = Y2Storage::Filesystems::MountByType::ID
-      elsif name.include?("/dev/")
-        mount_by = Y2Storage::Filesystems::MountByType::DEVICE
-      else
-        # existing code has the following lines here that don't make sense (afaics):
-        #
-        # mount_by = Y2Storage::Filesystems::MountByType::LABEL
-        # filesystem = staging.filesystems.with(label: name).first
-      end
-
+      mount_by = Y2Storage::Filesystems::MountByType.from_fstab_spec(name)
       return unless mount_by
 
       filesystem = fs_by_devicename(staging, name)
+      return unless filesystem
 
-      if filesystem
-        filesystem.mount_path = mountpoint
-        filesystem.mount_point.mount_by = mount_by
-      end
-
+      filesystem.mount_path = mountpoint
+      filesystem.mount_point.mount_by = mount_by
     end
 
     # FIXME
@@ -2326,38 +2293,52 @@ module Yast
     # Return nil if there's no such device or device doesn't have a filesystem.
     #
     # @param devicegraph [Devicegraph]
-    # @param devicename [String]
+    # @param device_spec [String] fs_spec field of one entry from fstab
     #
     # @return [String, nil]
     #
-    def fstype_for_device(devicegraph, devicename)
-      fs = fs_by_devicename(devicegraph, devicename)
+    def fstype_for_device(devicegraph, device_spec)
+      fs = fs_by_devicename(devicegraph, device_spec)
       fs.type.to_s if fs
     end
 
-    # Look up filesystem object with matching device name.
+    # Look up filesystem object with matching device name, as specified in
+    # fstab.
     #
     # Return nil if there's no such device or the device doesn't have a
     # filesystem.
     #
     # @param devicegraph [Devicegraph]
-    # @param devicename [String]
-    # @return [Y2Storage::Filesystems::BlkFilesystem, nil]
+    # @param device_spec [String] fs_spec field of one entry from fstab
+    # @return [Y2Storage::Filesystems::Base, nil]
     #
-    def fs_by_devicename(devicegraph, devicename)
-      fs = devicegraph.blk_filesystems.find do |fs|
-        fs.blk_devices.any? { |dev| dev.name == devicename }
-      end
+    def fs_by_devicename(devicegraph, device_spec)
+      fs = devicegraph.filesystems.find { |fs| fs.match_fstab_spec?(device_spec) }
+      # If the previous search returned nil, there is still a last chance to
+      # find the device. Maybe 'device_spec' is one of the udev names discarded
+      # by libstorage-ng
+      fs ||= fs_by_udev_lookup(devicegraph, device_spec)
 
       # log which devicegraph we operate on
       graph = "?"
       graph = "probed" if devicegraph.object_id == probed.object_id
       graph = "staging#" + Y2Storage::StorageManager.instance.staging_revision.to_s if devicegraph.object_id == staging.object_id
-      log.info("fs_by_devicename(#{graph}, #{devicename}) = #{'sid#' + fs.sid.to_s if fs}")
+      log.info("fs_by_devicename(#{graph}, #{device_spec}) = #{'sid#' + fs.sid.to_s if fs}")
 
       fs
     end
 
+    # Finds a filesystem by udev name, using a direct lookup in the system
+    # (i.e. going beyond the udev names recognized by libstorage-ng) if needed
+    #
+    # @param devicegraph [Devicegraph]
+    # @param name [String] full udev name
+    # @return [Y2Storage::Filesystems::BlkFilesystem, nil]
+    def fs_by_udev_lookup(devicegraph, name)
+      dev = devicegraph.find_by_any_name(name)
+      return nil if dev.nil || !dev.respond_to?(:filesystem)
+      dev.filesystem
+    end
   end
 
   RootPart = RootPartClass.new
