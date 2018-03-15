@@ -1481,12 +1481,41 @@ module Yast
         _FindPartitionInFstab_result
       )
 
+      # At this point, var_device_fstab contains the spec column of fstab
+      # for the /var mount point. E.g. "UUID=00x00x00x"
+      #
+      # If /var is a Btrfs subvolume of /, var_device_fstab will contain the
+      # spec of the root device. As a consequence the root filesystem  will
+      # end up mounted again on its own /var directory, causing a "nice" cycle
+      # in which the real content of /var is shadowed by things line /var/etc,
+      # /var/usr, /var/bin and, of course, /var/var.
+      # Even more fun, every file the installer tries to write below /var during
+      # the upgrade will end up directly below /. So the installed system
+      # contains /spool instead of /var/spool, /lock instead of /var/lock...
+
       # No need to mount "/var", it's not separate == already mounted with "/"
       if var_device_fstab == nil
         Builtins.y2milestone("Not a separate /var...")
         return nil
       end
 
+      # Before proceeding, let's explain some Storage methods
+      #
+      #   @param name [String] fstab spec for a mount point
+      #   Storage.DeviceRealDisk(name)
+      #     return false if name contains UUID or LABEL
+      #     return false if the device is (part of) a MD or loop device
+      #     return true if the device is a partition, false otherwise
+      #
+      #   @param name [String] fstab spec for a mount point
+      #   Storage.IsKernelDeviceName(name)
+      #     return false if name starts with "UUID="
+      #     return false if name starts with "LABEL="
+      #     return false if name starts with "/dev/disk/by-"
+      #     true otherwise
+
+      # Mount /var as-is if it's not a real partition or if it's mounted
+      # by UUID or LABEL
       if !Storage.DeviceRealDisk(var_device_fstab)
         Builtins.y2milestone(
           "Device %1 is not a real disk, mounting...",
@@ -1504,10 +1533,17 @@ module Yast
         return MountVarPartition(var_device_fstab)
       end
 
+      # The rest of the method tries to infer the /var device name from its
+      # partition number and the name of the root device
+
       tmp1 = Builtins.filter(fstab) do |entry|
         Ops.get_string(entry, "file", "") == "/"
       end
       root_device_fstab = Ops.get_string(tmp1, [0, "spec"], "")
+
+      # If /var was mounted by partition kernel name but the root device was
+      # not, we cannot apply the upcoming logic to made up the /var device name.
+      # So we simply give up and mount /var with the only device name we know.
       if !Storage.DeviceRealDisk(root_device_fstab)
         return MountVarPartition(var_device_fstab)
       end
@@ -1515,8 +1551,13 @@ module Yast
       root_info = Storage.GetDiskPartition(root_device_fstab)
       var_info = Storage.GetDiskPartition(var_device_fstab)
 
+      # If /var and /root are partitions in the same disk...
       if Ops.get_string(root_info, "disk", "") ==
           Ops.get_string(var_info, "disk", "")
+        # This builds the /var device name as a combination of the partition
+        # number for /var and the current disk name for the root device
+        # (i.e. the disk name in inst-sys, that can be different from the one
+        # in fstab).
         tmp2 = Storage.GetDiskPartition(root_device_current)
         var_partition_current2 = Storage.GetDeviceName(
           Ops.get_string(tmp2, "disk", ""),
@@ -1526,6 +1567,9 @@ module Yast
         return MountVarPartition(var_partition_current2)
       end
 
+      # If both partitions are not in the same disk, we try to infer in which
+      # disk is /var
+
       realdisks = []
       Builtins.foreach(Storage.GetOndiskTarget) do |s, m|
         # BNC #448577, checking device
@@ -1534,6 +1578,14 @@ module Yast
         end
       end
 
+      # Beware: if Btrfs is used, realdisks contains an extra entry for
+      # /dev/btrfs which is clearly not taken into account in the upcoming
+      # code
+
+      # If / and /var are in different disks and there are only two disks, then
+      # it's clear in which disk is /var (since we already know where is /).
+      #
+      # If there are more than two disks, then we give up and ask the user.
       if Builtins.size(realdisks) != 2
         # <-- BNC #448577, Cannot find /var partition automatically
         return nil if manual_var_mount && MountUserDefinedVarPartition()
@@ -1548,11 +1600,12 @@ module Yast
         )
       end
 
-      other_disk = Ops.get(
-        realdisks,
-        Ops.get(realdisks, 0, "") == Ops.get_string(root_info, "disk", "") ? 1 : 0,
-        ""
-      )
+      index = root_info["disk"] == realdisks[0] ? 1 : 0
+      other_disk = realdisks[index]
+
+      # Similar to the code above, we construct the name of the /var device as
+      # a combination if its partition number and another disk name (the one
+      # NOT containing root, in this case).
       var_partition_current = Storage.GetDeviceName(
         other_disk,
         Ops.get_integer(var_info, "nr", 0)
