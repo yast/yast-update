@@ -1471,127 +1471,48 @@ module Yast
       )
 
       # At this point, var_device_fstab contains the spec column of fstab
-      # for the /var mount point. E.g. "UUID=00x00x00x"
+      # for the /var mount point. E.g. "/dev/sda1", "/dev/system/var" or  "UUID=00x00x00x"
 
       # No need to mount "/var", it's not separate == already mounted with "/"
-      if var_device_fstab == nil
+      if var_device_fstab.nil?
         Builtins.y2milestone("Not a separate /var...")
         return nil
       end
 
-      # Before proceeding, let's explain some Storage methods
+      # BNC #494240: all methods except kernel names should be stable enough
+      if !mounted_by_kernel_name?(var_device_fstab)
+        log.info "Device #{var_device_fstab} is not mounted by kernel name, mounting..."
+        return MountVarPartition(var_device_fstab)
+      end
+
+      # Mounting virtual devices by kernel name (e.g. /dev/md0 or /dev/system/swap_lv)
+      # is also considered to be safe
+      if virtual_device?(var_device_fstab)
+        log.info "Device #{var_device_fstab} is not a partition, mounting..."
+        return MountVarPartition(var_device_fstab)
+      end
+
+      # At this point, var_device_fstab points either to a device that is not
+      # longer available or to a plain partition.
       #
-      #   @param name [String] fstab spec for a mount point
-      #   Storage.DeviceRealDisk(name)
-      #     return false if name contains UUID or LABEL
-      #     return false if the device is (part of) a MD or loop device
-      #     return true if the device is a partition, false otherwise
-      #
-      #   @param name [String] fstab spec for a mount point
-      #   Storage.IsKernelDeviceName(name)
-      #     return false if name starts with "UUID="
-      #     return false if name starts with "LABEL="
-      #     return false if name starts with "/dev/disk/by-"
-      #     true otherwise
-
-      # Mount /var as-is if it's not a real partition or if it's mounted
-      # by UUID or LABEL
-      if !Storage.DeviceRealDisk(var_device_fstab)
-        Builtins.y2milestone(
-          "Device %1 is not a real disk, mounting...",
-          var_device_fstab
-        )
-        return MountVarPartition(var_device_fstab)
-      end
-
-      # BNC #494240: If a device name is not created by Kernel, we can use it for upgrade
-      if !Storage.IsKernelDeviceName(var_device_fstab)
-        Builtins.y2milestone(
-          "Device %1 is not a Kernel device name, mounting...",
-          var_device_fstab
-        )
-        return MountVarPartition(var_device_fstab)
-      end
-
-      # The rest of the method tries to infer the /var device name from its
-      # partition number and the name of the root device
-
-      tmp1 = Builtins.filter(fstab) do |entry|
-        Ops.get_string(entry, "file", "") == "/"
-      end
-      root_device_fstab = Ops.get_string(tmp1, [0, "spec"], "")
-
-      # If /var was mounted by partition kernel name but the root device was
-      # not, we cannot apply the upcoming logic to made up the /var device name.
-      # So we simply give up and mount /var with the only device name we know.
-      if !Storage.DeviceRealDisk(root_device_fstab)
-        return MountVarPartition(var_device_fstab)
-      end
-
-      root_info = Storage.GetDiskPartition(root_device_fstab)
-      var_info = Storage.GetDiskPartition(var_device_fstab)
-
-      # If /var and /root are partitions in the same disk...
-      if Ops.get_string(root_info, "disk", "") ==
-          Ops.get_string(var_info, "disk", "")
-        # This builds the /var device name as a combination of the partition
-        # number for /var and the current disk name for the root device
-        # (i.e. the disk name in inst-sys, that can be different from the one
-        # in fstab).
-        tmp2 = Storage.GetDiskPartition(root_device_current)
-        var_partition_current2 = Storage.GetDeviceName(
-          Ops.get_string(tmp2, "disk", ""),
-          Ops.get_integer(var_info, "nr", 0)
-        )
-
-        return MountVarPartition(var_partition_current2)
-      end
-
-      # If both partitions are not in the same disk, we try to infer in which
-      # disk is /var
-
-      realdisks = []
-      Builtins.foreach(Storage.GetOndiskTarget) do |s, m|
-        # BNC #448577, checking device
-        if Storage.IsKernelDeviceName(s) && Storage.DeviceRealDisk(s)
-          realdisks = Builtins.add(realdisks, s)
+      # In the second case the name may not reliable since the disk may have
+      # changed its name (e.g. it used to be recognized as /dev/sda or /dev/hdb in
+      # the system to update but it became /dev/sdb in the new system).
+      new_name = update_var_dev_name(var_device_fstab, fstab, root_device_current)
+      if new_name
+        if new_name != var_device_fstab
+          log.info "Partition #{var_device_fstab} seems to have turned into #{new_name}"
         end
+        log.info "Device #{new_name} is a partition, mounting..."
+        return MountVarPartition(new_name)
       end
 
-      # Beware: if Btrfs is used, realdisks contains an extra entry for
-      # /dev/btrfs which is clearly not taken into account in the upcoming
-      # code
+      # BNC #448577: cannot find /var partition automatically, so ask the user
+      return nil if manual_var_mount && MountUserDefinedVarPartition()
 
-      # If / and /var are in different disks and there are only two disks, then
-      # it's clear in which disk is /var (since we already know where is /).
-      #
-      # If there are more than two disks, then we give up and ask the user.
-      if Builtins.size(realdisks) != 2
-        # <-- BNC #448577, Cannot find /var partition automatically
-        return nil if manual_var_mount && MountUserDefinedVarPartition()
-
-        Builtins.y2error(
-          "don't know how to handle more than two disks at this point"
-        )
-        # error message
-        return Ops.add(
-          _("Unable to mount /var partition with this disk configuration.\n"),
-          @sdb
-        )
-      end
-
-      index = root_info["disk"] == realdisks[0] ? 1 : 0
-      other_disk = realdisks[index]
-
-      # Similar to the code above, we construct the name of the /var device as
-      # a combination if its partition number and another disk name (the one
-      # NOT containing root, in this case).
-      var_partition_current = Storage.GetDeviceName(
-        other_disk,
-        Ops.get_integer(var_info, "nr", 0)
-      )
-
-      MountVarPartition(var_partition_current)
+      # Everything else failed, return error message
+      log.error "Unable to mount /var partition"
+      _("Unable to mount /var partition with this disk configuration.\n") + @sdb
     end
 
     def has_pam_mount
@@ -2327,8 +2248,76 @@ module Yast
     # @return [Y2Storage::Filesystems::BlkFilesystem, nil]
     def fs_by_udev_lookup(devicegraph, name)
       dev = devicegraph.find_by_any_name(name)
-      return nil if dev.nil || !dev.respond_to?(:filesystem)
+      return nil if dev.nil? || !dev.respond_to?(:filesystem)
       dev.filesystem
+    end
+
+    # Whether the given fstab spec corresponds to a device mounted by its kernel
+    # device name.
+    def mounted_by_kernel_name?(spec)
+      mount_by = Y2Storage::Filesystems::MountByType.from_fstab_spec(spec)
+      mount_by.is?(:device)
+    end
+
+    # Whether the device referenced by the given fstab spec is a virtual device
+    # (basically anything that is not a partition).
+    #
+    # This is somehow the inverse of the old Storage.DeviceRealDisk
+    #
+    # @return [Boolean] true if the device was found and is not a partition
+    def virtual_device?(spec)
+      filesystem = fs_by_devicename(probed, spec)
+      # If 'filesystem' is nil, either the device is not longer there or it's a
+      # partition that now has a new name (names of virtual devices should be stable).
+      return false unless filesystem
+
+      # If this is not based on a block device (so far that means this is NFS),
+      # then it's virtual.
+      return true unless filesystem.respond_to?(:plain_blk_devices)
+
+      # To be more faithful to the original check on Storage.DeviceRealDisk
+      # let's consider everything but a partition to be virtual.
+      filesystem.plain_blk_devices.none? { |dev| dev.is?(:partition) }
+    end
+
+    # This method tries to infer the /var device name from its partition number
+    # and the name of the root device.
+    #
+    # @return [String, nil] new name of the device (best guess), nil if we know
+    #   the current name is outdated but we cannot infer the new one
+    def update_var_dev_name(var_name, fstab, root_current_name)
+      root_entry = fstab.find { |entry| entry["file"] == "/" }
+      root_spec = root_entry ? root_entry["spec"] : nil
+      root_device = probed.find_by_name(root_current_name)
+
+      # If /var was mounted by partition kernel name but the root device was
+      # not, we cannot apply the upcoming logic to made up the new /var device
+      # name. Let's simply use the one we already know.
+      if root_spec.nil? || !mounted_by_kernel_name?(root_spec) || !root_device.is?(:partition)
+        return var_name
+      end
+
+      # Regular expresion to break a partition name. Second capture gets the
+      # partition number (as string). First capture gets the rest.
+      regexp = /(.*[^\d])(\d*)$/
+      var_name_no_number, var_name_number = regexp.match(var_name).captures
+      root_spec_no_number = regexp.match(root_spec)[1]
+
+      # If /var and / were partitions in the same disk...
+      if var_name_no_number == root_spec_no_number
+        root_current_no_number = regexp.match(root_current_name)[1]
+        return root_current_no_number + var_name_number
+      end
+
+      # If both partitions were not in the same disk, we assume '/' is in one
+      # disk and '/var' in the other one. Of course that logic only works if
+      # there are exactly two disks.
+      return nil if probed.disk_devices.size != 2
+
+      root_disk = root_device.partitionable
+      other_disk = probed.disk_devices.find { |dev| dev != root_disk }
+      partition = other_disk.partitions.find { |part| part.number == var_name_number.to_i }
+      partition.name
     end
   end
 
