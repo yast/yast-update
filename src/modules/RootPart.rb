@@ -592,26 +592,25 @@ module Yast
     # @param [String] mountpoint string a mount point to find
     # @return [String] the found partition
     def FindPartitionInFstab(fstab, mountpoint)
-      if Builtins.substring(
-          mountpoint,
-          Ops.subtract(Builtins.size(mountpoint), 1),
-          1
-        ) == "/"
-        mountpoint = Builtins.substring(
-          mountpoint,
-          0,
-          Ops.subtract(Builtins.size(mountpoint), 1)
-        )
+      # Removing the "/" and then adding it again in the comparison below looks
+      # weird, but let's don't change this ancient code too much.
+      mountpoints = mountpoint.chomp("/")
+
+      tmp = fstab.value.select do |entry|
+        file = entry.fetch("file", "")
+        mntops = entry.fetch("mntops", "")
+
+        # Discard Btrfs subvolumes, they are not really a separate device
+        if mntops.include?("subvol=")
+          log.info "FindPartitionInFstab: #{file} subvolume ignored"
+          next false
+        end
+
+        file == mountpoint || file == mountpoint + "/"
       end
+      return nil if tmp.size.zero?
 
-      tmp = Builtins.filter(fstab.value) do |entry|
-        Ops.get_string(entry, "file", "") == mountpoint ||
-          Ops.get_string(entry, "file", "") == Ops.add(mountpoint, "/")
-      end
-
-      return nil if Builtins.size(tmp) == 0
-
-      Ops.get_string(tmp, [0, "spec"], "")
+      tmp.first.fetch("spec", "")
     end
 
     def update_mount_options(options)
@@ -1461,6 +1460,7 @@ module Yast
 
       manual_mount_successful
     end
+
     def MountVarIfRequired(fstab, root_device_current, manual_var_mount)
       fstab = deep_copy(fstab)
       var_device_fstab = (
@@ -1472,15 +1472,6 @@ module Yast
 
       # At this point, var_device_fstab contains the spec column of fstab
       # for the /var mount point. E.g. "UUID=00x00x00x"
-      #
-      # If /var is a Btrfs subvolume of /, var_device_fstab will contain the
-      # spec of the root device. As a consequence the root filesystem  will
-      # end up mounted again on its own /var directory, causing a "nice" cycle
-      # in which the real content of /var is shadowed by things line /var/etc,
-      # /var/usr, /var/bin and, of course, /var/var.
-      # Even more fun, every file the installer tries to write below /var during
-      # the upgrade will end up directly below /. So the installed system
-      # contains /spool instead of /var/spool, /lock instead of /var/lock...
 
       # No need to mount "/var", it's not separate == already mounted with "/"
       if var_device_fstab == nil
