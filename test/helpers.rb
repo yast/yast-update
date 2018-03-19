@@ -16,4 +16,13 @@ module Helpers
     allow(subject).to receive(:initialize_update_rootpart)
     allow(subject).to receive(:load_data)
   end
+
+  def stub_storage(devicegraph_file)
+    path = File.join(File.dirname(__FILE__), "data", "devicegraphs", devicegraph_file)
+    if path.end_with?(".xml")
+      Y2Storage::StorageManager.create_test_instance.probe_from_xml(path)
+    else
+      Y2Storage::StorageManager.create_test_instance.probe_from_yaml(path)
+    end
+  end
 end
