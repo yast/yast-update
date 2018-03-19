@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Mar 19 16:24:35 UTC 2018 - ancor@suse.com
+
+- Fixed a crash when upgrading systems with a separate /var
+  (bsc#1071454).
+- Better support for upgrading systems with a /var subvolume.
+- 4.0.12
+
+-------------------------------------------------------------------
 Wed Mar 14 15:42:22 UTC 2018 - lslezak@suse.cz
 
 - Properly restore the original installation repositories when
