@@ -1495,7 +1495,7 @@ module Yast
       # At this point, var_device_fstab points either to a device that is not
       # longer available or to a plain partition.
       #
-      # In the second case the name may not reliable since the disk may have
+      # In the second case the name may not be reliable since the disk may have
       # changed its name (e.g. it used to be recognized as /dev/sda or /dev/hdb in
       # the system to update but it became /dev/sdb in the new system).
       new_name = update_var_dev_name(var_device_fstab, fstab, root_device_current)
@@ -2291,7 +2291,7 @@ module Yast
       root_device = probed.find_by_name(root_current_name)
 
       # If /var was mounted by partition kernel name but the root device was
-      # not, we cannot apply the upcoming logic to made up the new /var device
+      # not, we cannot apply the upcoming logic to make up the new /var device
       # name. Let's simply use the one we already know.
       if root_spec.nil? || !mounted_by_kernel_name?(root_spec) || !root_device.is?(:partition)
         return var_name
