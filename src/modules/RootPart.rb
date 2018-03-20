@@ -2326,7 +2326,7 @@ module Yast
       "hpfs",
       "vfat",
       "auto",
-    ]
+    ].freeze
     private_constant :ALLOWED_FS
 
     # Whether a given fstab entry should be mounted by {#MountFSTab}
@@ -2341,12 +2341,11 @@ module Yast
       return false if path == "/"
       return false unless ALLOWED_FS.include?(vfstype)
       return false if mntops.include?("noauto")
-      # The conditions above are enough for any mount point except /var
-      return true if path != "/var"
 
-      # Condition for /var. In general, it should have been already processed by
+      # The conditions above are enough for any mount point except /var.
+      # In the /var case, it should have been already processed by
       # #MountVarIfRequired... except when /var is a subvolume
-      !IsMounted("/var") && mntops.include?("subvol=")
+      path != "/var" || mntops.include?("subvol=")
     end
   end
 
