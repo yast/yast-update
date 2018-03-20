@@ -2241,6 +2241,9 @@ module Yast
 
     # Whether the given fstab spec corresponds to a device mounted by its kernel
     # device name.
+    #
+    # @param spec [String] content of the first column of an /etc/fstab entry
+    # @return [Boolean]
     def mounted_by_kernel_name?(spec)
       mount_by = Y2Storage::Filesystems::MountByType.from_fstab_spec(spec)
       mount_by.is?(:device)
@@ -2251,6 +2254,7 @@ module Yast
     #
     # This is somehow the inverse of the old Storage.DeviceRealDisk
     #
+    # @param spec [String] content of the first column of an /etc/fstab entry
     # @return [Boolean] true if the device was found and is not a partition
     def virtual_device?(spec)
       filesystem = fs_by_devicename(probed, spec)
@@ -2270,6 +2274,9 @@ module Yast
     # This method tries to infer the /var device name from its partition number
     # and the name of the root device.
     #
+    # @param var_name [String] spec of the /var partition in the old /etc/fstab
+    # @param fstab [Array<Hash>] content of the old /etc/fstab
+    # @param root_current_name [String] current kernel device name of the root partition
     # @return [String, nil] new name of the device (best guess), nil if we know
     #   the current name is outdated but we cannot infer the new one
     def update_var_dev_name(var_name, fstab, root_current_name)
