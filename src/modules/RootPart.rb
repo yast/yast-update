@@ -995,34 +995,6 @@ module Yast
       true
     end
 
-
-    # Check if specified mount point is mounted
-    # @param [String] mountpoint the mount point to be checked
-    # @return [Boolean] true if it is mounted
-    def IsMounted(mountpoint)
-      if Builtins.substring(
-          mountpoint,
-          Ops.subtract(Builtins.size(mountpoint), 1),
-          1
-        ) == "/"
-        mountpoint = Builtins.substring(
-          mountpoint,
-          0,
-          Ops.subtract(Builtins.size(mountpoint), 1)
-        )
-      end
-
-      ret = false
-      Builtins.foreach(@activated) do |e|
-        if Ops.get_string(e, :type, "") == "mount" &&
-            (Ops.get_string(e, :mntpt, "") == mountpoint ||
-              Ops.get_string(e, :mntpt, "") == Ops.add(mountpoint, "/"))
-          ret = true
-        end
-      end
-      ret
-    end
-
     # bugzilla #258563
     def CheckBootSize(bootpart)
       min_suggested_bootsize = 65536
