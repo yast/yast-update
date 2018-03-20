@@ -1012,7 +1012,7 @@ module Yast
         )
       end
 
-      ret = true
+      ret = false
       Builtins.foreach(@activated) do |e|
         if Ops.get_string(e, :type, "") == "mount" &&
             (Ops.get_string(e, :mntpt, "") == mountpoint ||
@@ -1109,18 +1109,6 @@ module Yast
     #
     def MountFSTab(fstab, message)
       fstab = deep_copy(fstab)
-      allowed_fs = [
-        "ext",
-        "ext2",
-        "ext3",
-        "ext4",
-        "btrfs",
-        "jfs",
-        "xfs",
-        "hpfs",
-        "vfat",
-        "auto",
-      ]
 
       # mount sysfs first
       if MountPartition("/sys", "sysfs", "sysfs") == nil
@@ -1142,9 +1130,8 @@ module Yast
         mntops = Ops.get_string(mounts, "mntops", "")
         spec = Ops.get_string(mounts, "spec", "")
         fspath = Ops.get_string(mounts, "file", "")
-        if Builtins.contains(allowed_fs, vfstype) && fspath != "/" &&
-            (fspath != "/var" || !IsMounted("/var")) &&
-            !Builtins.issubstring(mntops, "noauto")
+
+        if mount_regular_fstab_entry?(mounts)
           Builtins.y2milestone("mounting %1 to %2", spec, fspath)
 
           if !Mode.test
@@ -1247,7 +1234,7 @@ module Yast
 
               success = false if !CheckBootSize(checkspec)
             end
-          end # allowed_fs
+          end # mount_regular_fstab_entry?
         elsif vfstype == "swap" && fspath == "swap"
           Builtins.y2milestone("mounting %1 to %2", spec, fspath)
 
@@ -2318,6 +2305,41 @@ module Yast
       other_disk = probed.disk_devices.find { |dev| dev != root_disk }
       partition = other_disk.partitions.find { |part| part.number == var_name_number.to_i }
       partition.name
+    end
+
+    # @see #mount_regular_fstab_entry?(
+    ALLOWED_FS = [
+      "ext",
+      "ext2",
+      "ext3",
+      "ext4",
+      "btrfs",
+      "jfs",
+      "xfs",
+      "hpfs",
+      "vfat",
+      "auto",
+    ]
+    private_constant :ALLOWED_FS
+
+    # Whether a given fstab entry should be mounted by {#MountFSTab}
+    #
+    # @param entry [Hash] fstab entry
+    # @return [Boolean]
+    def mount_regular_fstab_entry?(entry)
+      vfstype = entry.fetch("vfstype", "")
+      mntops = entry.fetch("mntops", "")
+      path = entry.fetch("file", "")
+
+      return false if path == "/"
+      return false unless ALLOWED_FS.include?(vfstype)
+      return false if mntops.include?("noauto")
+      # The conditions above are enough for any mount point except /var
+      return true if path != "/var"
+
+      # Condition for /var. In general, it should have been already processed by
+      # #MountVarIfRequired... except when /var is a subvolume
+      !IsMounted("/var") && mntops.include?("subvol=")
     end
   end
 
