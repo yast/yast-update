@@ -469,27 +469,16 @@ module Yast
 
 
     # Mount partition on specified mount point
-    # @param [String] mount_point string mount point to mount the partition at
-    # @param [String] device string device to mount
-    # @param [String] mount_type string filesystem type to be specified while mounting
+    # @param mount_point [String] path to mount the partition at
+    # @param device [String] device to mount, in the format of the first field of fstab
+    # @param mount_type [String] filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
     def MountPartition(mount_point, device, mount_type, fsopts = "")
       if mount_type == ""
 
-        # storage-ng
-        #
-        # FIXME
-        #
-        # Note that the code below will get passed unmodified fstab entries
-        # (like 'UUID=2f61fdb9-f82a-4052-8610-1eb090b82098') for device names
-        # and typically not match anything due to this.
-        #
-        # See also the comment in #update_staging_filesystem! below.
-        #
+        # Note that "device" comes from the unmodified fstab entry so it can be
+        # something like 'UUID=2f61fdb9-f82a-4052-8610-1eb090b82098'.
         mount_type = fstype_for_device(probed, device) || ""
-=begin
-        mount_type = FileSystems.GetMountString(Storage.DetectFs(device), "")
-=end
       end
 
       # #223878, do not call modprobe with empty mount_type
@@ -603,26 +592,25 @@ module Yast
     # @param [String] mountpoint string a mount point to find
     # @return [String] the found partition
     def FindPartitionInFstab(fstab, mountpoint)
-      if Builtins.substring(
-          mountpoint,
-          Ops.subtract(Builtins.size(mountpoint), 1),
-          1
-        ) == "/"
-        mountpoint = Builtins.substring(
-          mountpoint,
-          0,
-          Ops.subtract(Builtins.size(mountpoint), 1)
-        )
+      # Removing the "/" and then adding it again in the comparison below looks
+      # weird, but let's don't change this ancient code too much.
+      mountpoints = mountpoint.chomp("/")
+
+      tmp = fstab.value.select do |entry|
+        file = entry.fetch("file", "")
+        mntops = entry.fetch("mntops", "")
+
+        # Discard Btrfs subvolumes, they are not really a separate device
+        if mntops.include?("subvol=")
+          log.info "FindPartitionInFstab: #{file} subvolume ignored"
+          next false
+        end
+
+        file == mountpoint || file == mountpoint + "/"
       end
+      return nil if tmp.size.zero?
 
-      tmp = Builtins.filter(fstab.value) do |entry|
-        Ops.get_string(entry, "file", "") == mountpoint ||
-          Ops.get_string(entry, "file", "") == Ops.add(mountpoint, "/")
-      end
-
-      return nil if Builtins.size(tmp) == 0
-
-      Ops.get_string(tmp, [0, "spec"], "")
+      tmp.first.fetch("spec", "")
     end
 
     def update_mount_options(options)
@@ -1007,34 +995,6 @@ module Yast
       true
     end
 
-
-    # Check if specified mount point is mounted
-    # @param [String] mountpoint the mount point to be checked
-    # @return [Boolean] true if it is mounted
-    def IsMounted(mountpoint)
-      if Builtins.substring(
-          mountpoint,
-          Ops.subtract(Builtins.size(mountpoint), 1),
-          1
-        ) == "/"
-        mountpoint = Builtins.substring(
-          mountpoint,
-          0,
-          Ops.subtract(Builtins.size(mountpoint), 1)
-        )
-      end
-
-      ret = true
-      Builtins.foreach(@activated) do |e|
-        if Ops.get_string(e, :type, "") == "mount" &&
-            (Ops.get_string(e, :mntpt, "") == mountpoint ||
-              Ops.get_string(e, :mntpt, "") == Ops.add(mountpoint, "/"))
-          ret = true
-        end
-      end
-      ret
-    end
-
     # bugzilla #258563
     def CheckBootSize(bootpart)
       min_suggested_bootsize = 65536
@@ -1121,18 +1081,6 @@ module Yast
     #
     def MountFSTab(fstab, message)
       fstab = deep_copy(fstab)
-      allowed_fs = [
-        "ext",
-        "ext2",
-        "ext3",
-        "ext4",
-        "btrfs",
-        "jfs",
-        "xfs",
-        "hpfs",
-        "vfat",
-        "auto",
-      ]
 
       # mount sysfs first
       if MountPartition("/sys", "sysfs", "sysfs") == nil
@@ -1154,9 +1102,8 @@ module Yast
         mntops = Ops.get_string(mounts, "mntops", "")
         spec = Ops.get_string(mounts, "spec", "")
         fspath = Ops.get_string(mounts, "file", "")
-        if Builtins.contains(allowed_fs, vfstype) && fspath != "/" &&
-            (fspath != "/var" || !IsMounted("/var")) &&
-            !Builtins.issubstring(mntops, "noauto")
+
+        if mount_regular_fstab_entry?(mounts)
           Builtins.y2milestone("mounting %1 to %2", spec, fspath)
 
           if !Mode.test
@@ -1259,7 +1206,7 @@ module Yast
 
               success = false if !CheckBootSize(checkspec)
             end
-          end # allowed_fs
+          end # mount_regular_fstab_entry?
         elsif vfstype == "swap" && fspath == "swap"
           Builtins.y2milestone("mounting %1 to %2", spec, fspath)
 
@@ -1472,6 +1419,7 @@ module Yast
 
       manual_mount_successful
     end
+
     def MountVarIfRequired(fstab, root_device_current, manual_var_mount)
       fstab = deep_copy(fstab)
       var_device_fstab = (
@@ -1481,84 +1429,49 @@ module Yast
         _FindPartitionInFstab_result
       )
 
+      # At this point, var_device_fstab contains the spec column of fstab
+      # for the /var mount point. E.g. "/dev/sda1", "/dev/system/var" or  "UUID=00x00x00x"
+
       # No need to mount "/var", it's not separate == already mounted with "/"
-      if var_device_fstab == nil
+      if var_device_fstab.nil?
         Builtins.y2milestone("Not a separate /var...")
         return nil
       end
 
-      if !Storage.DeviceRealDisk(var_device_fstab)
-        Builtins.y2milestone(
-          "Device %1 is not a real disk, mounting...",
-          var_device_fstab
-        )
+      # BNC #494240: all methods except kernel names should be stable enough
+      if !mounted_by_kernel_name?(var_device_fstab)
+        log.info "Device #{var_device_fstab} is not mounted by kernel name, mounting..."
         return MountVarPartition(var_device_fstab)
       end
 
-      # BNC #494240: If a device name is not created by Kernel, we can use it for upgrade
-      if !Storage.IsKernelDeviceName(var_device_fstab)
-        Builtins.y2milestone(
-          "Device %1 is not a Kernel device name, mounting...",
-          var_device_fstab
-        )
+      # Mounting virtual devices by kernel name (e.g. /dev/md0 or /dev/system/swap_lv)
+      # is also considered to be safe
+      if virtual_device?(var_device_fstab)
+        log.info "Device #{var_device_fstab} is not a partition, mounting..."
         return MountVarPartition(var_device_fstab)
       end
 
-      tmp1 = Builtins.filter(fstab) do |entry|
-        Ops.get_string(entry, "file", "") == "/"
-      end
-      root_device_fstab = Ops.get_string(tmp1, [0, "spec"], "")
-      if !Storage.DeviceRealDisk(root_device_fstab)
-        return MountVarPartition(var_device_fstab)
-      end
-
-      root_info = Storage.GetDiskPartition(root_device_fstab)
-      var_info = Storage.GetDiskPartition(var_device_fstab)
-
-      if Ops.get_string(root_info, "disk", "") ==
-          Ops.get_string(var_info, "disk", "")
-        tmp2 = Storage.GetDiskPartition(root_device_current)
-        var_partition_current2 = Storage.GetDeviceName(
-          Ops.get_string(tmp2, "disk", ""),
-          Ops.get_integer(var_info, "nr", 0)
-        )
-
-        return MountVarPartition(var_partition_current2)
-      end
-
-      realdisks = []
-      Builtins.foreach(Storage.GetOndiskTarget) do |s, m|
-        # BNC #448577, checking device
-        if Storage.IsKernelDeviceName(s) && Storage.DeviceRealDisk(s)
-          realdisks = Builtins.add(realdisks, s)
+      # At this point, var_device_fstab points either to a device that is not
+      # longer available or to a plain partition.
+      #
+      # In the second case the name may not be reliable since the disk may have
+      # changed its name (e.g. it used to be recognized as /dev/sda or /dev/hdb in
+      # the system to update but it became /dev/sdb in the new system).
+      new_name = update_var_dev_name(var_device_fstab, fstab, root_device_current)
+      if new_name
+        if new_name != var_device_fstab
+          log.info "Partition #{var_device_fstab} seems to have turned into #{new_name}"
         end
+        log.info "Device #{new_name} is a partition, mounting..."
+        return MountVarPartition(new_name)
       end
 
-      if Builtins.size(realdisks) != 2
-        # <-- BNC #448577, Cannot find /var partition automatically
-        return nil if manual_var_mount && MountUserDefinedVarPartition()
+      # BNC #448577: cannot find /var partition automatically, so ask the user
+      return nil if manual_var_mount && MountUserDefinedVarPartition()
 
-        Builtins.y2error(
-          "don't know how to handle more than two disks at this point"
-        )
-        # error message
-        return Ops.add(
-          _("Unable to mount /var partition with this disk configuration.\n"),
-          @sdb
-        )
-      end
-
-      other_disk = Ops.get(
-        realdisks,
-        Ops.get(realdisks, 0, "") == Ops.get_string(root_info, "disk", "") ? 1 : 0,
-        ""
-      )
-      var_partition_current = Storage.GetDeviceName(
-        other_disk,
-        Ops.get_integer(var_info, "nr", 0)
-      )
-
-      MountVarPartition(var_partition_current)
+      # Everything else failed, return error message
+      log.error "Unable to mount /var partition"
+      _("Unable to mount /var partition with this disk configuration.\n") + @sdb
     end
 
     def has_pam_mount
@@ -2204,6 +2117,8 @@ module Yast
       false
     end
 
+    # The only value of this seems to be for yast-bootloader to locate the
+    # root & boot devices.
     def update_staging!
       log.info "start update_staging"
 
@@ -2227,40 +2142,16 @@ module Yast
     def update_staging_filesystem!(name, mountpoint)
       log.info "Setting partition data: Device: #{name}, MountPoint: #{mountpoint}"
 
-      # storage-ng
-      #
-      # FIXME
-      #
-      # The code below does not work as one would expect as 'name' comes straight out of
+      # Take into account that 'name' comes straight out of
       # /etc/fstab and might look like 'UUID=2f61fdb9-f82a-4052-8610-1eb090b82098'.
-      #
-      # The only value of this seems to be for yast-bootloader to locate the
-      # root & boot devices.
-      #
-      # Note that this works magically atm because for the root device, the
-      # kernel device name is passed so the 'if' below actually matches.
-      #
-
-      if name.include?("/dev/disk/by-id")
-        mount_by = Y2Storage::Filesystems::MountByType::ID
-      elsif name.include?("/dev/")
-        mount_by = Y2Storage::Filesystems::MountByType::DEVICE
-      else
-        # existing code has the following lines here that don't make sense (afaics):
-        #
-        # mount_by = Y2Storage::Filesystems::MountByType::LABEL
-        # filesystem = staging.filesystems.with(label: name).first
-      end
-
+      mount_by = Y2Storage::Filesystems::MountByType.from_fstab_spec(name)
       return unless mount_by
 
       filesystem = fs_by_devicename(staging, name)
+      return unless filesystem
 
-      if filesystem
-        filesystem.mount_path = mountpoint
-        filesystem.mount_point.mount_by = mount_by
-      end
-
+      filesystem.mount_path = mountpoint
+      filesystem.mount_point.mount_by = mount_by
     end
 
     # FIXME
@@ -2273,38 +2164,161 @@ module Yast
     # Return nil if there's no such device or device doesn't have a filesystem.
     #
     # @param devicegraph [Devicegraph]
-    # @param devicename [String]
+    # @param device_spec [String] fs_spec field of one entry from fstab
     #
     # @return [String, nil]
     #
-    def fstype_for_device(devicegraph, devicename)
-      fs = fs_by_devicename(devicegraph, devicename)
+    def fstype_for_device(devicegraph, device_spec)
+      fs = fs_by_devicename(devicegraph, device_spec)
       fs.type.to_s if fs
     end
 
-    # Look up filesystem object with matching device name.
+    # Look up filesystem object with matching device name, as specified in
+    # fstab.
     #
     # Return nil if there's no such device or the device doesn't have a
     # filesystem.
     #
     # @param devicegraph [Devicegraph]
-    # @param devicename [String]
-    # @return [Y2Storage::Filesystems::BlkFilesystem, nil]
+    # @param device_spec [String] fs_spec field of one entry from fstab
+    # @return [Y2Storage::Filesystems::Base, nil]
     #
-    def fs_by_devicename(devicegraph, devicename)
-      fs = devicegraph.blk_filesystems.find do |fs|
-        fs.blk_devices.any? { |dev| dev.name == devicename }
-      end
+    def fs_by_devicename(devicegraph, device_spec)
+      fs = devicegraph.filesystems.find { |fs| fs.match_fstab_spec?(device_spec) }
+      # If the previous search returned nil, there is still a last chance to
+      # find the device. Maybe 'device_spec' is one of the udev names discarded
+      # by libstorage-ng
+      fs ||= fs_by_udev_lookup(devicegraph, device_spec)
 
       # log which devicegraph we operate on
       graph = "?"
       graph = "probed" if devicegraph.object_id == probed.object_id
       graph = "staging#" + Y2Storage::StorageManager.instance.staging_revision.to_s if devicegraph.object_id == staging.object_id
-      log.info("fs_by_devicename(#{graph}, #{devicename}) = #{'sid#' + fs.sid.to_s if fs}")
+      log.info("fs_by_devicename(#{graph}, #{device_spec}) = #{'sid#' + fs.sid.to_s if fs}")
 
       fs
     end
 
+    # Finds a filesystem by udev name, using a direct lookup in the system
+    # (i.e. going beyond the udev names recognized by libstorage-ng) if needed
+    #
+    # @param devicegraph [Devicegraph]
+    # @param name [String] full udev name
+    # @return [Y2Storage::Filesystems::BlkFilesystem, nil]
+    def fs_by_udev_lookup(devicegraph, name)
+      dev = devicegraph.find_by_any_name(name)
+      return nil if dev.nil? || !dev.respond_to?(:filesystem)
+      dev.filesystem
+    end
+
+    # Whether the given fstab spec corresponds to a device mounted by its kernel
+    # device name.
+    #
+    # @param spec [String] content of the first column of an /etc/fstab entry
+    # @return [Boolean]
+    def mounted_by_kernel_name?(spec)
+      mount_by = Y2Storage::Filesystems::MountByType.from_fstab_spec(spec)
+      mount_by.is?(:device)
+    end
+
+    # Whether the device referenced by the given fstab spec is a virtual device
+    # (basically anything that is not a partition).
+    #
+    # This is somehow the inverse of the old Storage.DeviceRealDisk
+    #
+    # @param spec [String] content of the first column of an /etc/fstab entry
+    # @return [Boolean] true if the device was found and is not a partition
+    def virtual_device?(spec)
+      filesystem = fs_by_devicename(probed, spec)
+      # If 'filesystem' is nil, either the device is not longer there or it's a
+      # partition that now has a new name (names of virtual devices should be stable).
+      return false unless filesystem
+
+      # If this is not based on a block device (so far that means this is NFS),
+      # then it's virtual.
+      return true unless filesystem.respond_to?(:plain_blk_devices)
+
+      # To be more faithful to the original check on Storage.DeviceRealDisk
+      # let's consider everything but a partition to be virtual.
+      filesystem.plain_blk_devices.none? { |dev| dev.is?(:partition) }
+    end
+
+    # This method tries to infer the /var device name from its partition number
+    # and the name of the root device.
+    #
+    # @param var_name [String] spec of the /var partition in the old /etc/fstab
+    # @param fstab [Array<Hash>] content of the old /etc/fstab
+    # @param root_current_name [String] current kernel device name of the root partition
+    # @return [String, nil] new name of the device (best guess), nil if we know
+    #   the current name is outdated but we cannot infer the new one
+    def update_var_dev_name(var_name, fstab, root_current_name)
+      root_entry = fstab.find { |entry| entry["file"] == "/" }
+      root_spec = root_entry ? root_entry["spec"] : nil
+      root_device = probed.find_by_name(root_current_name)
+
+      # If /var was mounted by partition kernel name but the root device was
+      # not, we cannot apply the upcoming logic to make up the new /var device
+      # name. Let's simply use the one we already know.
+      if root_spec.nil? || !mounted_by_kernel_name?(root_spec) || !root_device.is?(:partition)
+        return var_name
+      end
+
+      # Regular expresion to break a partition name. Second capture gets the
+      # partition number (as string). First capture gets the rest.
+      regexp = /(.*[^\d])(\d*)$/
+      var_name_no_number, var_name_number = regexp.match(var_name).captures
+      root_spec_no_number = regexp.match(root_spec)[1]
+
+      # If /var and / were partitions in the same disk...
+      if var_name_no_number == root_spec_no_number
+        root_current_no_number = regexp.match(root_current_name)[1]
+        return root_current_no_number + var_name_number
+      end
+
+      # If both partitions were not in the same disk, we assume '/' is in one
+      # disk and '/var' in the other one. Of course that logic only works if
+      # there are exactly two disks.
+      return nil if probed.disk_devices.size != 2
+
+      root_disk = root_device.partitionable
+      other_disk = probed.disk_devices.find { |dev| dev != root_disk }
+      partition = other_disk.partitions.find { |part| part.number == var_name_number.to_i }
+      partition.name
+    end
+
+    # @see #mount_regular_fstab_entry?(
+    ALLOWED_FS = [
+      "ext",
+      "ext2",
+      "ext3",
+      "ext4",
+      "btrfs",
+      "jfs",
+      "xfs",
+      "hpfs",
+      "vfat",
+      "auto",
+    ].freeze
+    private_constant :ALLOWED_FS
+
+    # Whether a given fstab entry should be mounted by {#MountFSTab}
+    #
+    # @param entry [Hash] fstab entry
+    # @return [Boolean]
+    def mount_regular_fstab_entry?(entry)
+      vfstype = entry.fetch("vfstype", "")
+      mntops = entry.fetch("mntops", "")
+      path = entry.fetch("file", "")
+
+      return false if path == "/"
+      return false unless ALLOWED_FS.include?(vfstype)
+      return false if mntops.include?("noauto")
+
+      # The conditions above are enough for any mount point except /var.
+      # In the /var case, it should have been already processed by
+      # #MountVarIfRequired... except when /var is a subvolume
+      path != "/var" || mntops.include?("subvol=")
+    end
   end
 
   RootPart = RootPartClass.new
