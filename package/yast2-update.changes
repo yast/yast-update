@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Apr 27 13:45:41 UTC 2018 - lslezak@suse.cz
+
+- Copy the resolv.conf and the device files from inst-sys
+  to target, sort the restore scripts to run them in the expected
+  order (bsc#1089643)
+- 4.0.13
+
+-------------------------------------------------------------------
 Mon Mar 19 16:24:35 UTC 2018 - ancor@suse.com
 
 - Fixed a crash when upgrading systems with a separate /var
