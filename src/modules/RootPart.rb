@@ -1702,9 +1702,6 @@ module Yast
       ]
     }
 
-    # copy these device files into inst-sys to make sure the chrooted scripts work
-    REQUIRED_DEVICES = [ "null", "zero", "random", "urandom" ]
-
     def create_backup
       BACKUP_DIRS.each_pair do |name, paths|
         Update.create_backup(name, paths)
@@ -1717,11 +1714,9 @@ module Yast
       # the original file is backed up and restored later
       ::FileUtils.cp(RESOLV_CONF, File.join(Installation.destdir, RESOLV_CONF)) if File.exist?(RESOLV_CONF)
 
-      REQUIRED_DEVICES.each do |dev|
-        # FileUtils.cp does not handle device files correctly, use `cp -a` instead
-        target = File.join(Installation.destdir, "dev", dev)
-        system("cp -a /dev/#{dev} #{Shellwords.escape(target)}")
-      end
+      # make the /dev files available in the chroot so the scripts work correctly there
+      target = File.join(Installation.destdir, "dev")
+      system("mount --bind /dev #{Shellwords.escape(target)}")
     end
 
     # Get architecture of an elf file.
