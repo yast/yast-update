@@ -1,8 +1,8 @@
 -------------------------------------------------------------------
 Fri Apr 27 13:45:41 UTC 2018 - lslezak@suse.cz
 
-- Copy the resolv.conf and the device files from inst-sys
-  to target, sort the restore scripts to run them in the expected
+- Copy the resolv.conf and bind mount /dev directory to the target
+  root, sort the restore scripts to run them in the expected
   order (bsc#1089643)
 - 4.0.13
 
