@@ -31,6 +31,8 @@ require "yast2/fs_snapshot"
 require "yast2/fs_snapshot_store"
 require "y2storage"
 
+require "fileutils"
+
 module Yast
   class RootPartClass < Module
     include Logger
@@ -1675,25 +1677,46 @@ module Yast
         end
         Update.clean_backup
         create_backup
+        inject_intsys_files
       end
 
       success
     end
 
+    RESOLV_CONF = "/etc/resolv.conf".freeze
+
     # known configuration files that are changed during update, so we need to
     # backup them to restore if something goes wrong (bnc#882039)
     BACKUP_DIRS = {
-      "sw_mgmt" => [
+      # use a number prefix to set the execution order
+      "0100-sw_mgmt" => [
         "/var/lib/rpm",
         "/etc/zypp/repos.d",
         "/etc/zypp/services.d",
         "/etc/zypp/credentials.d"
+      ],
+      # this should be restored as the very last one, after restoring the original
+      # resolv.conf the network might not work properly in the chroot
+      "0999-resolv_conf" => [
+        RESOLV_CONF
       ]
     }
+
     def create_backup
       BACKUP_DIRS.each_pair do |name, paths|
         Update.create_backup(name, paths)
       end
+    end
+
+    # inject the required files from the inst-sys to the chroot so
+    # the network connection works for the chrooted scripts
+    def inject_intsys_files
+      # the original file is backed up and restored later
+      ::FileUtils.cp(RESOLV_CONF, File.join(Installation.destdir, RESOLV_CONF)) if File.exist?(RESOLV_CONF)
+
+      # make the /dev files available in the chroot so the scripts work correctly there
+      target = File.join(Installation.destdir, "dev")
+      system("mount --bind /dev #{Shellwords.escape(target)}")
     end
 
     # Get architecture of an elf file.

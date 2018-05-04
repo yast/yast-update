@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.0.12
+Version:        4.0.13
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -49,8 +49,8 @@ Requires:	yast2-storage-ng >= 4.0.137
 Requires:	yast2 >= 3.1.126
 Requires:	yast2-installation
 
-# Packages#proposal_for_update
-Requires:	yast2-packager >= 3.2.13
+# handle bind mount at /mnt/dev
+Requires:	yast2-packager >= 4.0.61
 
 # Pkg.TargetInitializeOptions()
 Requires:       yast2-pkg-bindings >= 3.1.14
