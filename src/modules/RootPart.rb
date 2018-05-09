@@ -36,7 +36,7 @@ require "fileutils"
 module Yast
   class RootPartClass < Module
     include Logger
-    NON_MODULAR_FS = ["proc", "sysfs"]
+    NON_MODULAR_FS = ["devtmpfs", "proc", "sysfs"]
 
     def main
       Yast.import "UI"
@@ -1097,6 +1097,13 @@ module Yast
         )
       end
 
+      # to have devices like /dev/cdrom and /dev/urandom in the chroot
+      if MountPartition("/dev", "devtmpfs", "devtmpfs") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "devtmpfs", :mntpt => "/dev" }
+        )
+      end
+
       success = true
 
       Builtins.foreach(fstab) do |mounts|
@@ -1713,10 +1720,6 @@ module Yast
     def inject_intsys_files
       # the original file is backed up and restored later
       ::FileUtils.cp(RESOLV_CONF, File.join(Installation.destdir, RESOLV_CONF)) if File.exist?(RESOLV_CONF)
-
-      # make the /dev files available in the chroot so the scripts work correctly there
-      target = File.join(Installation.destdir, "dev")
-      system("mount --bind /dev #{Shellwords.escape(target)}")
     end
 
     # Get architecture of an elf file.
