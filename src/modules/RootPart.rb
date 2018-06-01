@@ -1697,7 +1697,10 @@ module Yast
     BACKUP_DIRS = {
       # use a number prefix to set the execution order
       "0100-sw_mgmt" => [
+        # RPM DB - the old location, on new systems it's just a symlink
         "/var/lib/rpm",
+        # RPM DB - the new location which works better with snapshots
+        "/usr/lib/sysimage/rpm",
         "/etc/zypp/repos.d",
         "/etc/zypp/services.d",
         "/etc/zypp/credentials.d"
