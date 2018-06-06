@@ -775,11 +775,12 @@ module Yast
     BACKUP_DIR = "var/adm/backup/system-upgrade"
     # Creates backup with name based on `name` contaings everything
     # matching globs in `paths`.
-    # @param name[String] name for backup file. Use bash friendly name ;)
+    # @param name[String] name for backup file. Use a number prefix to run
+    #   the restore scripts in the expected order. Use a bash friendly name ;)
     # @note Can be called only after target root is mounted.
     #
     # @example to store repos file and credentials directory
-    #   Update.create_backup("repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
+    #   Update.create_backup("0100-repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
     def create_backup(name, paths)
       log.info "Creating tarball for #{name} including #{paths}"
       mounted_root = Installation.destdir
@@ -805,7 +806,8 @@ module Yast
       log.info "Restoring backup"
       mounted_root = Installation.destdir
       script_glob = File.join(mounted_root, BACKUP_DIR,"restore-*.sh")
-      ::Dir.glob(script_glob).each do |path|
+      # sort the scripts to execute them in the expected order
+      ::Dir.glob(script_glob).sort.each do |path|
         cmd = "sh #{path} #{File.join("/", mounted_root)}"
         res = SCR.Execute(path(".target.bash_output"), cmd)
         log.info "Restoring with script #{cmd} result: #{res}"

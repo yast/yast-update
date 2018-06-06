@@ -234,4 +234,18 @@ describe Yast::RootPart do
       end
     end
   end
+
+  describe "#MountFSTab" do
+    it "mounts /dev, /proc and /sys" do
+      allow(subject).to receive(:AddMountedPartition)
+
+      ["/dev", "/proc", "/sys"].each do |d|
+        expect(subject).to receive(:MountPartition).with(d, anything, anything)
+      end
+
+      # call with empty list to only test the /dev, /proc and /sys mounting
+      fstab = []
+      subject.MountFSTab(fstab, "")
+    end
+  end
 end
