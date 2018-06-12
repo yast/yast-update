@@ -1530,12 +1530,11 @@ module Yast
         read_fstab_and_cryptotab(fstab_ref, crtab_ref, root_device_current)
         fstab = fstab_ref.value
         crtab = crtab_ref.value
-        # storage-ng
-=begin
-        Storage.ChangeDmNamesFromCrypttab(
-          Ops.add(Installation.destdir, "/etc/crypttab")
-        )
-=end
+
+        # Update encryption devices with the names indicated in the crypttab file (bsc#1094963)
+        crypttab_path = File.join(Installation.destdir, "/etc/crypttab")
+        Y2Storage::Encryption.use_crypttab_names(probed, crypttab_path)
+
         Update.GetProductName
 
         if FstabUsesKernelDeviceNameForHarddisks(fstab)

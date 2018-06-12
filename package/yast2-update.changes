@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun  7 17:10:49 UTC 2018 - jlopez@suse.com
+
+- Update encryption device names according to the values in the
+  crypttab file (bsc#1094963).
+- 4.0.16
+
+-------------------------------------------------------------------
 Wed Jun  6 11:19:12 UTC 2018 - lslezak@suse.cz
 
 - Flush the disk cache after restoring the backup to mitigate
