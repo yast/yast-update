@@ -891,6 +891,10 @@ cd ${1:-/}
 tar xvf #{tarball_path} --overwrite
 # return back to original dir
 cd -
+# flush the caches
+sync
+# wait a bit to really write everything to disk (see "man sync")
+sleep 3
 EOF
 
       File.write(script_path, script_content)
