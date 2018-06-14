@@ -248,4 +248,40 @@ describe Yast::RootPart do
       subject.MountFSTab(fstab, "")
     end
   end
+
+  describe "#inject_intsys_files" do
+    before do
+      allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
+    end
+
+    context "resolf.conf exists in inst-sys" do
+      before do
+        expect(File).to receive(:exist?).with("/etc/resolv.conf").and_return(true)
+        allow(FileUtils).to receive(:cp)
+      end
+
+      it "copies the resolf.conf from inst-sys to the target" do
+        expect(FileUtils).to receive(:cp).with("/etc/resolv.conf", "/mnt/etc/resolv.conf")
+        subject.inject_intsys_files
+      end
+
+      # (bsc#1096142)
+      it "does not crash on the EPERM exception" do
+        expect(FileUtils).to receive(:cp).with("/etc/resolv.conf", "/mnt/etc/resolv.conf") \
+          .and_raise(Errno::EPERM)
+        expect { subject.inject_intsys_files }.to_not raise_error
+      end
+    end
+
+    context "resolf.conf does not exist in inst-sys" do
+      before do
+        expect(File).to receive(:exist?).with("/etc/resolv.conf").and_return(false)
+      end
+
+      it "does not copy the resolf.conf" do
+        expect(FileUtils).to_not receive(:cp).with("/etc/resolv.conf", "/mnt/etc/resolv.conf")
+        subject.inject_intsys_files
+      end
+    end
+  end
 end
