@@ -1718,7 +1718,13 @@ module Yast
     # the network connection works for the chrooted scripts
     def inject_intsys_files
       # the original file is backed up and restored later
-      ::FileUtils.cp(RESOLV_CONF, File.join(Installation.destdir, RESOLV_CONF)) if File.exist?(RESOLV_CONF)
+      target = File.join(Installation.destdir, RESOLV_CONF)
+      ::FileUtils.cp(RESOLV_CONF, target) if File.exist?(RESOLV_CONF)
+    rescue Errno::EPERM => e
+      # just log a warning when rewriting the file is not permitted,
+      # e.g. it has the immutable flag set (bsc#1096142)
+      # assume that the user locked content works properly
+      log.warn("Cannot update #{target}, keeping the original content, #{e.class}: #{e}")
     end
 
     # Get architecture of an elf file.
