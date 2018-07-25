@@ -146,12 +146,17 @@ module Yast
           fs = ""
 
           # is a linux fs, can be a root fs, has a fs name
-          if part_fs != nil && Ops.get(i, :fstype) != nil &&
-              (CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)) &&
-              part_fs_name != nil
+          if part_fs != nil &&
+            (CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)) &&
+            part_fs_name != nil
+            # We are sure that we have found a valid linux partition for update.
+            # In some cases fstype has not been set correctly while previous
+            # installation. E.g. Parted (versions older than 3.2) has set
+            # fstype to "Microsoft Basic Data" although it is a linux partition.
+            # So we are not showing this entry in order to not confusing the
+            # user.
             fs = Builtins.sformat(
-              _("%1 (%2)"),
-              Ops.get_string(i, :fstype, ""),
+              _("Linux (%1)"),
               part_fs_name
             )
           else
