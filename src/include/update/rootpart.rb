@@ -155,10 +155,7 @@ module Yast
             # fstype to "Microsoft Basic Data" although it is a linux partition.
             # So we are not showing this entry in order to not confusing the
             # user.
-            fs = Builtins.sformat(
-              _("Linux (%1)"),
-              part_fs_name
-            )
+            fs = part_fs_name
           else
             fs = Ops.get_string(i, :fstype, Ops.get_string(i, :fs, ""))
           end
