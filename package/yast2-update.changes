@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Aug 20 14:26:01 CEST 2018 - schubi@suse.de
+
+- Changed licence to GPL-2.0-only.
+
+-------------------------------------------------------------------
 Wed Jul 25 13:21:22 CEST 2018 - schubi@suse.de
 
 - Wrong fstype "Windows Data Partition" will not be shown anymore
