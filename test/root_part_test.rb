@@ -254,13 +254,13 @@ describe Yast::RootPart do
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
     end
 
-    context "resolf.conf exists in inst-sys" do
+    context "resolv.conf exists in inst-sys" do
       before do
         expect(File).to receive(:exist?).with("/etc/resolv.conf").and_return(true)
         allow(FileUtils).to receive(:cp)
       end
 
-      it "copies the resolf.conf from inst-sys to the target" do
+      it "copies the resolv.conf from inst-sys to the target" do
         expect(FileUtils).to receive(:cp).with("/etc/resolv.conf", "/mnt/etc/resolv.conf")
         subject.inject_intsys_files
       end
@@ -273,12 +273,12 @@ describe Yast::RootPart do
       end
     end
 
-    context "resolf.conf does not exist in inst-sys" do
+    context "resolv.conf does not exist in inst-sys" do
       before do
         expect(File).to receive(:exist?).with("/etc/resolv.conf").and_return(false)
       end
 
-      it "does not copy the resolf.conf" do
+      it "does not copy the resolv.conf" do
         expect(FileUtils).to_not receive(:cp).with("/etc/resolv.conf", "/mnt/etc/resolv.conf")
         subject.inject_intsys_files
       end
