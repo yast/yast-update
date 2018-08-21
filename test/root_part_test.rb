@@ -257,17 +257,17 @@ describe Yast::RootPart do
     context "resolv.conf exists in inst-sys" do
       before do
         expect(File).to receive(:exist?).with("/etc/resolv.conf").and_return(true)
-        allow(FileUtils).to receive(:cp)
+        allow(FileUtils).to receive(:copy_entry)
       end
 
       it "copies the resolv.conf from inst-sys to the target" do
-        expect(FileUtils).to receive(:cp).with("/etc/resolv.conf", "/mnt/etc/resolv.conf")
+        expect(FileUtils).to receive(:copy_entry).with("/etc/resolv.conf", "/mnt/etc/resolv.conf", false, false, true)
         subject.inject_intsys_files
       end
 
       # (bsc#1096142)
       it "does not crash on the EPERM exception" do
-        expect(FileUtils).to receive(:cp).with("/etc/resolv.conf", "/mnt/etc/resolv.conf") \
+        expect(FileUtils).to receive(:copy_entry).with("/etc/resolv.conf", "/mnt/etc/resolv.conf", false, false, true) \
           .and_raise(Errno::EPERM)
         expect { subject.inject_intsys_files }.to_not raise_error
       end
@@ -279,7 +279,7 @@ describe Yast::RootPart do
       end
 
       it "does not copy the resolv.conf" do
-        expect(FileUtils).to_not receive(:cp).with("/etc/resolv.conf", "/mnt/etc/resolv.conf")
+        expect(FileUtils).to_not receive(:copy_entry).with("/etc/resolv.conf", "/mnt/etc/resolv.conf", false, false, true)
         subject.inject_intsys_files
       end
     end
