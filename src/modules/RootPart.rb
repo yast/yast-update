@@ -1719,7 +1719,11 @@ module Yast
     def inject_intsys_files
       # the original file is backed up and restored later
       target = File.join(Installation.destdir, RESOLV_CONF)
-      ::FileUtils.cp(RESOLV_CONF, target) if File.exist?(RESOLV_CONF)
+      # use copy entry as we need to remove_destination 5th param in case of symlink to dynamic
+      # resolver like systemd-resolver and some configuration of network manager. So we not modify
+      # symlink target and instead just replace symlink with our file that can resolve and from
+      # backup we later restore original symlink.
+      ::FileUtils.copy_entry(RESOLV_CONF, target, false, false, true) if File.exist?(RESOLV_CONF)
     rescue Errno::EPERM => e
       # just log a warning when rewriting the file is not permitted,
       # e.g. it has the immutable flag set (bsc#1096142)
