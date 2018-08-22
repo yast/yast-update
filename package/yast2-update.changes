@@ -1,7 +1,14 @@
 -------------------------------------------------------------------
-Mon Aug 20 14:26:01 CEST 2018 - schubi@suse.de
+Wed Aug 22 09:55:27 CEST 2018 - schubi@suse.de
 
 - Switched license in spec file from SPDX2 to SPDX3 format.
+
+-------------------------------------------------------------------
+ Aug 21 05:13:58 UTC 2018 - lslezak@suse.cz
+
+- Do not crash at upgrade when the original /etc/resolv.conf
+  file is set to immutable (bsc#1096142)
+- 4.1.1
 
 -------------------------------------------------------------------
 Wed Jul 25 13:21:22 CEST 2018 - schubi@suse.de

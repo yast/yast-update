@@ -107,7 +107,7 @@ describe Yast::Update do
       paths = ["/path_with_slash"]
       expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /tar/).
         and_return({"exit" => 1})
-      expect{Yast::Update.create_backup(name, paths)}.to raise_error
+      expect{Yast::Update.create_backup(name, paths)}.to raise_error(RuntimeError, "Failed to create backup")
     end
 
     it "create restore script" do
@@ -154,9 +154,9 @@ describe Yast::Update do
       it "returns true as there is no upgrade path defined" do
         allow(Yast::ProductFeatures).to receive(:GetFeature).with("software","upgrade").and_return(nil)
 
-        expect(Yast::Y2Logger.instance).to receive(:info) do |msg|
-          expect(msg).to match(/upgrade is not handled by this product/i)
-        end.and_call_original
+        expect(Yast::Y2Logger.instance).to receive(:info)\
+          .with(/upgrade is not handled by this product/i)\
+          .and_call_original
 
         expect(Yast::Update.SetDesktopPattern).to eq(true)
       end
@@ -167,9 +167,9 @@ describe Yast::Update do
         default_product_control_desktop
         allow(Yast::FileUtils).to receive(:Exists).with(/windowmanager/).and_return(false)
 
-        expect(Yast::Y2Logger.instance).to receive(:warn) do |msg|
-          expect(msg).to match(/(Sysconfig file .* does not exist|cannot read default window manager)/i)
-        end.twice.and_call_original
+        expect(Yast::Y2Logger.instance).to receive(:warn)\
+          .with(/(Sysconfig file .* does not exist|cannot read default window manager)/i)\
+          .twice.and_call_original
 
         expect(Yast::Update.SetDesktopPattern).to eq(true)
       end
@@ -181,9 +181,9 @@ describe Yast::Update do
         installed_desktop = "desktop-not-supported-for-upgrade"
         allow(Yast::Update).to receive(:installed_desktop).and_return(installed_desktop)
 
-        expect(Yast::Y2Logger.instance).to receive(:info) do |msg|
-          expect(msg).to match(/no matching desktop found .* #{installed_desktop}/i)
-        end.and_call_original
+        expect(Yast::Y2Logger.instance).to receive(:info)\
+          .with(/no matching desktop found .* #{installed_desktop}/i)\
+          .and_call_original
 
         expect(Yast::Update.SetDesktopPattern).to eq(true)
       end
@@ -196,9 +196,9 @@ describe Yast::Update do
         allow(Yast::SCR).to receive(:Execute).and_return(0)
         allow(Yast::SCR).to receive(:Execute).with(kind_of(Yast::Path), /rpm -q/).and_return(-1)
 
-        expect(Yast::Y2Logger.instance).to receive(:info) do |msg|
-          expect(msg).to match(/(package .* installed: false|not all packages .* are installed)/i)
-        end.twice.and_call_original
+        expect(Yast::Y2Logger.instance).to receive(:info)\
+          .with(/(package .* installed: false|not all packages .* are installed)/i)\
+          .twice.and_call_original
 
         expect(Yast::Update.SetDesktopPattern).to eq(true)
       end
