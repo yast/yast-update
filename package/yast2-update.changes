@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Aug 22 09:55:27 CEST 2018 - schubi@suse.de
+
+- Switched license in spec file from SPDX2 to SPDX3 format.
+
+-------------------------------------------------------------------
 Tue Aug 21 05:13:58 UTC 2018 - lslezak@suse.cz
 
 - Do not crash at upgrade when the original /etc/resolv.conf
