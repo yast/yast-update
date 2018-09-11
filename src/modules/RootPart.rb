@@ -1677,8 +1677,8 @@ module Yast
         # enter the mount points of the newly mounted partitions
         update_staging!
         if Yast2::FsSnapshot.configured?
-          # TRANSLATORS: label for filesystem snapshot taken before system update
-          snapshot = Yast2::FsSnapshot.create_pre(_("before update"), cleanup: :number, important: true)
+          # as of bsc #1092757 snapshot descriptions are not translated
+          snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup: :number, important: true)
           Yast2::FsSnapshotStore.save("update", snapshot.number)
         end
         Update.clean_backup
