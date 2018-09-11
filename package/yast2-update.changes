@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 11 15:34:53 CEST 2018 - aschnell@suse.com
+
+- do not translate snapshot description (bsc#1092757)
+- 4.1.2
+
+-------------------------------------------------------------------
 Wed Aug 22 09:55:27 CEST 2018 - schubi@suse.de
 
 - Switched license in spec file from SPDX2 to SPDX3 format.
