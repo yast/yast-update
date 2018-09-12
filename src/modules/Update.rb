@@ -285,7 +285,7 @@ module Yast
               found = Builtins.find(to_install) { |u| u == i }
               found != nil
             end
-            @_products_compatible = equal_product != nil 
+            @_products_compatible = equal_product != nil
             # no product name found
             # bugzilla #218720, valid without testing according to comment #10
           else
@@ -430,7 +430,7 @@ module Yast
 
       # Remove 'Beta...' from product release
       if Builtins.regexpmatch(old_name, "Beta")
-        old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Beta.*$", "\\1") 
+        old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Beta.*$", "\\1")
         # Remove 'Alpha...' from product release
       elsif Builtins.regexpmatch(old_name, "Alpha")
         old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Alpha.*$", "\\1")
@@ -467,7 +467,7 @@ module Yast
             Installation.installedVersion,
             "major",
             Builtins.tointeger(inst_ver)
-          ) 
+          )
           # openSUSE
         elsif Builtins.regexpmatch(inst_ver, "^[0123456789]+.[0123456789]+$")
           Ops.set(
@@ -550,7 +550,7 @@ module Yast
             Ops.subtract(num, 1),
             0
           )
-        end 
+        end
         # default for !Stage::normal
       else
         update_to_source = Packages.GetBaseSourceID
@@ -624,7 +624,7 @@ module Yast
             Installation.updateVersion,
             "major",
             Builtins.tointeger(new_ver)
-          ) 
+          )
           # openSUSE
         elsif Builtins.regexpmatch(new_ver, "^[0123456789]+.[0123456789]$")
           Ops.set(
