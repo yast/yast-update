@@ -285,7 +285,7 @@ module Yast
               found = Builtins.find(to_install) { |u| u == i }
               found != nil
             end
-            @_products_compatible = equal_product != nil 
+            @_products_compatible = equal_product != nil
             # no product name found
             # bugzilla #218720, valid without testing according to comment #10
           else
@@ -430,7 +430,7 @@ module Yast
 
       # Remove 'Beta...' from product release
       if Builtins.regexpmatch(old_name, "Beta")
-        old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Beta.*$", "\\1") 
+        old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Beta.*$", "\\1")
         # Remove 'Alpha...' from product release
       elsif Builtins.regexpmatch(old_name, "Alpha")
         old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Alpha.*$", "\\1")
@@ -467,7 +467,7 @@ module Yast
             Installation.installedVersion,
             "major",
             Builtins.tointeger(inst_ver)
-          ) 
+          )
           # openSUSE
         elsif Builtins.regexpmatch(inst_ver, "^[0123456789]+.[0123456789]+$")
           Ops.set(
@@ -550,7 +550,7 @@ module Yast
             Ops.subtract(num, 1),
             0
           )
-        end 
+        end
         # default for !Stage::normal
       else
         update_to_source = Packages.GetBaseSourceID
@@ -624,7 +624,7 @@ module Yast
             Installation.updateVersion,
             "major",
             Builtins.tointeger(new_ver)
-          ) 
+          )
           # openSUSE
         elsif Builtins.regexpmatch(new_ver, "^[0123456789]+.[0123456789]$")
           Ops.set(
@@ -801,16 +801,25 @@ module Yast
         :force => true, :secure => true)
     end
 
-    # restores backup
+    # Restores valid backups
+    #
+    # It will look for "restore-*.sh" files inside the BACKUP_DIR, executing only those created
+    # after last boot (bsc#1097297)
     def restore_backup
       log.info "Restoring backup"
       mounted_root = Installation.destdir
-      script_glob = File.join(mounted_root, BACKUP_DIR,"restore-*.sh")
+      script_glob = File.join(mounted_root, BACKUP_DIR, "restore-*.sh")
       # sort the scripts to execute them in the expected order
       ::Dir.glob(script_glob).sort.each do |path|
-        cmd = "sh #{path} #{File.join("/", mounted_root)}"
-        res = SCR.Execute(path(".target.bash_output"), cmd)
-        log.info "Restoring with script #{cmd} result: #{res}"
+        backup_time = File.stat(path).ctime.to_i
+
+        if boot_time < backup_time
+          cmd = "sh #{path} #{File.join("/", mounted_root)}"
+          res = SCR.Execute(path(".target.bash_output"), cmd)
+          log.info "Restoring with script #{cmd} result: #{res}"
+        else
+          log.info "Discarding #{path} (created before last boot)"
+        end
       end
     end
 
@@ -849,6 +858,11 @@ module Yast
     publish :function => :restore_backup, :type => "void ()"
 
   private
+
+    # @return [Integer] boot time found in /proc/stat
+    def boot_time
+      @boot_time ||= File.read("/proc/stat")[/btime.*/].split.last.to_i
+    end
 
     def create_tarball(tarball_path, root, paths)
       # tar reports an error if a file does not exist.

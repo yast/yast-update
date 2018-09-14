@@ -137,12 +137,40 @@ describe Yast::Update do
   end
 
   describe "#restore_backup" do
-    it "call all restore scripts in backup directory" do
-      expect(::Dir).to receive(:glob).and_return(["restore-a.sh", "restore-b.sh"])
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /sh .*restore-a.sh \/mnt/).
-        and_return({"exit" => 0})
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /sh .*restore-b.sh \/mnt/).
-        and_return({"exit" => 0})
+    let(:proc_stat_file) { File.read("test/data/proc_stat") }
+    # btime + 1
+    let(:valid_backup_time) { 1_536_908_469  }
+    # btime - 1
+    let(:invalid_backup_time) { 1_536_908_467  }
+    let(:first_backup) { "000-restore-c.sh" }
+    let(:second_backup) { "restore-a.sh" }
+    let(:third_backup) { "restore-b.sh" }
+    let(:mock_stat) { double({ ctime: nil }) }
+
+    before do
+      allow(File).to receive(:read).with("/proc/stat").and_return(proc_stat_file)
+      allow(File).to receive(:stat).with(anything).and_return(mock_stat)
+      allow(Dir).to receive(:glob).and_return([third_backup, first_backup, second_backup])
+      allow(mock_stat).to receive(:ctime)
+        .and_return(valid_backup_time, valid_backup_time, invalid_backup_time)
+    end
+
+    it "found all available backups" do
+      expect(::Dir).to receive(:glob)
+        .and_return(["restore-b.sh", "000-restore-c.sh", "restore-a.sh"])
+
+      Yast::Update.restore_backup
+    end
+
+    it "execute only backups created after boot" do
+      expect(Yast::SCR).to receive(:Execute)
+        .with(Yast::Path.new(".target.bash_output"), /sh .*000-restore-c.sh \/mnt/)
+        .and_return({"exit" => 0})
+      expect(Yast::SCR).to receive(:Execute)
+        .with(Yast::Path.new(".target.bash_output"), /sh .*restore-a.sh \/mnt/)
+        .and_return({"exit" => 0})
+      expect(Yast::SCR).to_not receive(:Execute)
+        .with(Yast::Path.new(".target.bash_output"), /sh .*restore-b.sh \/mnt/)
 
       Yast::Update.restore_backup
     end
