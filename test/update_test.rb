@@ -151,17 +151,63 @@ describe Yast::Update do
   end
 
   describe "#restore_backup" do
-    it "call all restore scripts in backup directory" do
-      expect(::Dir).to receive(:glob).and_return(["restore-a.sh", "restore-b.sh"])
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /sh .*restore-a.sh \/mnt/).
-        and_return({"exit" => 0})
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /sh .*restore-b.sh \/mnt/).
-        and_return({"exit" => 0})
+    let(:os_release_pathname) { double }
+    let(:os_backup_release_pathname) { double }
+    let(:os_release_content) { File.new("#{DATA_DIR}/etc/leap-15-os-release").read }
+    let(:os_backup_release_content) { File.new("#{DATA_DIR}/etc/tw-os-release").read }
+
+    before do
+      allow(::Dir).to receive(:glob).and_return(["restore-a.sh", "restore-b.sh"])
+
+      allow(Pathname).to receive(:new)
+        .with("#{Yast::Installation.destdir}/etc/os-release")
+        .and_return(os_release_pathname)
+      allow(Pathname).to receive(:new)
+        .with("#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}/os-release")
+        .and_return(os_backup_release_pathname)
+      allow(os_release_pathname).to receive(:read).and_return(os_release_content)
+      allow(os_backup_release_pathname).to receive(:read).and_return(os_backup_release_content)
+    end
+
+    it "check the release info files" do
+      expect(Pathname).to receive(:new)
+        .with("#{Yast::Installation.destdir}/etc/os-release")
+      expect(Pathname).to receive(:new)
+        .with("#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}/os-release")
 
       Yast::Update.restore_backup
     end
-  end
 
+    context "when the release info match" do
+      let(:os_backup_release_content) { os_release_content }
+
+      it "call all restore scripts in backup directory" do
+        expect(Yast::SCR).to receive(:Execute)
+          .with(Yast::Path.new(".target.bash_output"), /sh .*restore-a.sh \/mnt/)
+        expect(Yast::SCR).to receive(:Execute)
+          .with(Yast::Path.new(".target.bash_output"), /sh .*restore-b.sh \/mnt/)
+
+        Yast::Update.restore_backup
+      end
+    end
+
+    context "when the release info does not match" do
+      it "logs an error" do
+        expect(Yast::Update.log).to receive(:error).with(/not restored/)
+
+        Yast::Update.restore_backup
+      end
+
+      it "does not continue" do
+        expect(Yast::SCR).to_not receive(:Execute)
+          .with(Yast::Path.new(".target.bash_output"), /sh .*restore-a.sh \/mnt/)
+        expect(Yast::SCR).to_not receive(:Execute)
+          .with(Yast::Path.new(".target.bash_output"), /sh .*restore-b.sh \/mnt/)
+
+        Yast::Update.restore_backup
+      end
+    end
+  end
 
   describe "#SetDesktopPattern" do
     context "if there is no definition of window manager upgrade path in control file" do

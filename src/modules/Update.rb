@@ -809,17 +809,58 @@ module Yast
       ::FileUtils.rm_r(File.join(Installation.destdir, BACKUP_DIR), :force => true, :secure => true)
     end
 
-    # restores backup
+    # Restores the available backup(s)
+    #
+    # If the VERSION_ID in the backup os-release file matches with the value stored in
+    # /etc/os-release (see bsc#1097297), the available backup scripts (restores-*.sh) will be
+    # executed **in the expected order** (see bsc#1089643).
+    #
+    # @see #restore_backup?
     def restore_backup
-      log.info "Restoring backup"
-      mounted_root = Installation.destdir
-      script_glob = File.join(mounted_root, BACKUP_DIR,"restore-*.sh")
-      # sort the scripts to execute them in the expected order
-      ::Dir.glob(script_glob).sort.each do |path|
-        cmd = "sh #{path} #{File.join("/", mounted_root)}"
-        res = SCR.Execute(path(".target.bash_output"), cmd)
-        log.info "Restoring with script #{cmd} result: #{res}"
+      if restore_backup?
+        log.info "Restoring backup"
+
+        mounted_root = Installation.destdir
+        available_restore_scripts = ::Dir.glob(File.join(mounted_root, BACKUP_DIR, "restore-*.sh"))
+
+        available_restore_scripts.sort.each do |path|
+          cmd = "sh #{path} #{File.join("/", mounted_root)}"
+          res = SCR.Execute(path(".target.bash_output"), cmd)
+
+          log.info "Restoring with script #{cmd} result: #{res}"
+        end
+      else
+        log.error "Backup was not restored because its version info does not match"
       end
+    end
+
+    # Check if backup must be restored, based on the version info (bsc#1097297)
+    #
+    # @see #version_from
+    #
+    # @return [Boolean] true if update and backup have the same VERSION_ID; false otherwise
+    def restore_backup?
+      current_release = Pathname.new("#{Installation.destdir}/etc/os-release")
+      backed_release = Pathname.new("#{Installation.destdir}/#{BACKUP_DIR}/os-release")
+
+      version_from(current_release) == version_from(backed_release)
+    end
+
+    # Returns the ID and VERSION_ID from given file
+    #
+    # @see https://www.freedesktop.org/software/systemd/man/os-release.html
+    #
+    # @param file [File|Pathname] Operating system identification file
+    #
+    # @return [String] a string holding the ID and VERSION_ID or empty if something went wrong
+    def version_from(file)
+      content = file.read
+      id = content[/^ID=.*/].split("=", 2).last
+      version_id = content[/^VERSION_ID=.*/].split("=", 2).last
+
+      "#{id}-#{version_id}"
+    rescue
+      ""
     end
 
     publish :variable => :packages_to_install, :type => "integer"
