@@ -811,15 +811,15 @@ module Yast
 
     # Restores the available backup(s)
     #
-    # If the VERSION_ID in the backup os-release file matches with the value stored in
+    # If the ID and VERSION_ID in the backup os-release file matches with the values stored in
     # /etc/os-release (see bsc#1097297), the available backup scripts (restores-*.sh) will be
     # executed **in the expected order** (see bsc#1089643).
     #
     # @see #restore_backup?
     def restore_backup
-      if restore_backup?
-        log.info "Restoring backup"
+      log.info "Restoring the backup"
 
+      if restore_backup?
         mounted_root = Installation.destdir
         available_restore_scripts = ::Dir.glob(File.join(mounted_root, BACKUP_DIR, "restore-*.sh"))
 
@@ -838,10 +838,14 @@ module Yast
     #
     # @see #version_from
     #
-    # @return [Boolean] true if update and backup have the same VERSION_ID; false otherwise
+    # @return [Boolean] true when versions matches; false otherwise
     def restore_backup?
       current_release = Pathname.new("#{Installation.destdir}/etc/os-release")
-      backed_release = Pathname.new("#{Installation.destdir}/#{BACKUP_DIR}/os-release")
+      backed_release  = Pathname.new("#{Installation.destdir}/#{BACKUP_DIR}/os-release")
+      current_version = version_from(current_release)
+      backed_version  = version_from(backed_release)
+
+      log.info "Version expected: #{current_version}. Backup version: #{backed_version}"
 
       version_from(current_release) == version_from(backed_release)
     end
@@ -855,11 +859,11 @@ module Yast
     # @return [String] a string holding the ID and VERSION_ID or empty if something went wrong
     def version_from(file)
       content = file.read
-      id = content[/^ID=.*/].split("=", 2).last
-      version_id = content[/^VERSION_ID=.*/].split("=", 2).last
+      id = content[/^ID=.*/].split("=", 2).last.tr('"', '')
+      version_id = content[/^VERSION_ID=.*/].split("=", 2).last.tr('"', '')
 
       "#{id}-#{version_id}"
-    rescue
+    rescue SystemCallError
       ""
     end
 
@@ -907,7 +911,7 @@ module Yast
         Pathname.new("#{Installation.destdir}/etc/os-release"),
         Pathname.new("#{Installation.destdir}/#{BACKUP_DIR}")
       )
-    rescue
+    rescue SystemCallError
       nil
     end
 

@@ -84,6 +84,12 @@ describe Yast::Update do
       Yast::Update.create_backup('testing', [])
     end
 
+    it "does not crash when os-release file does not exists" do
+      allow(::FileUtils).to receive(:cp).and_raise(Errno::ENOENT)
+
+      expect { Yast::Update.create_backup('testing', []) }.to_not raise_error
+    end
+
     it "create tarball including given name with all paths added" do
       name = "test-backup"
       paths = ["a", "b"]
@@ -157,6 +163,8 @@ describe Yast::Update do
     let(:os_backup_release_content) { File.new("#{DATA_DIR}/etc/tw-os-release").read }
 
     before do
+      allow(Yast::Update.log).to receive(:info).and_call_original
+
       allow(::Dir).to receive(:glob).and_return(["restore-a.sh", "restore-b.sh"])
 
       allow(Pathname).to receive(:new)
@@ -178,6 +186,14 @@ describe Yast::Update do
       Yast::Update.restore_backup
     end
 
+    context "when any file does not exists" do
+      it "does not crash" do
+        allow(os_backup_release_pathname).to receive(:read).and_raise(Errno::ENOENT)
+
+        expect { Yast::Update.restore_backup }.to_not raise_error
+      end
+    end
+
     context "when the release info match" do
       let(:os_backup_release_content) { os_release_content }
 
@@ -192,8 +208,11 @@ describe Yast::Update do
     end
 
     context "when the release info does not match" do
-      it "logs an error" do
-        expect(Yast::Update.log).to receive(:error).with(/not restored/)
+      it "logs info and error" do
+        expect(Yast::Update.log).to receive(:info)
+          .with("Version expected: opensuse-leap-15.0. Backup version: opensuse-tumbleweed-20180911")
+          .and_call_original
+        expect(Yast::Update.log).to receive(:error).with(/not restored/).and_call_original
 
         Yast::Update.restore_backup
       end
