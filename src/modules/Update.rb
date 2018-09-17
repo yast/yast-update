@@ -773,32 +773,40 @@ module Yast
     end
 
     BACKUP_DIR = "var/adm/backup/system-upgrade"
-    # Creates backup with name based on `name` contaings everything
-    # matching globs in `paths`.
-    # @param name[String] name for backup file. Use a number prefix to run
-    #   the restore scripts in the expected order. Use a bash friendly name ;)
+
+    # Creates the backup with name based on `name` containing everything matching globs in `paths`
+    #
     # @note Can be called only after target root is mounted.
     #
+    # @param name [String] name for backup file. Use a number prefix to run the restore scripts in
+    #   the expected order. Use a bash friendly name ;)
+    # @param paths [Array<String>] paths to files that must be included
+    #
     # @example to store repos file and credentials directory
-    #   Update.create_backup("0100-repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
+    #   Yast::Update.create_backup("0100-repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
     def create_backup(name, paths)
-      log.info "Creating tarball for #{name} including #{paths}"
       mounted_root = Installation.destdir
 
+      # Copy the os-release file (bsc#1097297)
+      log.info "Copying the os-release file"
+      copy_os_release
+
+      log.info "Creating the tarball for #{name} including #{paths}"
       tarball_path = File.join(BACKUP_DIR, "#{name}.tar.gz")
       root_tarball_path = File.join(mounted_root, tarball_path)
       create_tarball(root_tarball_path, mounted_root, paths)
 
+      log.info "Creating the restore script for #{name}"
       script_path = File.join(mounted_root, BACKUP_DIR, "restore-#{name}.sh")
       create_restore_script(script_path, tarball_path, paths)
     end
 
-    # clean backup content. Usefull to clean up all content before creating new backup
+    # Removes the backup content
+    #
+    # Usefull to clean up **ALL** content in BACKUP_DIR before creating a new backup.
     def clean_backup
       log.info "Cleaning backup dir"
-      mounted_root = Installation.destdir
-      ::FileUtils.rm_r(File.join(mounted_root, BACKUP_DIR),
-        :force => true, :secure => true)
+      ::FileUtils.rm_r(File.join(Installation.destdir, BACKUP_DIR), :force => true, :secure => true)
     end
 
     # restores backup
@@ -849,6 +857,18 @@ module Yast
     publish :function => :restore_backup, :type => "void ()"
 
   private
+
+    # Includes the os-release file to backup
+    #
+    # @see https://www.freedesktop.org/software/systemd/man/os-release.html
+    def copy_os_release
+      ::FileUtils.cp(
+        Pathname.new("#{Installation.destdir}/etc/os-release"),
+        Pathname.new("#{Installation.destdir}/#{BACKUP_DIR}")
+      )
+    rescue
+      nil
+    end
 
     def create_tarball(tarball_path, root, paths)
       # tar reports an error if a file does not exist.

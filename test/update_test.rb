@@ -62,12 +62,26 @@ describe Yast::Update do
 
   describe "#create_backup" do
     before(:each) do
+      allow(::FileUtils).to receive(:cp)
       allow(::FileUtils).to receive(:mkdir_p)
       allow(::File).to receive(:write)
       allow(::FileUtils).to receive(:chmod)
       allow(::File).to receive(:exist?).and_return(true)
+      allow(Pathname).to receive(:new)
       allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /^tar /).
         and_return({"exit" => 0})
+    end
+
+    let(:os_release_pathname) { double }
+
+    it "copies the release info file" do
+      allow(Pathname).to receive(:new)
+        .with("#{Yast::Installation.destdir}/etc/os-release")
+        .and_return(os_release_pathname)
+
+      expect(::FileUtils).to receive(:cp).with(os_release_pathname, anything)
+
+      Yast::Update.create_backup('testing', [])
     end
 
     it "create tarball including given name with all paths added" do
