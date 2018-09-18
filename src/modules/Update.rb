@@ -285,7 +285,7 @@ module Yast
               found = Builtins.find(to_install) { |u| u == i }
               found != nil
             end
-            @_products_compatible = equal_product != nil 
+            @_products_compatible = equal_product != nil
             # no product name found
             # bugzilla #218720, valid without testing according to comment #10
           else
@@ -430,7 +430,7 @@ module Yast
 
       # Remove 'Beta...' from product release
       if Builtins.regexpmatch(old_name, "Beta")
-        old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Beta.*$", "\\1") 
+        old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Beta.*$", "\\1")
         # Remove 'Alpha...' from product release
       elsif Builtins.regexpmatch(old_name, "Alpha")
         old_name = Builtins.regexpsub(old_name, "^(.*)[ \t]+Alpha.*$", "\\1")
@@ -467,7 +467,7 @@ module Yast
             Installation.installedVersion,
             "major",
             Builtins.tointeger(inst_ver)
-          ) 
+          )
           # openSUSE
         elsif Builtins.regexpmatch(inst_ver, "^[0123456789]+.[0123456789]+$")
           Ops.set(
@@ -550,7 +550,7 @@ module Yast
             Ops.subtract(num, 1),
             0
           )
-        end 
+        end
         # default for !Stage::normal
       else
         update_to_source = Packages.GetBaseSourceID
@@ -624,7 +624,7 @@ module Yast
             Installation.updateVersion,
             "major",
             Builtins.tointeger(new_ver)
-          ) 
+          )
           # openSUSE
         elsif Builtins.regexpmatch(new_ver, "^[0123456789]+.[0123456789]$")
           Ops.set(
@@ -773,45 +773,98 @@ module Yast
     end
 
     BACKUP_DIR = "var/adm/backup/system-upgrade"
-    # Creates backup with name based on `name` contaings everything
-    # matching globs in `paths`.
-    # @param name[String] name for backup file. Use a number prefix to run
-    #   the restore scripts in the expected order. Use a bash friendly name ;)
+
+    # Creates the backup with name based on `name` containing everything matching globs in `paths`
+    #
     # @note Can be called only after target root is mounted.
     #
+    # @param name [String] name for backup file. Use a number prefix to run the restore scripts in
+    #   the expected order. Use a bash friendly name ;)
+    # @param paths [Array<String>] paths to files that must be included
+    #
     # @example to store repos file and credentials directory
-    #   Update.create_backup("0100-repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
+    #   Yast::Update.create_backup("0100-repos", ["/etc/zypp/repos.d/*", "/etc/zypp/credentials"])
     def create_backup(name, paths)
-      log.info "Creating tarball for #{name} including #{paths}"
       mounted_root = Installation.destdir
 
+      # Copy the os-release file (bsc#1097297)
+      log.info "Copying the os-release file"
+      copy_os_release
+
+      log.info "Creating the tarball for #{name} including #{paths}"
       tarball_path = File.join(BACKUP_DIR, "#{name}.tar.gz")
       root_tarball_path = File.join(mounted_root, tarball_path)
       create_tarball(root_tarball_path, mounted_root, paths)
 
+      log.info "Creating the restore script for #{name}"
       script_path = File.join(mounted_root, BACKUP_DIR, "restore-#{name}.sh")
       create_restore_script(script_path, tarball_path, paths)
     end
 
-    # clean backup content. Usefull to clean up all content before creating new backup
+    # Removes the backup content
+    #
+    # Usefull to clean up **ALL** content in BACKUP_DIR before creating a new backup.
     def clean_backup
       log.info "Cleaning backup dir"
-      mounted_root = Installation.destdir
-      ::FileUtils.rm_r(File.join(mounted_root, BACKUP_DIR),
-        :force => true, :secure => true)
+      ::FileUtils.rm_r(File.join(Installation.destdir, BACKUP_DIR), :force => true, :secure => true)
     end
 
-    # restores backup
+    # Restores the available backup(s)
+    #
+    # If the ID and VERSION_ID in the backup os-release file matches with the values stored in
+    # /etc/os-release (see bsc#1097297), the available backup scripts (restores-*.sh) will be
+    # executed **in the expected order** (see bsc#1089643).
+    #
+    # @see #restore_backup?
     def restore_backup
-      log.info "Restoring backup"
-      mounted_root = Installation.destdir
-      script_glob = File.join(mounted_root, BACKUP_DIR,"restore-*.sh")
-      # sort the scripts to execute them in the expected order
-      ::Dir.glob(script_glob).sort.each do |path|
-        cmd = "sh #{path} #{File.join("/", mounted_root)}"
-        res = SCR.Execute(path(".target.bash_output"), cmd)
-        log.info "Restoring with script #{cmd} result: #{res}"
+      log.info "Restoring the backup"
+
+      if restore_backup?
+        mounted_root = Installation.destdir
+        available_restore_scripts = ::Dir.glob(File.join(mounted_root, BACKUP_DIR, "restore-*.sh"))
+
+        available_restore_scripts.sort.each do |path|
+          cmd = "sh #{path} #{File.join("/", mounted_root)}"
+          res = SCR.Execute(path(".target.bash_output"), cmd)
+
+          log.info "Restoring with script #{cmd} result: #{res}"
+        end
+      else
+        log.error "Backup was not restored because its version info does not match"
       end
+    end
+
+    # Check if backup must be restored, based on the version info (bsc#1097297)
+    #
+    # @see #version_from
+    #
+    # @return [Boolean] true when versions matches; false otherwise
+    def restore_backup?
+      current_release = Pathname.new("#{Installation.destdir}/etc/os-release")
+      backed_release  = Pathname.new("#{Installation.destdir}/#{BACKUP_DIR}/os-release")
+      current_version = version_from(current_release)
+      backed_version  = version_from(backed_release)
+
+      log.info "Version expected: #{current_version}. Backup version: #{backed_version}"
+
+      version_from(current_release) == version_from(backed_release)
+    end
+
+    # Returns the ID and VERSION_ID from given file
+    #
+    # @see https://www.freedesktop.org/software/systemd/man/os-release.html
+    #
+    # @param file [File|Pathname] Operating system identification file
+    #
+    # @return [String] a string holding the ID and VERSION_ID or empty if something went wrong
+    def version_from(file)
+      content = file.read
+      id = content[/^ID=.*/].split("=", 2).last.tr('"', '')
+      version_id = content[/^VERSION_ID=.*/].split("=", 2).last.tr('"', '')
+
+      "#{id}-#{version_id}"
+    rescue SystemCallError
+      ""
     end
 
     publish :variable => :packages_to_install, :type => "integer"
@@ -849,6 +902,18 @@ module Yast
     publish :function => :restore_backup, :type => "void ()"
 
   private
+
+    # Includes the os-release file to backup
+    #
+    # @see https://www.freedesktop.org/software/systemd/man/os-release.html
+    def copy_os_release
+      ::FileUtils.cp(
+        Pathname.new("#{Installation.destdir}/etc/os-release"),
+        Pathname.new("#{Installation.destdir}/#{BACKUP_DIR}")
+      )
+    rescue SystemCallError
+      nil
+    end
 
     def create_tarball(tarball_path, root, paths)
       # tar reports an error if a file does not exist.

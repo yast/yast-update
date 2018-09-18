@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 17 12:20:58 UTC 2018 - dgonzalez@suse.com
+
+- Avoid to restore old backups when upgrade fails (bsc#1097297)
+- 4.1.3
+
+-------------------------------------------------------------------
 Tue Sep 11 15:34:53 CEST 2018 - aschnell@suse.com
 
 - do not translate snapshot description (bsc#1092757)
