@@ -189,6 +189,7 @@ describe Yast::Update do
     let(:os_backup_release_pathname) { double }
     let(:os_release_content) { File.new("#{DATA_DIR}/etc/leap-15-os-release").read }
     let(:os_backup_release_content) { File.new("#{DATA_DIR}/etc/tw-os-release").read }
+    let(:backup_dir) { "#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}" }
 
     before do
       allow(Yast::Update.log).to receive(:info).and_call_original
@@ -199,7 +200,7 @@ describe Yast::Update do
         .with("#{Yast::Installation.destdir}/etc/os-release")
         .and_return(os_release_pathname)
       allow(Pathname).to receive(:new)
-        .with("#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}/os-release")
+        .with("#{backup_dir}/os-release")
         .and_return(os_backup_release_pathname)
       allow(os_release_pathname).to receive(:read).and_return(os_release_content)
       allow(os_backup_release_pathname).to receive(:read).and_return(os_backup_release_content)
@@ -209,7 +210,7 @@ describe Yast::Update do
       expect(Pathname).to receive(:new)
         .with("#{Yast::Installation.destdir}/etc/os-release")
       expect(Pathname).to receive(:new)
-        .with("#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}/os-release")
+        .with("#{backup_dir}/os-release")
 
       Yast::Update.restore_backup
     end
