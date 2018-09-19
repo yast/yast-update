@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 19 16:52:02 CEST 2018 - schubi@suse.de
+
+- Fixed crash while writing backup (bsc#1108934)
+- 4.1.4
+
+-------------------------------------------------------------------
 Mon Sep 17 12:20:58 UTC 2018 - dgonzalez@suse.com
 
 - Avoid to restore old backups when upgrade fails (bsc#1097297)
