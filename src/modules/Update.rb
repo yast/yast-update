@@ -788,8 +788,8 @@ module Yast
       mounted_root = Installation.destdir
 
       # ensure directory exists
-      backup_dir = File.join(mounted_root, BACKUP_DIR)
-      ::FileUtils.mkdir_p(backup_dir) unless ::Dir.exist?(backup_dir)
+      backup_dir = Pathname.new("#{mounted_root}/#{BACKUP_DIR}")
+      ::FileUtils.mkdir_p(backup_dir) unless backup_dir.exist?
 
       # Copy the os-release file (bsc#1097297)
       log.info "Copying the os-release file"
