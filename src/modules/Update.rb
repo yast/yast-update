@@ -787,6 +787,10 @@ module Yast
     def create_backup(name, paths)
       mounted_root = Installation.destdir
 
+      # ensure directory exists
+      backup_dir = Pathname.new("#{mounted_root}/#{BACKUP_DIR}")
+      ::FileUtils.mkdir_p(backup_dir) unless backup_dir.exist?
+
       # Copy the os-release file (bsc#1097297)
       log.info "Copying the os-release file"
       copy_os_release
@@ -919,9 +923,6 @@ module Yast
       # tar reports an error if a file does not exist.
       # So we have to check this before.
       existing_paths = paths.select { |p| File.exist?(File.join(root, p)) }
-
-      # ensure directory exists
-      ::FileUtils.mkdir_p(File.dirname(tarball_path))
 
       paths_without_prefix = existing_paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
 

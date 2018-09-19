@@ -67,12 +67,40 @@ describe Yast::Update do
       allow(::File).to receive(:write)
       allow(::FileUtils).to receive(:chmod)
       allow(::File).to receive(:exist?).and_return(true)
-      allow(Pathname).to receive(:new)
+      allow(Pathname).to receive(:new).and_return(double("Pathname", exist?: true))
       allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /^tar /).
         and_return({"exit" => 0})
     end
 
+    let(:backup_dir) { "#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}" }
+    let(:backup_dir_pathname) { double("Pathname") }
     let(:os_release_pathname) { double }
+
+    context "when backup directory does not exit yet" do
+      before do
+        allow(Pathname).to receive(:new).with(backup_dir).and_return(backup_dir_pathname)
+        allow(backup_dir_pathname).to receive(:exist?).and_return(false)
+      end
+
+      it "creates it" do
+        expect(::FileUtils).to receive(:mkdir_p).with(backup_dir_pathname)
+
+        Yast::Update.create_backup("test", [])
+      end
+    end
+
+    context "when backup directory is alreday present" do
+      before do
+        allow(Pathname).to receive(:new).with(backup_dir).and_return(backup_dir_pathname)
+        allow(backup_dir_pathname).to receive(:exist?).and_return(true)
+      end
+
+      it "does not create it again" do
+        expect(::FileUtils).to_not receive(:mkdir_p).with(backup_dir_pathname)
+
+        Yast::Update.create_backup("test", [])
+      end
+    end
 
     it "copies the release info file" do
       allow(Pathname).to receive(:new)
@@ -161,6 +189,7 @@ describe Yast::Update do
     let(:os_backup_release_pathname) { double }
     let(:os_release_content) { File.new("#{DATA_DIR}/etc/leap-15-os-release").read }
     let(:os_backup_release_content) { File.new("#{DATA_DIR}/etc/tw-os-release").read }
+    let(:backup_dir) { "#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}" }
 
     before do
       allow(Yast::Update.log).to receive(:info).and_call_original
@@ -171,7 +200,7 @@ describe Yast::Update do
         .with("#{Yast::Installation.destdir}/etc/os-release")
         .and_return(os_release_pathname)
       allow(Pathname).to receive(:new)
-        .with("#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}/os-release")
+        .with("#{backup_dir}/os-release")
         .and_return(os_backup_release_pathname)
       allow(os_release_pathname).to receive(:read).and_return(os_release_content)
       allow(os_backup_release_pathname).to receive(:read).and_return(os_backup_release_content)
@@ -181,7 +210,7 @@ describe Yast::Update do
       expect(Pathname).to receive(:new)
         .with("#{Yast::Installation.destdir}/etc/os-release")
       expect(Pathname).to receive(:new)
-        .with("#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}/os-release")
+        .with("#{backup_dir}/os-release")
 
       Yast::Update.restore_backup
     end
