@@ -131,3 +131,4 @@ Use this component if you wish to update your system.
 %{yast_controldir}/update.xml
 %{yast_clientdir}/update.rb
 %{yast_clientdir}/run_update.rb
+%license COPYING

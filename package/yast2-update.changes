@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Oct 16 16:37:07 CEST 2018 - schubi@suse.de
+
+- Added license file to spec.
+
+-------------------------------------------------------------------
 Wed Sep 19 16:52:02 CEST 2018 - schubi@suse.de
 
 - Fixed crash while writing backup (bsc#1108934)
