@@ -1531,9 +1531,23 @@ module Yast
         fstab = fstab_ref.value
         crtab = crtab_ref.value
 
-        # Update encryption devices with the names indicated in the crypttab file (bsc#1094963)
+        # Encryption names indicated in the crypttab file are stored in its correspondig encryption
+        # device to make possible to find a device by using the name specified in a fstab file,
+        # (bsc#1094963).
+        #
+        # For example, when fstab has:
+        #
+        #   /dev/disk/by-id/dm-name-cr_home / auto 0 0
+        #
+        # and the fstab device is searched by that name:
+        #
+        #   devicegraph.find_by_any_name("/dev/disk/by-id/dm-name-cr_home")
+        #
+        # The proper encryption device could be found if there is a encrypttion device where
+        #
+        #   encryption.crypttab_name  #=> "cr_home"
         crypttab_path = File.join(Installation.destdir, "/etc/crypttab")
-        Y2Storage::Encryption.use_crypttab_names(probed, crypttab_path)
+        Y2Storage::Encryption.save_crypttab_names(probed, crypttab_path)
 
         Update.GetProductName
 
