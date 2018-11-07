@@ -236,6 +236,25 @@ describe Yast::RootPart do
   end
 
   describe "#MountFSTab" do
+    before do
+      stub_storage(scenario)
+      # Mock the system lookup executed as last resort when the devicegraph
+      # doesn't contain the searched information
+      allow(Y2Storage::BlkDevice).to receive(:find_by_any_name)
+    end
+
+    let(:scenario) { "two-disks-two-btrfs.xml" }
+
+    let(:fstab) do
+      [
+        {
+          "file"=>"/home", "mntops"=>"defaults", "vfstype"=>"ext4", "spec"=> device_spec
+        }
+      ]
+    end
+
+    let(:device_spec) { nil }
+
     it "mounts /dev, /proc and /sys" do
       allow(subject).to receive(:AddMountedPartition)
 
@@ -246,6 +265,41 @@ describe Yast::RootPart do
       # call with empty list to only test the /dev, /proc and /sys mounting
       fstab = []
       subject.MountFSTab(fstab, "")
+    end
+
+    context "when the device spec has UUID= format" do
+      let(:device_spec) { "UUID=111-222-333" }
+
+      it "tries to mount by using UUID= spec" do
+        expect(subject).to receive(:FsckAndMount)
+          .with("/home", "UUID=111-222-333", anything, anything)
+
+        subject.MountFSTab(fstab, "")
+      end
+    end
+
+    context "when the device spec does not have UUID= format" do
+      context "and a device with such spec is not found" do
+        let(:device_spec) { "/dev/sdc1" }
+
+        it "tries to mount by using the given device spec" do
+          expect(subject).to receive(:FsckAndMount)
+            .with("/home", "/dev/sdc1", anything, anything)
+
+          subject.MountFSTab(fstab, "")
+        end
+      end
+
+      context "and a device with such spec is found" do
+        let(:device_spec) { "/dev/sda2" }
+
+        it "tries to mount by using its udev uuid name" do
+          expect(subject).to receive(:FsckAndMount)
+            .with("/home", "/dev/disk/by-uuid/d6e5c710-3067-48de-8363-433e54a9d0b5", anything, anything)
+
+          subject.MountFSTab(fstab, "")
+        end
+      end
     end
   end
 

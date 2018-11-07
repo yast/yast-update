@@ -1121,7 +1121,18 @@ module Yast
 
             mount_err = ""
             while mount_err != nil
-              mount_err = FsckAndMount(fspath, spec, mount_type, mntops)
+              # An encryption device might be probed with a name that does not match with the name
+              # indicated in the fstab file. For example, when the fstab entry is:
+              #
+              #   /dev/mapper/cr_home   /home   ext4  defaults  0   0
+              #
+              # and that encryption device was probed as /dev/mapper/cr-auto-1.
+              #
+              # In that case, to mount /dev/mapper/cr_home would fail because there is not a device
+              # in the inst-sys with such name. To avoid possible failures when mounting the fstab
+              # device, the safest device name is used instead, that is, UUID= format or its uuid
+              # udev name, see {#safest_device_name}.
+              mount_err = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
               if mount_err != nil
                 Builtins.y2error(
                   "mounting %1 (type %2) on %3 failed",
@@ -1531,9 +1542,23 @@ module Yast
         fstab = fstab_ref.value
         crtab = crtab_ref.value
 
-        # Update encryption devices with the names indicated in the crypttab file (bsc#1094963)
+        # Encryption names indicated in the crypttab file are stored in its correspondig encryption
+        # device to make possible to find a device by using the name specified in a fstab file,
+        # (bsc#1094963).
+        #
+        # For example, when fstab has:
+        #
+        #   /dev/disk/by-id/dm-name-cr_home / auto 0 0
+        #
+        # and the fstab device is searched by that name:
+        #
+        #   devicegraph.find_by_any_name("/dev/disk/by-id/dm-name-cr_home")
+        #
+        # The proper encryption device could be found if there is a encrypttion device where
+        #
+        #   encryption.crypttab_name  #=> "cr_home"
         crypttab_path = File.join(Installation.destdir, "/etc/crypttab")
-        Y2Storage::Encryption.use_crypttab_names(probed, crypttab_path)
+        Y2Storage::Encryption.save_crypttab_names(probed, crypttab_path)
 
         Update.GetProductName
 
@@ -2244,6 +2269,39 @@ module Yast
       dev = devicegraph.find_by_any_name(name)
       return nil if dev.nil? || !dev.respond_to?(:filesystem)
       dev.filesystem
+    end
+
+    # Safest device name to perform the mount action
+    #
+    # It will be the udev uuid name (e.g., /dev/disk/by-uuid/111-222-333) when the device
+    # spec has not UUID= format.
+    #
+    # @see udev_uuid
+    #
+    # @example
+    #
+    #   safest_device_name("UUID=111-222-333")    #=> "UUID=111-222-333"
+    #   safest_device_name("/dev/mapper/cr_home") #=> "/dev/disk/by-uuid/111-222-333"
+    #
+    # @param device_spec [String] e.g., "UUID=111-222-333", "/dev/sda2", "/dev/mapper/cr_home"
+    # @return [String] safest device name, e.g., "/dev/disk/by-uuid/111-222-333"
+    def safest_device_name(device_spec)
+      return device_spec if device_spec.start_with?("UUID=")
+
+      udev_uuid(device_spec) || device_spec
+    end
+
+    # Finds a device and returns its udev uuid name
+    #
+    # @param device_spec [String] e.g., "UUID=111-222-333", "/dev/sda2", "/dev/mapper/cr_home"
+    # @return [String, nil] uuid name (e.g., "/dev/disk/by-uuid/111-222-333") or nil if the
+    #   device is not found.
+    def udev_uuid(device_spec)
+      filesystem = fs_by_devicename(probed, device_spec)
+      return nil if filesystem.nil?
+
+      device = filesystem.blk_devices.first
+      device.udev_full_uuid
     end
 
     # Whether the given fstab spec corresponds to a device mounted by its kernel

@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.1.4
+Version:        4.1.5
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -41,10 +41,10 @@ BuildRequires:	yast2-installation-control
 # Needed for tests
 BuildRequires:  rubygem(rspec)
 
-# Encryption.use_crypttab_names
-BuildRequires:	yast2-storage-ng >= 4.0.186
-# Encryption.use_crypttab_names
-Requires:	yast2-storage-ng >= 4.0.186
+# Encryption.save_crypttab_names
+BuildRequires:	yast2-storage-ng >= 4.1.31
+# Encryption.save_crypttab_names
+Requires:	yast2-storage-ng >= 4.1.31
 # FSSnapshotStore
 Requires:	yast2 >= 3.1.126
 Requires:	yast2-installation
