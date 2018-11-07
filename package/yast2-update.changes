@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Mon Nov  5 17:10:54 UTC 2018 - jlopez@suse.com
+
+- Avoid to crash when crypttab contains entries where the LUKS is
+  given by UUID= format.
+- Avoid to crash when an encryption device is not probed with the
+  name indicated in a fstab entry.
+- Related to bsc#1094963.
+- 4.1.5
+
+-------------------------------------------------------------------
 Tue Oct 16 16:37:07 CEST 2018 - schubi@suse.de
 
 - Added license file to spec.
