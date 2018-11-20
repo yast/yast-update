@@ -446,8 +446,6 @@ module Yast
           Pkg::ResolvableInstall(package, :package)
         end
 
-        Packages.SelectProduct
-
         # FATE #301990, Bugzilla #238488
         # Control the upgrade process better
         update_sum = Pkg.PkgUpdateAll(GetUpdateConf())
