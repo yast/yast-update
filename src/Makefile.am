@@ -28,6 +28,10 @@ ylibclientdir = "${yast2dir}/lib/update/clients"
 ylibclient_DATA = \
   lib/update/clients/inst_update_partition_auto.rb
 
-EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(desktop_DATA) $(ylibclient_DATA)
+scalabledir = @icondir@/hicolor/scalable/apps
+scalable_DATA = \
+  icons/hicolor/scalable/apps/yast-update.svg
+
+EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(desktop_DATA) $(ylibclient_DATA) $(scalable_DATA)
 
 include $(top_srcdir)/Makefile.am.common
