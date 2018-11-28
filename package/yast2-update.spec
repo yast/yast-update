@@ -127,7 +127,7 @@ Use this component if you wish to update your system.
 %defattr(-,root,root)
 %dir %{yast_desktopdir}
 %{yast_desktopdir}/update.desktop
-%{_datadir}/icons/*
+%{yast_icondir}
 %dir %{yast_controldir}
 %{yast_controldir}/update.xml
 %{yast_clientdir}/update.rb
