@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.1.6
+Version:        4.1.7
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -127,6 +127,7 @@ Use this component if you wish to update your system.
 %defattr(-,root,root)
 %dir %{yast_desktopdir}
 %{yast_desktopdir}/update.desktop
+%{yast_icondir}
 %dir %{yast_controldir}
 %{yast_controldir}/update.xml
 %{yast_clientdir}/update.rb
