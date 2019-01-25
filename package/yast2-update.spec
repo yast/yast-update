@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.1.7
+Version:        4.1.8
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -25,6 +25,7 @@ Source0:        %{name}-%{version}.tar.bz2
 
 Group:          System/YaST
 License:        GPL-2.0-only
+Url:            http://github.com/yast/yast-update
 BuildRequires:	update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
