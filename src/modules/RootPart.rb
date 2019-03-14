@@ -36,6 +36,7 @@ require "fileutils"
 module Yast
   class RootPartClass < Module
     include Logger
+
     NON_MODULAR_FS = ["devtmpfs", "proc", "sysfs"]
 
     def main
@@ -66,6 +67,7 @@ module Yast
       Yast.include self, "partitioning/custom_part_dialogs.rb"
 =end
 
+      @system_analyzer = Y2Update::SystemAnalyzer.new(staging)
 
       # Selected root partition for the update or boot.
       @selectedRootPartition = ""
@@ -1971,72 +1973,21 @@ module Yast
 
       return if @didSearchForRootPartitions
 
-      modules_to_load = {
-        "xfs" => "XFS",
-        "ext3" => "Ext3",
-        "ext4" => "Ext4",
-        "btrfs" => "BtrFS",
-        "raid0" => "Raid 0",
-        "raid1" => "Raid 1",
-        "raid5" => "Raid 5",
-        "raid6" => "Raid 6",
-        "raid10" => "Raid 10",
-        "dm-multipath" => "Multipath",
-        "dm-mod" => "DM",
-        "dm-snapshot" => "DM Snapshot",
-      }
+      system_analyzer.run
 
-      modules_to_load.each do |module_to_load, show_name|
-        ModuleLoading.Load(module_to_load, "", "Linux", show_name, Linuxrc.manual, true)
-      end
-
-      #	Storage::ActivateEvms();
-
-      # prepare progress-bar
-      if UI.WidgetExists(Id("search_progress"))
-        UI.ReplaceWidget(
-          Id("search_progress"),
-          ProgressBar(
-            Id("search_pb"),
-            _("Evaluating root partition. One moment please..."),
-            100,
-            0
-          )
-        )
-      end
-
-      @rootPartitions = {}
-      @numberOfValidRootPartitions = 0
-
-      # all formatted partitions and lvs on all devices
-      filesystems = probed.blk_filesystems.reject { |fs| fs.type.is?(:swap) }
-
-      counter = 0
-      filesystems.each_with_index do |fs, counter|
-        if UI.WidgetExists(Id("search_progress"))
-          percent = 100 * (counter + 1 / filesystems.size)
-          UI.ChangeWidget(Id("search_pb"), :Value, percent)
-        end
-
-        freshman = {}
-
-        log.debug("Checking filesystem: #{fs}")
-        freshman = CheckPartition(fs)
-
-        @rootPartitions[fs.blk_devices[0].name] = freshman
-        @numberOfValidRootPartitions += 1 if freshman[:valid]
-      end
-
-      # 100%
-      if UI.WidgetExists(Id("search_progress"))
-        UI.ChangeWidget(Id("search_pb"), :Value, 100)
-      end
+      @rootPartitions = filesystems_data
+      @numberOfValidRootPartitions = system_analyzer.root_filesystems.size
 
       @didSearchForRootPartitions = true
 
       Builtins.y2milestone("rootPartitions: %1", @rootPartitions)
 
       nil
+    end
+
+
+    def filesystems_data
+
     end
 
     def GetDistroArch
@@ -2122,6 +2073,8 @@ module Yast
     publish :function => :Detect, :type => "void ()"
 
   private
+
+    attr_reader :system_analyzer
 
     def probed
       Y2Storage::StorageManager.instance.probed
