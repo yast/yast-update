@@ -37,20 +37,6 @@ module Y2Update
       @devicegraph = devicegraph
     end
 
-    # def filesystems
-    #   @filesystems ||= find_all_filesystems
-    # end
-
-    # def root_filesystems
-    #   @root_filesystems ||= find_root_filesystems
-    # end
-
-    # def data_for(filesystem)
-    #   read_filesystems_data
-
-    #   @filesystems_data[filesystem.sid]
-    # end
-
     def filesystems_data
       @filesystems_data ||= read_filesystems_data
     end
@@ -146,7 +132,26 @@ module Y2Update
     end
 
     def read_filesystem_data(filesystem)
-      filesytem_data = FilesystemData.new(filesystem)
+      mount = mount_filesystem?(filesystem)
+
+      FilesystemData.new(filesystem, mount: mount)
+    end
+
+    def mount_filesystem?(filesystem)
+      return false unless root_filesystem_type?(filesystem)
+
+      filesystem.type.is?(:jfs) ? mount_jfs_filesystem?(filesystem) : true
+    end
+
+    def root_filesystem_type?(filesystem)
+      filesystem.type.root_ok? || filesystem.type.legacy_root?
+    end
+
+    def pass_jfs_check?(filesystem)
+
+    end
+
+
 
       return filesystem_data unless root_filesystem_type?(filesystem)
 
