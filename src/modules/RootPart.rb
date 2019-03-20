@@ -29,6 +29,9 @@
 require "yast"
 require "yast2/fs_snapshot"
 require "yast2/fs_snapshot_store"
+require "y2update/action/find_roots"
+require "y2update/jfs_checker"
+require "y2update/dialog/mount_question"
 require "y2storage"
 
 require "fileutils"
@@ -66,8 +69,6 @@ module Yast
 =begin
       Yast.include self, "partitioning/custom_part_dialogs.rb"
 =end
-
-      @system_analyzer = Y2Update::SystemAnalyzer.new(staging)
 
       # Selected root partition for the update or boot.
       @selectedRootPartition = ""
@@ -391,87 +392,6 @@ module Yast
       ret
     end
 
-    # Function checks the device and returns whether it is OK or not.
-    # The read-only FS check is performed for jfs only and only one for
-    # one device.
-    #
-    # @param [String] mount_type "jfs", "ext2" or "reiser"
-    # @param [String] device, such as /dev/hda3 or /dev/sda8
-    # @param [string &] error_message (a reference to string)
-    # @return [Boolean] if successfull or if user forces it
-    def RunFSCKonJFS(mount_type, device, error_message)
-      # #176292, run fsck before jfs is mounted
-      if mount_type == "jfs" && device != ""
-        if Builtins.contains(@already_checked_jfs_partitions, device)
-          Builtins.y2milestone("Device %1 has been already checked...", device)
-          return true
-        end
-
-        UI.OpenDialog(
-          Label(Builtins.sformat(_("Checking file system on %1..."), device))
-        )
-
-        Builtins.y2milestone("Running fsck on %1", device)
-        # -n == Check read only, make no changes to the file system.
-        cmd = Convert.to_map(
-          SCR.Execute(
-            path(".target.bash_output"),
-            Builtins.sformat("fsck.jfs -n %1", device)
-          )
-        )
-
-        UI.CloseDialog
-
-        # failed
-        if Ops.get(cmd, "exit") != 0
-          Builtins.y2error("Result: %1", cmd)
-          error_message.value = Builtins.tostring(Ops.get(cmd, "stderr"))
-
-          details = ""
-          if Ops.get_string(cmd, "stdout", "") != ""
-            details = Ops.add(details, Ops.get_string(cmd, "stdout", ""))
-          end
-          if Ops.get_string(cmd, "stderr", "") != ""
-            details = Ops.add(
-              Ops.add(details == "" ? "" : "\n", details),
-              Ops.get_string(cmd, "stderr", "")
-            )
-          end
-
-          return AnyQuestionAnyButtonsDetails(
-            # popup headline
-            _("File System Check Failed"),
-            Builtins.sformat(
-              # popup question (continue/cancel dialog)
-              # %1 is a device name such as /dev/hda5
-              _(
-                "The file system check of device %1 has failed.\n" +
-                  "\n" +
-                  "Do you want to continue mounting the device?\n"
-              ),
-              device
-            ),
-            Label.ContinueButton,
-            # button
-            _("&Skip Mounting"),
-            details
-          )
-          # succeeded
-        else
-          # add device into the list of already checked partitions (with exit status 0);
-          @already_checked_jfs_partitions = Builtins.add(
-            @already_checked_jfs_partitions,
-            device
-          )
-          Builtins.y2milestone("Result: %1", cmd)
-          return true
-        end
-      end
-
-      true
-    end
-
-
     # Mount partition on specified mount point
     # @param mount_point [String] path to mount the partition at
     # @param device [String] device to mount, in the format of the first field of fstab
@@ -500,19 +420,8 @@ module Yast
         )
       end
 
-      error_message = nil
-      if !(
-          error_message_ref = arg_ref(error_message);
-          _RunFSCKonJFS_result = RunFSCKonJFS(
-            mount_type,
-            device,
-            error_message_ref
-          );
-          error_message = error_message_ref.value;
-          _RunFSCKonJFS_result
-        )
-        return error_message
-      end
+      error_message = jfs_check_error(device)
+      return error_message if error_message
 
       mnt_opts = cleaned_mount_options(fsopts)
 
@@ -542,8 +451,22 @@ module Yast
       end
     end
 
+    def jfs_check_error(device_name)
+      return nil if @already_checked_jfs_partitions.include?(device_name)
 
+      filesystem = probed.find_by_name(device_name).filesystem
 
+      checker = Y2Update::JFSChecker.new(filesystem)
+
+      @already_checked_jfs_partitions << device_name
+
+      return nil if checker.valid?
+
+      details = checker.error_message(stdout: true)
+      dialog = Y2Update::Dialog::MountQuestion.new(device_name, details)
+
+      dialog.run ? nil : checker.error_message
+    end
 
     # Check filesystem on a partition and mount the partition on specified mount
     #  point
@@ -1794,176 +1717,6 @@ module Yast
       ret
     end
 
-    # storage-ng
-    # this is the closest equivalent we have in storage-ng
-    def device_type(device)
-      if device.is?(:partition)
-        device.id.to_human_string
-      elsif device.is?(:lvm_lv)
-        "LV"
-      else
-        nil
-      end
-    end
-
-    # Check a root partition and return map with information (see
-    # variable rootPartitions).
-    def CheckPartition(filesystem)
-      device = filesystem.blk_devices[0]
-      p_dev = device.name
-
-      freshman = {
-        valid:  false,
-        name:   "unknown",
-        arch:   "unknown",
-        label:  filesystem.label,
-        fs:     filesystem.type.to_sym,
-        fstype: device_type(device)
-      }
-
-      # possible root FS
-      if filesystem.type.root_ok? || filesystem.type.legacy_root?
-        mount_type = filesystem.type.to_s
-
-        error_message = nil
-        log.debug("Running RunFSCKonJFS with mount_type: #{mount_type} and device: #{p_dev}")
-        if !(
-            error_message_ref = arg_ref(error_message);
-            _RunFSCKonJFS_result = RunFSCKonJFS(
-              mount_type,
-              p_dev,
-              error_message_ref
-            );
-            error_message = error_message_ref.value;
-            _RunFSCKonJFS_result
-          )
-          freshman[:valid] = false
-          log.debug("Returning not valid partition: #{freshman}")
-          return freshman
-        end
-
-        # mustn't be empty and must be modular
-        if mount_type != "" && !NON_MODULAR_FS.include?(mount_type)
-          log.debug("Calling modprobe #{mount_type}")
-          SCR.Execute(path(".target.modprobe"), mount_type, "")
-        end
-
-        # storage-ng: not sure if we need to introduce something equivalent
-=begin
-        log.debug("Removing #{p_dev}")
-        Storage.RemoveDmMapsTo(p_dev)
-=end
-
-        # mount (read-only) partition to Installation::destdir
-        log.debug("Mounting #{[p_dev, Installation.destdir, Installation.mountlog].inspect}")
-        mount =
-          SCR.Execute(
-            path(".target.mount"),
-            [p_dev, Installation.destdir, Installation.mountlog],
-            "-o ro"
-          )
-
-        if Convert.to_boolean(mount)
-          # Is this a root partition, does /etc/fstab exists?
-          log.debug("Checking /etc/fstab in #{Installation.destdir}")
-          if Ops.greater_than(
-              SCR.Read(
-                path(".target.size"),
-                Ops.add(Installation.destdir, "/etc/fstab")
-              ),
-              0
-            )
-            Builtins.y2milestone("found fstab on %1", p_dev)
-
-            fstab = []
-            crtab = []
-
-            fstab_ref = arg_ref(fstab)
-            crtab_ref = arg_ref(crtab)
-            read_fstab_and_cryptotab(fstab_ref, crtab_ref, p_dev)
-            fstab = fstab_ref.value
-            crtab = crtab_ref.value
-            Update.GetProductName
-
-            fstab = Builtins.filter(fstab) do |p|
-              Ops.get_string(p, "file", "") == "/"
-            end
-
-            if Builtins.size(Ops.get_string(fstab, [0, "spec"], "")) == 0
-              Builtins.y2warning("Cannot find / entry in fstab %1", fstab)
-            end
-
-            freshman[:valid] = fstab_entry_matches?(fstab[0], filesystem)
-
-            if Mode.autoinst
-              # we dont care about the other checks in autoinstallation
-              SCR.Execute(path(".target.umount"), Installation.destdir)
-              return deep_copy(freshman)
-            end
-
-            freshman[:valid] = false if !Update.IsProductSupportedForUpgrade
-
-            # Get installed release name
-            # TRANSLATORS: label for an unknown installed system
-            freshman[:name] = Update.installed_product || _("Unknown")
-            Builtins.y2debug("release: %1", freshman[:name])
-
-            # Right architecture?
-            freshman[:arch] = GetArchOfELF(Installation.destdir + "/bin/bash")
-            instsys_arch = GetArchOfELF("/bin/bash")
-
-            # `arch_valid, see bugzilla #288201
-            # installed /bin/bash and the one from inst-sys are matching
-            if freshman[:arch] == instsys_arch
-              Builtins.y2milestone("Architecture (%1) is valid", instsys_arch)
-              freshman[:arch_valid] = true
-
-              # both are PPC, bugzilla #249791
-            elsif ["ppc", "ppc64"].include?(freshman[:arch]) &&
-                ["ppc", "ppc64"].include?(instsys_arch)
-              Builtins.y2milestone(
-                "Architecture for partition %1 is %2, upgrading %3",
-                p_dev, freshman[:arch], instsys_arch
-              )
-              freshman[:arch_valid] = true
-
-              # Architecture is not matching
-            else
-              Builtins.y2milestone(
-                "Architecture for partition %1 is %2, upgrading %3",
-                p_dev, freshman[:arch], instsys_arch
-              )
-              freshman[:arch_valid] = false
-            end
-
-            if !freshman[:arch_valid]
-              log.info "Architecture is not valid -> the whole partition is not valid"
-              freshman[:valid] = false
-            end
-
-            if IncompleteInstallationDetected(Installation.destdir)
-              log.info "Incomplete installation detected, partition is not valid"
-              freshman[:valid] = false
-            end
-
-            Builtins.y2milestone(
-              "Partition is valid: %1, arch is valid: %2",
-              Ops.get_boolean(freshman, :valid, false),
-              Ops.get_boolean(freshman, :arch_valid, false)
-            )
-          end
-
-          # unmount partition
-          SCR.Execute(path(".target.umount"), Installation.destdir)
-        end
-      end
-
-      log.info("#{filesystem} #{freshman}")
-
-      deep_copy(freshman)
-    end
-
-
     # Find all valid root partitions and place the result in rootPartitions.
     # The partitions are mounted and unmounted again (to Installation::destdir).
     # Loads a bunch of kernel modules.
@@ -1973,10 +1726,13 @@ module Yast
 
       return if @didSearchForRootPartitions
 
-      system_analyzer.run
+      action = Y2Update::Action::FindRoots.new(probed)
+      action.run
 
-      @rootPartitions = filesystems_data
-      @numberOfValidRootPartitions = system_analyzer.root_filesystems.size
+      @rootPartitions = action.filesystems_data.map { |d| filesystem_data_to_hash(d) }
+      @numberOfValidRootPartitions = action.root_filesystems_data.size
+
+      save_checked_jfs(action.filesystems_data)
 
       @didSearchForRootPartitions = true
 
@@ -1985,9 +1741,23 @@ module Yast
       nil
     end
 
+    def filesystem_data_to_hash(filesystem_data)
+      {
+        valid:  filesystem_data.valid_root?,
+        name:   filesystem_data.release_name,
+        arch:   filesystem_data.arch,
+        label:  filesystem_data.label,
+        fs:     filesystem_data.type.to_sym,
+        fstype: filesystem_data.device_type
+      }
+    end
 
-    def filesystems_data
+    def save_checked_jfs(filesystems_data)
+      jfs_filesystems_data = filesystems_data.select { |d| d.type.is?(:jfs) }
 
+      devices = jfs_filesystems_data.map { |d| d.device.name }
+
+      @already_checked_jfs_partitions.concat(devices)
     end
 
     def GetDistroArch
