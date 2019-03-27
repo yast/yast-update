@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 26 16:29:07 UTC 2019 - José Iván López González <jlopez@suse.com>
+
+- Remove code related to device name translations.
+- 4.2.0
+
+-------------------------------------------------------------------
 Thu Jan 24 18:49:24 UTC 2019 - lslezak@suse.cz
 
 - Added URL tag to the spec file (bsc#1097957)

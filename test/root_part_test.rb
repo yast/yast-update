@@ -69,10 +69,10 @@ describe Yast::RootPart do
         end
 
         it "returns a string including the device and the error " do
-          result = subject.MountVarIfRequired(fstab, root_device, false)
+          result = subject.MountVarIfRequired(fstab, false)
           expect(result).to be_a(String)
           expect(result).to include("an error")
-          expect(result).to include(var_device)
+          expect(result).to include(var_spec)
         end
       end
 
@@ -82,7 +82,7 @@ describe Yast::RootPart do
         end
 
         it "returns nil" do
-          expect(subject.MountVarIfRequired(fstab, root_device, false)).to be_nil
+          expect(subject.MountVarIfRequired(fstab, false)).to be_nil
         end
       end
     end
@@ -90,33 +90,31 @@ describe Yast::RootPart do
     context "if there is no separate partition" do
       context "and no @/var subvolume" do
         let(:fstab) { fstab_sda2 }
-        let(:root_device) { "/dev/sda2" }
         let(:root_spec) { "UUID=d6e5c710-3067-48de-8363-433e54a9d0b5" }
 
         it "does not try to mount /var" do
           expect(subject).to_not receive(:FsckAndMount)
-          subject.MountVarIfRequired(fstab, root_device, false)
+          subject.MountVarIfRequired(fstab, false)
         end
 
         it "returns nil" do
-          expect(subject.MountVarIfRequired(fstab, root_device, false)).to be_nil
+          expect(subject.MountVarIfRequired(fstab, false)).to be_nil
         end
       end
 
       context "and there is a @/var subvolume" do
         let(:fstab) { fstab_sda1 }
-        let(:root_device) { "/dev/sda1" }
         let(:root_spec) { "UUID=0a0ebfa7-e1a8-45f2-ad53-495e192fcc8d" }
 
         # The old code did not support Btrfs properly, so it mounted the /var
         # subvolume as a partition, which produced big breakage.
         it "does not try to mount /var" do
           expect(subject).to_not receive(:FsckAndMount)
-          subject.MountVarIfRequired(fstab, root_device, false)
+          subject.MountVarIfRequired(fstab, false)
         end
 
         it "returns nil" do
-          expect(subject.MountVarIfRequired(fstab, root_device, false)).to be_nil
+          expect(subject.MountVarIfRequired(fstab, false)).to be_nil
         end
       end
     end
@@ -131,48 +129,32 @@ describe Yast::RootPart do
         ]
       end
 
-      context "that was mounted by UUID" do
-        let(:root_device) { "/dev/sda2" }
+      context "and the device is found in the system" do
         let(:root_spec) { "UUID=d6e5c710-3067-48de-8363-433e54a9d0b5" }
 
         let(:var_spec) { "UUID=c9510dc7-fb50-4f7b-bd84-886965c821f6" }
-        let(:var_device) { var_spec }
 
-        it "tries to mount /var by its UUID" do
-          expect(subject).to receive(:FsckAndMount).with("/var", var_device, "")
-          subject.MountVarIfRequired(fstab, root_device, false)
+        it "tries to mount /var" do
+          expect(subject).to receive(:FsckAndMount).with("/var", var_spec, "")
+          subject.MountVarIfRequired(fstab, false)
         end
 
         include_examples "mounting result"
       end
 
-      context "that was mounted by kernel device name" do
-        # Let's simulate the situation in which the disk used to have another name
-        let(:root_spec) { "/dev/sdb2" }
-        let(:root_device) { "/dev/sda2" }
+      context "and the device is not found in the system" do
+        let(:root_spec) { "/dev/sda2" }
 
-        context "and is in the same disk than /" do
-          let(:var_spec) { "/dev/sdb4" }
-          let(:var_device) { "/dev/sda4" }
+        let(:var_spec) { "/dev/sdc1" }
 
-          it "tries to mount /var by its adapted device name" do
-            expect(subject).to receive(:FsckAndMount).with("/var", var_device, "")
-            subject.MountVarIfRequired(fstab, root_device, false)
-          end
-
-          include_examples "mounting result"
+        it "does not try to mount /var" do
+          expect(subject).to_not receive(:FsckAndMount)
+          subject.MountVarIfRequired(fstab, false)
         end
 
-        context "and is in a different disk than / (two disks in total)" do
-          let(:var_spec) { "/dev/sda1" }
-          let(:var_device) { "/dev/sdb1" }
-
-          it "tries to mount /var by its adapted device name" do
-            expect(subject).to receive(:FsckAndMount).with("/var", var_device, "")
-            subject.MountVarIfRequired(fstab, root_device, false)
-          end
-
-          include_examples "mounting result"
+        it "returns an error" do
+          expect(subject.MountVarIfRequired(fstab, false))
+            .to match(/Unable to mount/)
         end
       end
     end
@@ -189,47 +171,32 @@ describe Yast::RootPart do
         ]
       end
 
-      context "that was mounted by UUID" do
-        let(:root_device) { "/dev/vg0/root" }
-        let(:root_spec) { "/dev/disk/by-uuid/5a0a-3387" }
+      context "and the LVM logical volume is found in the system" do
+        let(:root_spec) { "/dev/vg0/root" }
 
         let(:var_spec) { "/dev/disk/by-uuid/4b85-3de0" }
-        let(:var_device) { var_spec }
 
-        it "tries to mount /var by its UUID" do
-          expect(subject).to receive(:FsckAndMount).with("/var", var_device, "")
-          subject.MountVarIfRequired(fstab, root_device, false)
+        it "tries to mount /var" do
+          expect(subject).to receive(:FsckAndMount).with("/var", var_spec, "")
+          subject.MountVarIfRequired(fstab, false)
         end
 
         include_examples "mounting result"
       end
 
-      context "that was mounted by kernel device name" do
+      context "and the LVM logical volume is not found in the system" do
         let(:root_spec) { "/dev/vg0/root" }
-        let(:root_device) { "/dev/vg0/root" }
 
-        context "and the LV is not longer there" do
-          let(:var_spec) { "/dev/vg0/none" }
-          let(:var_device) { "/dev/vg0/none" }
+        let(:var_spec) { "/dev/disk/by-uuid/not-found" }
 
-          it "tries to mount /var by its old device name" do
-            expect(subject).to receive(:FsckAndMount).with("/var", var_device, "")
-            subject.MountVarIfRequired(fstab, root_device, false)
-          end
-
-          include_examples "mounting result"
+        it "does not try to mount /var" do
+          expect(subject).to_not receive(:FsckAndMount)
+          subject.MountVarIfRequired(fstab, false)
         end
 
-        context "and the LV is still there" do
-          let(:var_spec) { "/dev/vg0/var" }
-          let(:var_device) { "/dev/vg0/var" }
-
-          it "tries to mount /var by its device name" do
-            expect(subject).to receive(:FsckAndMount).with("/var", var_device, "")
-            subject.MountVarIfRequired(fstab, root_device, false)
-          end
-
-          include_examples "mounting result"
+        it "returns an error" do
+          expect(subject.MountVarIfRequired(fstab, false))
+            .to match(/Unable to mount/)
         end
       end
     end
