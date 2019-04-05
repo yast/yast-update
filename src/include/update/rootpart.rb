@@ -47,10 +47,6 @@ module Yast
       Yast.import "Report"
       Yast.import "Update"
       Yast.import "Installation"
-# storage-ng
-=begin
-      Yast.import "FileSystems"
-=end
       Yast.import "Mode"
       Yast.import "Product"
     end
@@ -180,7 +176,7 @@ module Yast
 
       # exact match
       if arch_1 == arch_2
-        return true 
+        return true
         # ppc exception
       elsif Builtins.contains(ppc_archs, arch_1) &&
           Builtins.contains(ppc_archs, arch_2)

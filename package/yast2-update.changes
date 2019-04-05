@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr  5 14:43:25 UTC 2019 - José Iván López González <jlopez@suse.com>
+
+- Remove obsolete code.
+- 4.2.1
+
+-------------------------------------------------------------------
 Tue Mar 26 16:29:07 UTC 2019 - José Iván López González <jlopez@suse.com>
 
 - Remove code related to device name translations.

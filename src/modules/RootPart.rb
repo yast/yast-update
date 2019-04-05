@@ -58,15 +58,6 @@ module Yast
       Yast.import "Stage"
       Yast.import "Wizard"
 
-# storage-ng
-# This include allows to use DlgUpdateCryptFs, which has not equivalent in
-# yast-storage-ng. So the whole method invoking DlgUpdateCryptFs should be
-# checked (it's hopefully useless now).
-=begin
-      Yast.include self, "partitioning/custom_part_dialogs.rb"
-=end
-
-
       # Selected root partition for the update or boot.
       @selectedRootPartition = ""
 
@@ -673,62 +664,6 @@ module Yast
       nil
     end
 
-    # Register a new cryptotab agent and read the configuration
-    # from Installation::destdir
-    def readCryptoTab(crtab)
-      crtab_file = Ops.add(Installation.destdir, "/etc/cryptotab")
-
-      if FileUtils.Exists(crtab_file)
-        SCR.RegisterAgent(
-          path(".target.etc.cryptotab"),
-          term(
-            :ag_anyagent,
-            term(
-              :Description,
-              term(:File, crtab_file),
-              "#\n", # Comment
-              false, # read-only
-              term(
-                :List,
-                term(
-                  :Tuple,
-                  term(:loop, term(:String, "^\t ")),
-                  term(:Separator, "\t "),
-                  term(:file, term(:String, "^\t ")),
-                  term(:Separator, "\t "),
-                  term(:mount, term(:String, "^\t ")),
-                  term(:Separator, "\t "),
-                  term(:vfstype, term(:String, "^\t ")),
-                  term(:Separator, "\t "),
-                  term(:opt1, term(:String, "^\t ")),
-                  term(:Separator, "\t "),
-                  term(:opt2, term(:String, "^ \t")),
-                  term(:Optional, term(:Whitespace)),
-                  term(:Optional, term(:the_rest, term(:String, "^\n")))
-                ),
-                "\n"
-              )
-            )
-          )
-        )
-
-        crtab.value = Convert.convert(
-          SCR.Read(path(".target.etc.cryptotab")),
-          :from => "any",
-          :to   => "list <map>"
-        )
-
-        SCR.UnregisterAgent(path(".target.etc.cryptotab"))
-      else
-        Builtins.y2milestone(
-          "No such file %1. Not using cryptotab.",
-          crtab_file
-        )
-      end
-
-      nil
-    end
-
     def FstabHasSeparateVar(fstab)
       var_device_fstab = (
         fstab_ref = arg_ref(fstab.value);
@@ -770,104 +705,21 @@ module Yast
       default_scr = WFM.SCRGetDefault
       new_scr = nil
       @backward_translation = {}
+      # /etc/cryptotab was deprecated in favor of /etc/crypttab
+      #
+      # crypttab file is processed by storage-ng, see {#MountPartitions}.
+      crtab.value = []
 
       if Stage.initial
         fstab_ref = arg_ref(fstab.value)
         readFsTab(fstab_ref)
         fstab.value = fstab_ref.value
-        crtab_ref = arg_ref(crtab.value)
-        readCryptoTab(crtab_ref)
-        crtab.value = crtab_ref.value
       else
         fstab.value = Convert.convert(
           SCR.Read(path(".etc.fstab")),
           :from => "any",
           :to   => "list <map>"
         )
-        crtab.value = Convert.convert(
-          SCR.Read(path(".etc.cryptotab")),
-          :from => "any",
-          :to   => "list <map>"
-        )
-      end
-
-      true
-    end
-
-
-    #
-    def PrepareCryptoTab(crtab, fstab)
-      crtab = deep_copy(crtab)
-      crypt_nb = 0
-
-      Builtins.foreach(crtab) do |mounts|
-        vfstype = Ops.get_string(mounts, "vfstype", "")
-        mntops = Ops.get_string(mounts, "opt2", "")
-        loop = Ops.get_string(mounts, "loop", "")
-        fspath = Ops.get_string(mounts, "mount", "")
-        device = Ops.get_string(mounts, "file", "")
-        Builtins.y2milestone(
-          "vfstype:%1 mntops:%2 loop:%3 fspath:%4 device:%5",
-          vfstype,
-          mntops,
-          loop,
-          fspath,
-          device
-        )
-        if !Builtins.issubstring(mntops, "noauto")
-          again = true
-          while again
-            crypt_ok = true
-            crypt_passwd = DlgUpdateCryptFs(device, fspath)
-
-            if crypt_passwd == nil || crypt_passwd == ""
-              crypt_ok = false
-              again = false
-            end
-
-            Builtins.y2milestone("crypt pwd ok:%1", crypt_ok)
-
-            if crypt_ok
-              setloop = {
-                "encryption"    => "twofish",
-                "passwd"        => crypt_passwd,
-                "loop_dev"      => loop,
-                "partitionName" => device
-              }
-
-              crypt_ok = (
-                setloop_ref = arg_ref(setloop);
-                _PerformLosetup_result = Storage.PerformLosetup(
-                  setloop_ref,
-                  false
-                );
-                setloop = setloop_ref.value;
-                _PerformLosetup_result
-              )
-              Builtins.y2milestone("crypt ok: %1", crypt_ok)
-              if crypt_ok
-                loop = Ops.get_string(setloop, "loop_dev", "")
-              else
-                # yes-no popup
-                again = Popup.YesNo(_("Incorrect password. Try again?"))
-              end
-            end
-
-            if crypt_ok
-              add_fs = {
-                "file"    => fspath,
-                "mntops"  => mntops,
-                "spec"    => loop,
-                "freq"    => 0,
-                "passno"  => 0,
-                "vfstype" => vfstype
-              }
-              fstab.value = Builtins.prepend(fstab.value, add_fs)
-              AddMountedPartition({ :type => "crypt", :device => device })
-              again = false
-            end
-          end
-        end
       end
 
       true
@@ -1488,12 +1340,6 @@ module Yast
 
               success = false
             else
-              Builtins.y2milestone("cryptotab %1", crtab)
-
-              fstab_ref = arg_ref(fstab)
-              PrepareCryptoTab(crtab, fstab_ref)
-              fstab = fstab_ref.value
-
               Builtins.y2milestone("fstab %1", fstab)
 
               legacy_filesystems =
@@ -1641,8 +1487,7 @@ module Yast
       ret
     end
 
-    # storage-ng
-    # this is the closest equivalent we have in storage-ng
+    # This is the closest equivalent we have in storage-ng
     def device_type(device)
       if device.is?(:partition)
         device.id.to_human_string
@@ -1694,12 +1539,6 @@ module Yast
           log.debug("Calling modprobe #{mount_type}")
           SCR.Execute(path(".target.modprobe"), mount_type, "")
         end
-
-        # storage-ng: not sure if we need to introduce something equivalent
-=begin
-        log.debug("Removing #{p_dev}")
-        Storage.RemoveDmMapsTo(p_dev)
-=end
 
         # mount (read-only) partition to Installation::destdir
         log.debug("Mounting #{[p_dev, Installation.destdir, Installation.mountlog].inspect}")
