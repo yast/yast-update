@@ -27,6 +27,7 @@
 #
 
 require "cgi/util"
+require "y2packager/product_upgrade"
 
 module Yast
   class UpdateProposalClient < Client
@@ -450,6 +451,10 @@ module Yast
         # Control the upgrade process better
         update_sum = Pkg.PkgUpdateAll(GetUpdateConf())
         Builtins.y2milestone("Update summary: %1", update_sum)
+
+        # deselect the upgraded obsolete products (bsc#1133215)
+        Y2Packager::ProductUpgrade.remove_obsolete_upgrades
+
         Update.unknown_packages = Ops.get(update_sum, :ProblemListSze, 0)
       end
 
