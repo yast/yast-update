@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.2.1
+Version:        4.2.2
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -29,7 +29,8 @@ Url:            http://github.com/yast/yast-update
 BuildRequires:	update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
-BuildRequires:  yast2 >= 3.1.126
+# Y2Packager::ProductUpgrade.remove_obsolete_upgrades
+BuildRequires:  yast2 >= 4.1.69
 # Packages#proposal_for_update
 BuildRequires:  yast2-packager >= 3.2.13
 
@@ -46,8 +47,8 @@ BuildRequires:  rubygem(rspec)
 BuildRequires:	yast2-storage-ng >= 4.1.31
 # Encryption.save_crypttab_names
 Requires:	yast2-storage-ng >= 4.1.31
-# FSSnapshotStore
-Requires:	yast2 >= 3.1.126
+# Y2Packager::ProductUpgrade.remove_obsolete_upgrades
+Requires:	yast2 >= 4.1.69
 Requires:	yast2-installation
 
 # handle bind mount at /mnt/dev
