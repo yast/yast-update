@@ -30,7 +30,7 @@ BuildRequires:	update-desktop-files
 BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
 # Y2Packager::ProductUpgrade.remove_obsolete_upgrades
-BuildRequires:  yast2 >= 4.1.69
+BuildRequires:  yast2 >= 4.2.1
 # Packages#proposal_for_update
 BuildRequires:  yast2-packager >= 3.2.13
 
@@ -48,7 +48,7 @@ BuildRequires:	yast2-storage-ng >= 4.1.31
 # Encryption.save_crypttab_names
 Requires:	yast2-storage-ng >= 4.1.31
 # Y2Packager::ProductUpgrade.remove_obsolete_upgrades
-Requires:	yast2 >= 4.1.69
+Requires:	yast2 >= 4.2.1
 Requires:	yast2-installation
 
 # handle bind mount at /mnt/dev
