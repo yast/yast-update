@@ -441,11 +441,11 @@ module Yast
 
         Builtins.foreach(restore) { |res| Pkg.ResolvableInstall(res, :product) }
 
-        # make sure the packages needed for accessing the installation repository
-        # are installed, e.g. "cifs-mount" for SMB or "nfs-client" for NFS repositories
-        Packages.sourceAccessPackages.each do |package|
-          Pkg::ResolvableInstall(package, :package)
-        end
+        # install the needed package (e.g. "cifs-mount" for SMB or "nfs-client"
+        # for NFS repositories or "grub2" for the bootloader)
+        # false = allow installing new packages, otherwise it would only upgrade
+        # the already installed packages
+        Packages.SelectSystemPackages(false)
 
         # FATE #301990, Bugzilla #238488
         # Control the upgrade process better
