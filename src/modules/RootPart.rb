@@ -1682,7 +1682,6 @@ module Yast
           Yast2::FsSnapshotStore.save("update", snapshot.number)
         end
         Update.clean_backup
-        pre_inject_files
         create_backup
         inject_intsys_files
       end
@@ -1690,8 +1689,8 @@ module Yast
       success
     end
 
-    RESOLV_CONF = "/run/netconfig/resolv.conf".freeze
-    OLD_RESOLV_CONF = "/etc/resolv.conf".freeze
+    RESOLV_CONF = "/etc/resolv.conf".freeze
+    RUN_RESOLV_CONF = "/var/run/netconfig/resolv.conf".freeze
 
     # known configuration files that are changed during update, so we need to
     # backup them to restore if something goes wrong (bnc#882039)
@@ -1716,28 +1715,23 @@ module Yast
       end
     end
 
-    def pre_inject_files
-      old_dest = File.join(Installation.destdir, OLD_RESOLV_CONF)
-      dest = File.join(Installation.destdir, RESOLV_CONF)
-      if File.file?(old_dest) && !File.exist?(dest)
-        ::FileUtils.mkdir_p(File.dirname(dest))
-        ::FileUtils.mv(old_dest, dest)
-        ::FileUtils.ln_s(dest, old_dest)
-      end
-    end
-
     # inject the required files from the inst-sys to the chroot so
     # the network connection works for the chrooted scripts
     def inject_intsys_files
       # the original file is backed up and restored later
       target = File.join(Installation.destdir, RESOLV_CONF)
+      run_target = File.join(Installation.destdir, RUN_RESOLV_CONF)
       # use copy entry as we need to remove_destination 5th param in case of symlink to dynamic
       # resolver like systemd-resolver and some configuration of network manager. So we not modify
       # symlink target and instead just replace symlink with our file that can resolve and from
       # backup we later restore original symlink.
-      if File.symlink?(old_target)
-        ::FileUtils.copy_entry(RESOLV_CONF, target, false, false, true) if File.exist?(RESOLV_CONF)
+
+      unless File.file?(run_target)
+        ::FileUtils.mkdir_p(File.dirname(run_target))
       end
+      ::FileUtils.copy_entry(RUN_RESOLV_CONF, run_target, false, false, true)
+      ::FileUtils.ln_s(target, run_target) unless File.symlink?(target)
+
     rescue Errno::EPERM => e
       # just log a warning when rewriting the file is not permitted,
       # e.g. it has the immutable flag set (bsc#1096142)
