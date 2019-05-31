@@ -18,7 +18,7 @@ X-SuSE-YaST-Keywords=update,packages,factory,rpm
 Icon=yast-update
 Exec=xdg-su -c "/sbin/yast2 update"
 
-Name=FACTORY Update
-GenericName=Update your system to the newest packages from FACTORY (expert tool)
+Name=YaST FACTORY Update
+GenericName=FACTORY Update
 Comment=Update your system to the newest packages from FACTORY (expert tool)
 StartupNotify=true
