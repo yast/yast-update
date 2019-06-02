@@ -22,7 +22,7 @@ ynclude_DATA = \
   include/update/rootpart.rb
 
 desktop_DATA = \
-  desktop/org.openSUSE.YaST.Update.desktop
+  desktop/org.opensuse.yast.Update.desktop
 
 ylibclientdir = "${yast2dir}/lib/update/clients"
 ylibclient_DATA = \
