@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun  6 10:47:31 CEST 2019 - schubi@suse.de
+
+- Going back and forward in the update workflow: Initialize
+  add-on products and system packages correctly (bsc#1136012).
+- 4.1.10
+
+-------------------------------------------------------------------
 Fri Apr 26 11:03:27 UTC 2019 - Ladislav Slezák <lslezak@suse.cz>
 
 - Uninstall the "SUSE-Manager-Proxy" product when upgrading from
