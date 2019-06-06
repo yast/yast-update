@@ -41,6 +41,7 @@ module Yast
       Yast.import "ProductControl"
       Yast.import "RootPart"
       Yast.import "GetInstArgs"
+      Yast.import "AddOnProduct"
 
       Yast.include self, "update/rootpart.rb"
 
@@ -81,6 +82,9 @@ module Yast
 
       # drop the currently loaded repositories
       Yast::Pkg.SourceFinishAll
+      # drop the currently added add-ons
+      AddOnProduct.add_on_products = []
+
       # move the target from "/mnt" to "/"
       Yast::Pkg.TargetFinish
       Yast::Pkg.TargetInitialize("/")
