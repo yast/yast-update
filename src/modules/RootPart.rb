@@ -33,7 +33,7 @@ require "yast2/fs_snapshot_store"
 module Yast
   class RootPartClass < Module
     include Logger
-    NON_MODULAR_FS = ["proc", "sysfs"]
+    NON_MODULAR_FS = ["devtmpfs", "proc", "sysfs"]
 
     def main
       Yast.import "UI"
@@ -1230,6 +1230,13 @@ module Yast
       if MountPartition("/proc", "proc", "proc") == nil
         AddMountedPartition(
           { :type => "mount", :device => "proc", :mntpt => "/proc" }
+        )
+      end
+
+      # to have devices like /dev/cdrom and /dev/urandom in the chroot
+      if MountPartition("/dev", "devtmpfs", "devtmpfs") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "devtmpfs", :mntpt => "/dev" }
         )
       end
 
