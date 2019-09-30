@@ -1264,7 +1264,8 @@ module Yast
         #
         #   encryption.crypttab_name  #=> "cr_home"
         crypttab_path = File.join(Installation.destdir, "/etc/crypttab")
-        Y2Storage::Encryption.save_crypttab_names(probed, crypttab_path)
+        crypttab = Y2Storage::Crypttab.new(crypttab_path)
+        crypttab.save_encryption_names(probed)
 
         Update.GetProductName
 
