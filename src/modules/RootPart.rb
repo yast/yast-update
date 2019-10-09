@@ -1223,6 +1223,16 @@ module Yast
           { :type => "mount", :device => "devtmpfs", :mntpt => "/dev" }
         )
       end
+
+      if SCR.Execute(
+          path(".target.mount"),
+          ["/run", ::File.join(Installation.destdir, "run"), Installation.mountlog],
+          "--bind"
+         )
+        AddMountedPartition(
+          { :type => "mount", :device => "none", :mntpt => "/run" }
+        )
+      end
     end
 
     #
