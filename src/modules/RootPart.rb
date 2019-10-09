@@ -33,7 +33,7 @@ require "yast2/fs_snapshot_store"
 module Yast
   class RootPartClass < Module
     include Logger
-    NON_MODULAR_FS = ["proc", "sysfs"]
+    NON_MODULAR_FS = ["devtmpfs", "proc", "sysfs"]
 
     def main
       Yast.import "UI"
