@@ -1201,25 +1201,9 @@ module Yast
       end
     end
 
-    #
-    def MountFSTab(fstab, message)
-      fstab = deep_copy(fstab)
-      allowed_fs = [
-        "ext",
-        "ext2",
-        "ext3",
-        "ext4",
-        "btrfs",
-        "minix",
-        "reiserfs",
-        "jfs",
-        "xfs",
-        "xiafs",
-        "hpfs",
-        "vfat",
-        "auto",
-      ]
-
+    # Mount /sys /proc and the like inside Installation.destdir
+    # @return [void]
+    def mount_specials_in_destdir
       # mount sysfs first
       if MountPartition("/sys", "sysfs", "sysfs") == nil
         AddMountedPartition(
@@ -1239,6 +1223,29 @@ module Yast
           { :type => "mount", :device => "devtmpfs", :mntpt => "/dev" }
         )
       end
+    end
+
+    #
+    def MountFSTab(fstab, message)
+      fstab = deep_copy(fstab)
+
+      mount_specials_in_destdir
+
+      allowed_fs = [
+        "ext",
+        "ext2",
+        "ext3",
+        "ext4",
+        "btrfs",
+        "minix",
+        "reiserfs",
+        "jfs",
+        "xfs",
+        "xiafs",
+        "hpfs",
+        "vfat",
+        "auto",
+      ]
 
       success = true
 
