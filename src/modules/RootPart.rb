@@ -1201,9 +1201,36 @@ module Yast
       end
     end
 
+    # Mount /sys /proc and the like inside Installation.destdir
+    # @return [void]
+    def mount_specials_in_destdir
+      # mount sysfs first
+      if MountPartition("/sys", "sysfs", "sysfs") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "sysfs", :mntpt => "/sys" }
+        )
+      end
+
+      if MountPartition("/proc", "proc", "proc") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "proc", :mntpt => "/proc" }
+        )
+      end
+
+      # to have devices like /dev/cdrom and /dev/urandom in the chroot
+      if MountPartition("/dev", "devtmpfs", "devtmpfs") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "devtmpfs", :mntpt => "/dev" }
+        )
+      end
+    end
+
     #
     def MountFSTab(fstab, message)
       fstab = deep_copy(fstab)
+
+      mount_specials_in_destdir
+
       allowed_fs = [
         "ext",
         "ext2",
@@ -1219,19 +1246,6 @@ module Yast
         "vfat",
         "auto",
       ]
-
-      # mount sysfs first
-      if MountPartition("/sys", "sysfs", "sysfs") == nil
-        AddMountedPartition(
-          { :type => "mount", :device => "sysfs", :mntpt => "/sys" }
-        )
-      end
-
-      if MountPartition("/proc", "proc", "proc") == nil
-        AddMountedPartition(
-          { :type => "mount", :device => "proc", :mntpt => "/proc" }
-        )
-      end
 
       success = true
 
