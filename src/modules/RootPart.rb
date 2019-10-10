@@ -1224,6 +1224,15 @@ module Yast
         )
       end
 
+      efivars_path = "/sys/firmware/efi/efivars"
+      if ::File.exist?(efivars_path)
+        if MountPartition(efivars_path, "efivarfs", "efivarfs") == nil
+          AddMountedPartition(
+            { :type => "mount", :device => "efivarfs", :mntpt => efivars_path }
+          )
+        end
+      end
+
       if SCR.Execute(
           path(".target.mount"),
           ["/run", ::File.join(Installation.destdir, "run"), Installation.mountlog],
