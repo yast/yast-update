@@ -808,10 +808,9 @@ module Yast
       end
     end
 
-    #
-    def MountFSTab(fstab, message)
-      fstab = deep_copy(fstab)
-
+    # Mount /sys /proc and the like inside Installation.destdir
+    # @return [void]
+    def mount_specials_in_destdir
       # mount sysfs first
       if MountPartition("/sys", "sysfs", "sysfs") == nil
         AddMountedPartition(
@@ -831,6 +830,34 @@ module Yast
           { :type => "mount", :device => "devtmpfs", :mntpt => "/dev" }
         )
       end
+
+      efivars_path = "/sys/firmware/efi/efivars"
+      if ::File.exist?(efivars_path)
+        if MountPartition(efivars_path, "efivarfs", "efivarfs") == nil
+          AddMountedPartition(
+            { :type => "mount", :device => "efivarfs", :mntpt => efivars_path }
+          )
+        end
+      end
+
+      # MountPartition does not work here
+      # because it turns --bind into -o --bind
+      if SCR.Execute(
+          path(".target.mount"),
+          ["/run", ::File.join(Installation.destdir, "run"), Installation.mountlog],
+          "--bind"
+         )
+        AddMountedPartition(
+          { :type => "mount", :device => "none", :mntpt => "/run" }
+        )
+      end
+    end
+
+    #
+    def MountFSTab(fstab, message)
+      fstab = deep_copy(fstab)
+
+      mount_specials_in_destdir
 
       success = true
 
