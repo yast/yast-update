@@ -30,6 +30,9 @@
 #		calling this module.
 require "yast"
 
+require "y2packager/medium_type"
+require "y2packager/product_control_product"
+
 module Yast
   module UpdateRootpartInclude
     include Yast::Logger
@@ -522,13 +525,24 @@ module Yast
     end
 
     def target_distribution
-      base_products = Product.FindBaseProducts
+      if Y2Packager::MediumType.online?
+        control_products = Y2Packager::ProductControlProduct.products
 
-      # empty target distribution disables service compatibility check in case
-      # the base product cannot be found
-      target_distro = base_products ? base_products.first["register_target"] : ""
-      log.info "Base product target distribution: #{target_distro}"
+        if control_products.empty?
+          target_distro = ""
+        else
+          # curently all products have the same "register_target" value
+          target_distro = control_products.first.register_target || ""
+        end
+      else
+        base_products = Product.FindBaseProducts
 
+        # empty target distribution disables service compatibility check in case
+        # the base product cannot be found
+        target_distro = base_products ? base_products.first["register_target"] : ""
+      end
+
+      log.info "Base product target distribution: #{target_distro.inspect}"
       target_distro
     end
 
