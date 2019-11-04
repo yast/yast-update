@@ -19,6 +19,7 @@ describe Yast::InstUpdatePartitionAutoClient do
       allow(Yast::Pkg).to receive(:TargetInitializeOptions)
       allow(Yast::Pkg).to receive(:TargetFinish)
       allow(Yast::Pkg).to receive(:TargetLoad).and_return(true)
+      allow(Y2Packager::MediumType).to receive(:online?).and_return(false)
       stub_subject(subject)
     end
 
