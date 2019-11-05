@@ -126,7 +126,7 @@ module Yast
               end
             # Table item (unknown system [neither openSUSE 11.1 nor SLES 14 nor ...])
             elsif system == "unknown"
-              system = _("Unknown") 
+              system = _("Unknown")
             end
           end
 

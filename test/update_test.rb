@@ -12,8 +12,6 @@ Yast.import "SCR"
 Yast.import "Pkg"
 Yast.import "Report"
 
-include Yast::Logger
-
 DATA_DIR = File.join(
   __dir__,
   "data"
@@ -40,6 +38,8 @@ def default_SetDesktopPattern_stubs
 end
 
 describe Yast::Update do
+  include Yast::Logger
+
   before(:each) do
     log.info "--- test ---"
     allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
