@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,13 +17,13 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# File:	clients/update.ycp
-# Module:	System update
-# Summary:	Update client that actually does the update
-#		it's called from ypdate.ycp
-# Authors:	Klaus Kaempf <kkaempf@suse.de>
-#		Arvin Schnell <arvin@suse.de>
-#		Lukas Ocilka <locilka@suse.cz>
+# File:  clients/update.ycp
+# Module:  System update
+# Summary:  Update client that actually does the update
+#    it's called from ypdate.ycp
+# Authors:  Klaus Kaempf <kkaempf@suse.de>
+#    Arvin Schnell <arvin@suse.de>
+#    Lukas Ocilka <locilka@suse.cz>
 #
 # $Id$
 module Yast

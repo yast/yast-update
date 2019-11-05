@@ -112,7 +112,8 @@ describe Yast::InstUpdatePartitionAutoClient do
           end
 
           it "reports an error" do
-            expect(Yast::Report).to receive(:Error).with("A possibly incomplete installation has been detected.")
+            expect(Yast::Report).to receive(:Error)
+              .with("A possibly incomplete installation has been detected.")
 
             subject.main
           end

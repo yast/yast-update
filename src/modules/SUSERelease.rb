@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -30,7 +28,6 @@
 require "yast"
 
 module Yast
-
   class SUSEReleaseFileMissingError < StandardError
     def initialize(message)
       super message
@@ -40,7 +37,7 @@ module Yast
   class SUSEReleaseClass < Module
     include Yast::Logger
 
-    RELEASE_FILE_PATH = "/etc/SuSE-release"
+    RELEASE_FILE_PATH = "/etc/SuSE-release".freeze
 
     def initialize
       textdomain "update"
@@ -55,14 +52,14 @@ module Yast
     #
     # @param [String] system base-directory, default is "/"
     # @return [String] product name
-    def ReleaseInformation(base_dir="/")
+    def ReleaseInformation(base_dir = "/")
       release_file = File.join(base_dir, RELEASE_FILE_PATH)
 
       if !FileUtils.Exists(release_file)
         log.info "Release file #{release_file} not found"
         raise(
           SUSEReleaseFileMissingError,
-          _("Release file %{file} not found") % { :file => release_file }
+          format(_("Release file %{file} not found"), file: release_file)
         )
       end
 
@@ -71,7 +68,7 @@ module Yast
         log.error "Cannot read file #{release_file}"
         raise(
           IOError,
-          _("Cannot read release file %{file}") % { :file => release_file }
+          format(_("Cannot read release file %{file}"), file: release_file)
         )
       end
 
@@ -84,7 +81,7 @@ module Yast
       long_name.gsub(/[ ]*\(.*/, "")
     end
 
-    publish :function => :ReleaseInformation, :type => "string (string)"
+    publish function: :ReleaseInformation, type: "string (string)"
   end
 
   SUSERelease = SUSEReleaseClass.new

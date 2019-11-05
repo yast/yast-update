@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,11 +17,11 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module:	update_proposal.ycp
+# Module:  update_proposal.ycp
 #
-# Author:	Arvin Schnell <arvin@suse.de>
+# Author:  Arvin Schnell <arvin@suse.de>
 #
-# Purpose:	Let user choose update settings.
+# Purpose:  Let user choose update settings.
 #
 
 require "cgi/util"
@@ -54,13 +52,11 @@ module Yast
       Yast.import "Label"
       Yast.import "Stage"
 
-
       @func = Convert.to_string(WFM.Args(0))
       @param = Convert.to_map(WFM.Args(1))
       @ret = {}
 
       @rpm_db_existency_checked_already = false
-
 
       if @func == "MakeProposal"
         @force_reset = Ops.get_boolean(@param, "force_reset", false)
@@ -128,10 +124,13 @@ module Yast
         if Update.products_incompatible
           return {
             # error message in proposal
-            "warning"       => _(
-              "The installed product (%{update_from}) is not compatible with " \
-              "the product on the installation media (%{update_to})."
-            ) % { :update_from => @update_from, :update_to => @update_to },
+            "warning"       => format(
+              _(
+                "The installed product (%{update_from}) is not compatible with " \
+                "the product on the installation media (%{update_to})."
+              ),
+              update_from: @update_from, update_to: @update_to
+            ),
             "warning_level" => :fatal,
             "raw_proposal"  => []
           }
@@ -146,8 +145,9 @@ module Yast
               # TRANSLATORS: proposal error, %1 is the version of installed system
               # %2 is the version being installed
               _(
-                "Updating system to another version (%1 -> %2) is not supported on the running system.<br>\n" +
-                  "Boot from the installation media and use a normal upgrade\n" +
+                "Updating system to another version (%1 -> %2) is not supported on " \
+                  "the running system.<br>\n" \
+                  "Boot from the installation media and use a normal upgrade\n" \
                   "or disable software repositories of products with different versions.\n"
               ),
               @update_from,
@@ -163,7 +163,7 @@ module Yast
         # when labels don't match
         if !Stage.initial &&
             Ops.get_string(Installation.installedVersion, "show", "A") !=
-              Ops.get_string(Installation.updateVersion, "show", "B")
+                Ops.get_string(Installation.updateVersion, "show", "B")
           @warning_message = Builtins.sformat(
             # TRANSLATORS: proposal warning, both %1 and %2 are replaced with product names
             _(
@@ -186,16 +186,17 @@ module Yast
 
         products = Pkg.ResolvableProperties("", :product, "")
         # stores the proposal text output
-        @summary_text = Packages.product_update_summary(products).map{|item| "<li>#{item}</li>"}.join
+        @summary_text = Packages.product_update_summary(products)
+          .map { |item| "<li>#{item}</li>" }.join
 
         # recalculate the disk space usage data
         SpaceCalculation.GetPartitionInfo
 
         # TRANSLATORS: proposal dialog help
         @update_options_help = _(
-          "<p><b><big>Update Options</big></b> Select how your system will be updated.\n" +
-            "Choose if only installed packages should be updated or new ones should be\n" +
-            "installed as well (default). Decide whether unmaintained packages should be\n" +
+          "<p><b><big>Update Options</big></b> Select how your system will be updated.\n" \
+            "Choose if only installed packages should be updated or new ones should be\n" \
+            "installed as well (default). Decide whether unmaintained packages should be\n" \
             "deleted.</p>\n"
         )
 
@@ -217,7 +218,7 @@ module Yast
         # save the solver test case with details for later debugging
         Pkg.CreateSolverTestCase("/var/log/YaST2/solver-upgrade-proposal") if @ret["warning"]
       elsif @func == "AskUser"
-	# With proper control file, this should never be reached
+        # With proper control file, this should never be reached
         Report.Error(_("The update summary is read only and cannot be changed."))
         @ret = { "workflow_sequence" => :back }
       elsif @func == "Description"
@@ -257,11 +258,11 @@ module Yast
       ret = {}
 
       # not supported by libzypp anymore
-      #	if (Update::deleteOldPackages != nil) {
-      #	    ret["delete_unmaintained"] = Update::deleteOldPackages;
-      #	}
+      #  if (Update::deleteOldPackages != nil) {
+      #      ret["delete_unmaintained"] = Update::deleteOldPackages;
+      #  }
 
-      if Update.silentlyDowngradePackages != nil
+      if !Update.silentlyDowngradePackages.nil?
         Ops.set(ret, "silent_downgrades", Update.silentlyDowngradePackages)
       end
 
@@ -288,7 +289,7 @@ module Yast
       ret = false
       file_found_or_error_skipped = false
 
-      while !file_found_or_error_skipped
+      until file_found_or_error_skipped
         Builtins.foreach(rpm_db_files) do |check_file|
           if Installation.destdir != "/"
             check_file = Builtins.sformat(
@@ -306,71 +307,72 @@ module Yast
         end
 
         # file not found
-        if !ret
-          Builtins.y2error(
-            "None of files %1 exist in '%2'",
-            rpm_db_files,
-            Installation.destdir
-          )
+        next if ret
 
-          missing_files = ""
-          Builtins.foreach(rpm_db_files) do |check_file|
-            if Installation.destdir != "/"
-              check_file = Builtins.sformat(
-                "%1%2",
-                Installation.destdir,
-                check_file
-              )
-            end
-            missing_files = Ops.add(Ops.add(missing_files, "\n"), check_file)
+        Builtins.y2error(
+          "None of files %1 exist in '%2'",
+          rpm_db_files,
+          Installation.destdir
+        )
+
+        missing_files = ""
+        Builtins.foreach(rpm_db_files) do |check_file|
+          if Installation.destdir != "/"
+            check_file = Builtins.sformat(
+              "%1%2",
+              Installation.destdir,
+              check_file
+            )
           end
+          missing_files = Ops.add(Ops.add(missing_files, "\n"), check_file)
+        end
 
-          UI.OpenDialog(
-            Opt(:decorated),
-            VBox(
-              # popup error
-              Label(
+        UI.OpenDialog(
+          Opt(:decorated),
+          VBox(
+            # popup error
+            Label(
+              Ops.add(
                 Ops.add(
-                  Ops.add(
-                    # part of error popup message
-                    _("Cannot read the current RPM Database.") + "\n\n",
-                    # part of error popup message, %1 stands for newline-separated list of files
-                    Builtins.sformat(
-                      _("None of these files exist:%1"),
-                      missing_files
-                    )
-                  ),
-                  "\n\n"
-                )
-              ),
-              HBox(
-                PushButton(Id(:abort), Label.AbortButton), # disabled button - bugzilla #148105, comments #22 - #28
-                # `PushButton (`id(`ignore), Label::IgnoreButton())
-                PushButton(Id(:retry), Label.RetryButton)
+                  # part of error popup message
+                  _("Cannot read the current RPM Database.") + "\n\n",
+                  # part of error popup message, %1 stands for newline-separated list of files
+                  Builtins.sformat(
+                    _("None of these files exist:%1"),
+                    missing_files
+                  )
+                ),
+                "\n\n"
               )
+            ),
+            HBox(
+              PushButton(Id(:abort), Label.AbortButton),
+              # disabled button - bugzilla #148105, comments #22 - #28
+              # `PushButton (`id(`ignore), Label::IgnoreButton())
+              PushButton(Id(:retry), Label.RetryButton)
             )
           )
+        )
 
-          ui_r = UI.UserInput
+        ui_r = UI.UserInput
 
-          if ui_r == :cancel || ui_r == :abort
-            ret = false
-            file_found_or_error_skipped = true
-            Builtins.y2milestone("Check failed, returning error.")
-          elsif ui_r == :retry
-            file_found_or_error_skipped = false
-            Builtins.y2milestone("Trying again...") 
-            #} else if (ui_r == `ignore) {
-            #    ret = true;
-            #    file_found_or_error_skipped = true;
-            #    y2warning ("Skipping missing RPM Database, problems might occur...");
-          else
-            file_found_or_error_skipped = false
-            Builtins.y2error("Unexpected return: %1", ui_r)
-          end
-
-          UI.CloseDialog
+        if ui_r == :cancel || ui_r == :abort
+          ret = false
+          file_found_or_error_skipped = true
+          Builtins.y2milestone("Check failed, returning error.")
+        elsif ui_r == :retry
+          file_found_or_error_skipped = false
+          Builtins.y2milestone("Trying again...")
+          # } else if (ui_r == `ignore) {
+          #    ret = true;
+          #    file_found_or_error_skipped = true;
+          #    y2warning ("Skipping missing RPM Database, problems might occur...");
+        else
+          file_found_or_error_skipped = false
+          Builtins.y2error("Unexpected return: %1", ui_r)
         end
+
+        UI.CloseDialog
       end
 
       Builtins.y2milestone("CheckRPMDBforExistency - returning: %1", ret)
@@ -382,13 +384,11 @@ module Yast
       Packages.Init(true)
 
       # initialize target
-      if true
-        PackageCallbacks.SetConvertDBCallbacks
+      PackageCallbacks.SetConvertDBCallbacks
 
-        Pkg.TargetInit(Installation.destdir, false)
+      Pkg.TargetInit(Installation.destdir, false)
 
-        Update.GetProductName
-      end
+      Update.GetProductName
 
       # FATE #301990, Bugzilla #238488
       # Set initial update-related (packages/patches) values from control file
@@ -460,13 +460,9 @@ module Yast
 
       # preselect system patterns (including PackagesProposal patterns)
       sys_patterns = Packages.ComputeSystemPatternList
-      sys_patterns.each {|pat| Pkg.ResolvableInstall(pat, :pattern)}
+      sys_patterns.each { |pat| Pkg.ResolvableInstall(pat, :pattern) }
 
-      if Pkg.PkgSolve(false)
-        Update.solve_errors = 0
-      else
-        Update.solve_errors = Pkg.PkgSolveErrors
-      end
+      Update.solve_errors = Pkg.PkgSolve(false) ? 0 : Pkg.PkgSolveErrors
 
       log.info "Update compatibility: " \
         "Update.ProductsCompatible: #{Update.ProductsCompatible}, " \
@@ -476,14 +472,14 @@ module Yast
       # check product compatibility
       if !(Update.ProductsCompatible || Update.products_incompatible) || update_not_possible
         if Popup.ContinueCancel(
-            # continue-cancel popup
-            _(
-              "The installed product is not compatible with the product\n" +
-                "on the installation media. If you try to update using the\n" +
-                "current installation media, the system may not start or\n" +
-                "some applications may not run properly."
-            )
+          # continue-cancel popup
+          _(
+            "The installed product is not compatible with the product\n" \
+              "on the installation media. If you try to update using the\n" \
+              "current installation media, the system may not start or\n" \
+              "some applications may not run properly."
           )
+        )
           Update.IgnoreProductCompatibility
         else
           Update.products_incompatible = true

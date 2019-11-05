@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 # Copyright (c) 2018 SUSE LLC, All Rights Reserved.
@@ -19,14 +17,14 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module:	inst_update_partition.ycp
+# Module:  inst_update_partition.ycp
 #
-# Authors:	Stefan Schubert <schubi@suse.de>
-#		Arvin Schnell <arvin@suse.de>
+# Authors:  Stefan Schubert <schubi@suse.de>
+#    Arvin Schnell <arvin@suse.de>
 #
-# Purpose:	Select root partition for update or booting.
-#		RootPart::rootPartitions must be filled before
-#		calling this module.
+# Purpose:  Select root partition for update or booting.
+#    RootPart::rootPartitions must be filled before
+#    calling this module.
 #
 
 module Yast

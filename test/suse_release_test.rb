@@ -5,7 +5,7 @@ require_relative "test_helper"
 Yast.import "SUSERelease"
 
 DATA_DIR = File.join(
-  File.expand_path(File.dirname(__FILE__)),
+  __dir__,
   "data"
 )
 

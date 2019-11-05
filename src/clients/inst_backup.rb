@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,13 +17,13 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module: 	inst_backup.ycp
+# Module:   inst_backup.ycp
 #
-# Authors:	Stefan Schubert <schubi@suse.de>
-#		Arvin Schnell <arvin@suse.de>
-#		Lukas Ocilka <locilka@suse.cz>
+# Authors:  Stefan Schubert <schubi@suse.de>
+#    Arvin Schnell <arvin@suse.de>
+#    Lukas Ocilka <locilka@suse.cz>
 #
-# Purpose:	Ask the user for backups during the update.
+# Purpose:  Ask the user for backups during the update.
 #
 # $Id$
 module Yast
@@ -41,12 +39,11 @@ module Yast
       Yast.import "Popup"
       Yast.import "Installation"
 
-
       # Get information about available partitions
       @partition = Convert.convert(
         SpaceCalculation.GetPartitionInfo,
-        :from => "list",
-        :to   => "list <map>"
+        from: "list",
+        to:   "list <map>"
       )
       Builtins.y2milestone("evaluate partitions: %1", @partition)
 
@@ -89,14 +86,16 @@ module Yast
 
       # help text for backup dialog during update 1/7
       @help_text = _(
-        "<p>To avoid any loss of information during update,\ncreate a <b>backup</b> prior to updating.</p>\n"
+        "<p>To avoid any loss of information during update,\n" \
+          "create a <b>backup</b> prior to updating.</p>\n"
       )
 
       # help text for backup dialog during update 2/7
       @help_text = Ops.add(
         @help_text,
         _(
-          "<p><b>Warning:</b> This will not be a complete\nbackup. Only modified files will be saved.</p>\n"
+          "<p><b>Warning:</b> This will not be a complete\n" \
+            "backup. Only modified files will be saved.</p>\n"
         )
       )
 
@@ -110,7 +109,8 @@ module Yast
       @help_text = Ops.add(
         @help_text,
         _(
-          "<p><b>Create a Backup of Modified Files:</b>\nStores only those modified files that will be replaced during update.</p>\n"
+          "<p><b>Create a Backup of Modified Files:</b>\n" \
+            "Stores only those modified files that will be replaced during update.</p>\n"
         )
       )
 
@@ -118,8 +118,8 @@ module Yast
       @help_text = Ops.add(
         @help_text,
         _(
-          "<p><b>Create a Complete Backup of\n" +
-            "/etc/sysconfig:</b> This covers all configuration files that are part of the\n" +
+          "<p><b>Create a Complete Backup of\n" \
+            "/etc/sysconfig:</b> This covers all configuration files that are part of the\n" \
             "sysconfig mechanism, even those that will not be replaced.</p>\n"
         )
       )
@@ -128,9 +128,9 @@ module Yast
       @help_text = Ops.add(
         @help_text,
         _(
-          "<p><b>Remove Old Backups from the Backup\n" +
-            "Directory:</b> If your current system already is the result of an earlier\n" +
-            "update, there may be old configuration file backups. Select this option to\n" +
+          "<p><b>Remove Old Backups from the Backup\n" \
+            "Directory:</b> If your current system already is the result of an earlier\n" \
+            "update, there may be old configuration file backups. Select this option to\n" \
             "remove them.</p>\n"
         )
       )
@@ -143,7 +143,6 @@ module Yast
           Installation.update_backup_path
         )
       )
-
 
       Wizard.SetContents(
         @title,
@@ -171,7 +170,7 @@ module Yast
 
       @ret = nil
 
-      while true
+      loop do
         @ret = Wizard.UserInput
 
         break if @ret == :abort && Popup.ConfirmAbort(:painless)
@@ -182,21 +181,20 @@ module Yast
         @tmp = Convert.to_boolean(UI.QueryWidget(Id(:modified), :Value)) ||
           Convert.to_boolean(UI.QueryWidget(Id(:sysconfig), :Value))
 
-        if @ret == :next || @ret == :ok
-          next if @tmp && !check_backup_path(@partition)
+        next unless @ret == :next || @ret == :ok
+        next if @tmp && !check_backup_path(@partition)
 
-          Installation.update_backup_modified = Convert.to_boolean(
-            UI.QueryWidget(Id(:modified), :Value)
-          )
-          Installation.update_backup_sysconfig = Convert.to_boolean(
-            UI.QueryWidget(Id(:sysconfig), :Value)
-          )
-          Installation.update_remove_old_backups = Convert.to_boolean(
-            UI.QueryWidget(Id(:remove), :Value)
-          )
+        Installation.update_backup_modified = Convert.to_boolean(
+          UI.QueryWidget(Id(:modified), :Value)
+        )
+        Installation.update_backup_sysconfig = Convert.to_boolean(
+          UI.QueryWidget(Id(:sysconfig), :Value)
+        )
+        Installation.update_remove_old_backups = Convert.to_boolean(
+          UI.QueryWidget(Id(:remove), :Value)
+        )
 
-          break
-        end
+        break
       end
 
       Wizard.CloseDialog
@@ -252,18 +250,16 @@ module Yast
         end
       end
 
-      if Ops.greater_or_equal(free_space, min_space) || Mode.test
-        return true
-      else
-        # there is not enough space for the backup during update
-        # inform the user about this (MB==megabytes)
-        message = Builtins.sformat(
-          _("Minimum disk space of %1 MB required."),
-          min_space
-        )
-        Popup.Message(message)
-        return false
-      end
+      return true if Ops.greater_or_equal(free_space, min_space) || Mode.test
+
+      # there is not enough space for the backup during update
+      # inform the user about this (MB==megabytes)
+      message = Builtins.sformat(
+        _("Minimum disk space of %1 MB required."),
+        min_space
+      )
+      Popup.Message(message)
+      false
     end
   end
 end

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,11 +17,11 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module:	rootpart_proposal.ycp
+# Module:  rootpart_proposal.ycp
 #
-# Author:	Arvin Schnell <arvin@suse.de>
+# Author:  Arvin Schnell <arvin@suse.de>
 #
-# Purpose:	Let user choose root partition during update.
+# Purpose:  Let user choose root partition during update.
 #
 # $Id$
 module Yast
@@ -45,7 +43,6 @@ module Yast
       @param = Convert.to_map(WFM.Args(1))
       @ret = {}
 
-
       if @func == "MakeProposal"
         @force_reset = Ops.get_boolean(@param, "force_reset", false)
         @language_changed = Ops.get_boolean(@param, "language_changed", false)
@@ -65,9 +62,9 @@ module Yast
           RootPart.targetOk = false
 
           @ret = {
-            "warning" =>
-              # Proposal for system to update
-              _("No root partition found"),
+            "warning"       =>
+                               # Proposal for system to update
+                               _("No root partition found"),
             "warning_level" => :fatal,
             "raw_proposal"  => []
           }
@@ -86,19 +83,19 @@ module Yast
             RootPart.targetOk = RootPart.mount_target
           end
 
-          if RootPart.numberOfValidRootPartitions == 1
-            @ret = { "raw_proposal" => [RootPart.GetInfoOfSelected(:name)] }
+          @ret = if RootPart.numberOfValidRootPartitions == 1
+            { "raw_proposal" => [RootPart.GetInfoOfSelected(:name)] }
           else
-            @ret = {
+            {
               "raw_proposal" =>
-                # Proposal for system to update
-                [
-                  Builtins.sformat(
-                    _("%1 on root partition %2"),
-                    RootPart.GetInfoOfSelected(:name),
-                    RootPart.selectedRootPartition
-                  )
-                ]
+                                # Proposal for system to update
+                                [
+                                  Builtins.sformat(
+                                    _("%1 on root partition %2"),
+                                    RootPart.GetInfoOfSelected(:name),
+                                    RootPart.selectedRootPartition
+                                  )
+                                ]
             }
           end
 
@@ -127,9 +124,9 @@ module Yast
 
         if @result == :next
           Update.Detach
-          RootPart.UnmountPartitions(false) 
+          RootPart.UnmountPartitions(false)
 
-          #	    RootPart::targetOk = mount_target ();
+          #      RootPart::targetOk = mount_target ();
         end
 
         # Fill return map
@@ -141,10 +138,10 @@ module Yast
       elsif @func == "Description"
         # Fill return map.
 
-        if Mode.normal
-          @ret = {}
+        @ret = if Mode.normal
+          {}
         else
-          @ret = {
+          {
             # this is a heading
             "rich_text_title" => _("Selected for Update"),
             # this is a menu entry

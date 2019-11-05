@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2016 SUSE LLC, All Rights Reserved.
 #
@@ -13,12 +11,12 @@
 #
 # ------------------------------------------------------------------------------
 #
-# Authors:	Stefan Schubert <schubi@suse.de>
-#		Arvin Schnell <arvin@suse.de>
+# Authors:  Stefan Schubert <schubi@suse.de>
+#    Arvin Schnell <arvin@suse.de>
 #
-# Purpose:	Select root partition for update or booting.
-#		RootPart::rootPartitions must be filled before
-#		calling this module.
+# Purpose:  Select root partition for update or booting.
+#    RootPart::rootPartitions must be filled before
+#    calling this module.
 #
 # $Id:$
 
@@ -106,7 +104,7 @@ module Yast
         partition[:valid]
       end
 
-      partitions.size == 1 ? target_root : nil
+      (partitions.size == 1) ? target_root : nil
     end
 
     # special version that respect online specific target distro
