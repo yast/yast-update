@@ -28,6 +28,9 @@
 #    calling this module.
 require "yast"
 
+require "y2packager/medium_type"
+require "y2packager/product_control_product"
+
 module Yast
   module UpdateRootpartInclude
     include Yast::Logger
@@ -508,6 +511,13 @@ module Yast
     end
 
     def target_distribution
+      # FIXME: this is the same as in src/lib/update/clients/inst_update_partition_auto.rb:113
+      if Y2Packager::MediumType.offline?
+        control_products = Y2Packager::ProductControlProduct.products
+        # currently all products have the same "register_target" value
+        return control_products.first&.register_target || ""
+      end
+
       base_products = Product.FindBaseProducts
 
       # empty target distribution disables service compatibility check in case
