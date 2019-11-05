@@ -81,13 +81,6 @@ Naming/VariableName:
     - 'src/modules/RootPart.rb'
     - 'src/modules/Update.rb'
 
-# Offense count: 2
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: snake_case, normalcase, non_integer
-Naming/VariableNumber:
-  Exclude:
-    - 'src/include/update/rootpart.rb'
-
 # Offense count: 17
 Style/Documentation:
   Exclude:

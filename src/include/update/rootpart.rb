@@ -165,15 +165,15 @@ module Yast
 
     # Returns whether wanted and selected architectures match
     # bnc #372309
-    def DoArchitecturesMatch(arch_1, arch_2)
+    def DoArchitecturesMatch(arch1, arch2)
       ppc_archs = ["ppc", "ppc64"]
 
       # exact match
-      if arch_1 == arch_2
+      if arch1 == arch2
         true
         # ppc exception
-      elsif Builtins.contains(ppc_archs, arch_1) &&
-          Builtins.contains(ppc_archs, arch_2)
+      elsif Builtins.contains(ppc_archs, arch1) &&
+          Builtins.contains(ppc_archs, arch2)
         true
       else
         false
