@@ -116,12 +116,6 @@ Style/GuardClause:
     - 'src/include/update/rootpart.rb'
     - 'src/modules/RootPart.rb'
 
-# Offense count: 2
-Style/MultilineTernaryOperator:
-  Exclude:
-    - 'src/include/update/rootpart.rb'
-    - 'src/modules/RootPart.rb'
-
 # Offense count: 15
 Style/MultipleComparison:
   Exclude:

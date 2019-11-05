@@ -294,12 +294,14 @@ module Yast
 
       popup_def = Left(Label(question))
 
-      details_checkbox = has_details ?
+      details_checkbox = if has_details
         VBox(
           VSpacing(1),
           Left(CheckBox(Id(:details), Opt(:notify), _("Show &Details"), false))
-        ) :
+        )
+      else
         Empty()
+      end
 
       popup_buttons = VBox(
         VSpacing(1),

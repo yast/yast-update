@@ -101,9 +101,7 @@ module Yast
 
         # see bugzilla #288201
         # architecture needs to be valid when updating, not booting
-        arch_is_valid = (flavor == :boot) ?
-          true :
-          Ops.get_boolean(i, :arch_valid, false)
+        arch_is_valid = flavor == :boot || Ops.get_boolean(i, :arch_valid, false)
         if withall || Ops.get_boolean(i, :valid, false) && arch_is_valid
           # `ext2, `jfs, ...
           part_fs = Ops.get_symbol(i, :fs)
