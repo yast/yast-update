@@ -250,18 +250,16 @@ module Yast
         end
       end
 
-      if Ops.greater_or_equal(free_space, min_space) || Mode.test
-        return true
-      else
-        # there is not enough space for the backup during update
-        # inform the user about this (MB==megabytes)
-        message = Builtins.sformat(
-          _("Minimum disk space of %1 MB required."),
-          min_space
-        )
-        Popup.Message(message)
-        return false
-      end
+      return true if Ops.greater_or_equal(free_space, min_space) || Mode.test
+
+      # there is not enough space for the backup during update
+      # inform the user about this (MB==megabytes)
+      message = Builtins.sformat(
+        _("Minimum disk space of %1 MB required."),
+        min_space
+      )
+      Popup.Message(message)
+      false
     end
   end
 end

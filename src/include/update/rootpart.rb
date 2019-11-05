@@ -170,15 +170,14 @@ module Yast
 
       # exact match
       if arch_1 == arch_2
-        return true
+        true
         # ppc exception
       elsif Builtins.contains(ppc_archs, arch_1) &&
           Builtins.contains(ppc_archs, arch_2)
-        return true
+        true
+      else
+        false
       end
-
-      # else
-      false
     end
 
     def UmountMountedPartition

@@ -120,27 +120,25 @@ module Yast
     def GetInfoOfSelected(what)
       i = Ops.get(@rootPartitions, @selectedRootPartition, {})
 
-      if what == :name
-        # Name is known
-        if Ops.get_string(i, what, "") != ""
-          return Ops.get_string(i, what, "")
+      # label - name of sustem to update
+      return Ops.get_locale(i, what, _("Unknown")) if what != :name
 
-          # Linux partition, but no root FS found
-        elsif Builtins.contains(
-          FileSystems.possible_root_fs,
-          Ops.get_symbol(i, :fs, :nil)
-        )
-          # label - name of sustem to update
-          return _("Unknown Linux System")
+      # Name is known
+      if Ops.get_string(i, what, "") != ""
+        Ops.get_string(i, what, "")
 
-          # Non-Linux
-        else
-          # label - name of sustem to update
-          return _("Non-Linux System")
-        end
+        # Linux partition, but no root FS found
+      elsif Builtins.contains(
+        FileSystems.possible_root_fs,
+        Ops.get_symbol(i, :fs, :nil)
+      )
+        # label - name of sustem to update
+        _("Unknown Linux System")
+
+        # Non-Linux
       else
         # label - name of sustem to update
-        return Ops.get_locale(i, what, _("Unknown"))
+        _("Non-Linux System")
       end
     end
 
@@ -504,13 +502,7 @@ module Yast
           mnt_opts
         )
       )
-      if ret
-        return nil
-      else
-        return Convert.to_string(
-          SCR.Read(path(".target.string"), Installation.mountlog)
-        )
-      end
+      ret ? nil : SCR.Read(path(".target.string"), Installation.mountlog)
     end
 
     # Check filesystem on a partition and mount the partition on specified mount
@@ -749,45 +741,41 @@ module Yast
       )
 
       # Size of the /boot partition is satisfactory
-      if Ops.greater_or_equal(bootsize, min_suggested_bootsize)
-        return true
+      return true if Ops.greater_or_equal(bootsize, min_suggested_bootsize)
 
-        # Less than a hero
-      else
-        current_bs = Ops.divide(bootsize, 1024)
-        suggested_bs = Ops.divide(min_suggested_bootsize, 1024)
+      current_bs = Ops.divide(bootsize, 1024)
+      suggested_bs = Ops.divide(min_suggested_bootsize, 1024)
 
-        cont = Popup.ContinueCancelHeadline(
-          # TRANSLATORS: a popup headline
-          _("Warning"),
-          # TRANSLATORS: error message,
-          # %1 is replaced with the current /boot partition size
-          # %2 with the recommended size
-          Builtins.sformat(
-            _(
-              "Your /boot partition is too small (%1 MB).\n" \
-                "We recommend a size of no less than %2 MB or else the new Kernel may not fit.\n" \
-                "It is safer to either enlarge the partition\n" \
-                "or not use a /boot partition at all.\n" \
-                "\n" \
-                "Do you want to continue updating the current system?\n"
-            ),
-            current_bs,
-            suggested_bs
-          )
+      cont = Popup.ContinueCancelHeadline(
+        # TRANSLATORS: a popup headline
+        _("Warning"),
+        # TRANSLATORS: error message,
+        # %1 is replaced with the current /boot partition size
+        # %2 with the recommended size
+        Builtins.sformat(
+          _(
+            "Your /boot partition is too small (%1 MB).\n" \
+              "We recommend a size of no less than %2 MB or else the new Kernel may not fit.\n" \
+              "It is safer to either enlarge the partition\n" \
+              "or not use a /boot partition at all.\n" \
+              "\n" \
+              "Do you want to continue updating the current system?\n"
+          ),
+          current_bs,
+          suggested_bs
         )
+      )
 
-        if cont
-          Builtins.y2warning(
-            "User decided to continue despite small a /boot partition"
-          )
-          return true
-        else
-          Builtins.y2milestone(
-            "User decided not to continue with small /boot partition"
-          )
-          return false
-        end
+      if cont
+        Builtins.y2warning(
+          "User decided to continue despite small a /boot partition"
+        )
+        return true
+      else
+        Builtins.y2milestone(
+          "User decided not to continue with small /boot partition"
+        )
+        return false
       end
     end
 
@@ -1135,15 +1123,13 @@ module Yast
             UI.QueryWidget(Id("var_device"), :Value)
           )
 
-          if ret == "var_device"
-            UI.ChangeWidget(
-              Id("device_info"),
-              :Value,
-              Ops.get(device_info, var_device, "")
-            )
-          else
-            break
-          end
+          break if ret != "var_device"
+
+          UI.ChangeWidget(
+            Id("device_info"),
+            :Value,
+            Ops.get(device_info, var_device, "")
+          )
         end
 
         UI.CloseDialog
