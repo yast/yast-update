@@ -962,7 +962,7 @@ module Yast
 
               success = false if !CheckBootSize(checkspec)
             end
-          end # mount_regular_fstab_entry?
+          end
         elsif vfstype == "swap" && fspath == "swap"
           Builtins.y2milestone("mounting %1 to %2", spec, fspath)
 

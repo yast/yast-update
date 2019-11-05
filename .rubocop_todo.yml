@@ -88,11 +88,6 @@ Naming/VariableNumber:
   Exclude:
     - 'src/include/update/rootpart.rb'
 
-# Offense count: 1
-Style/CommentedKeyword:
-  Exclude:
-    - 'src/modules/RootPart.rb'
-
 # Offense count: 17
 Style/Documentation:
   Exclude:
