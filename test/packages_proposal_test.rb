@@ -20,7 +20,7 @@ describe Yast::PackagesProposalClient do
         installed: ["grub", "elilo"],
         selected:  ["grub", "grub2-efi", "grub2-pc"],
         removed:   ["elilo"]
-      }
+      }.freeze
 
       before do
         allow(Yast::SpaceCalculation).to receive(:GetPartitionWarning)
@@ -47,10 +47,10 @@ describe Yast::PackagesProposalClient do
       end
 
       it "is meant to be triggered if packages proposal changes" do
-        expect(client.main["trigger"]).to eq({
+        expect(client.main["trigger"]).to eq(
           "expect" => { "class" => "Yast::Packages", "method" => "PackagesProposalChanged" },
-          "value" => false
-        })
+          "value"  => false
+        )
       end
     end
   end

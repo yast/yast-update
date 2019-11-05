@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,12 +17,12 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module:	RootPart.ycp
+# Module:  RootPart.ycp
 #
-# Authors:	Arvin Schnell <arvin@suse.de>
+# Authors:  Arvin Schnell <arvin@suse.de>
 #
-# Purpose:	Responsible for searching of root partitions and
-#		mounting of target partitions.
+# Purpose:  Responsible for searching of root partitions and
+#    mounting of target partitions.
 
 require "yast"
 require "yast2/fs_snapshot"
@@ -36,7 +34,7 @@ require "fileutils"
 module Yast
   class RootPartClass < Module
     include Logger
-    NON_MODULAR_FS = ["devtmpfs", "proc", "sysfs"]
+    NON_MODULAR_FS = ["devtmpfs", "proc", "sysfs"].freeze
 
     def main
       Yast.import "UI"
@@ -118,7 +116,6 @@ module Yast
       Ops.greater_than(Builtins.size(@activated), 0)
     end
 
-
     # Get the key what of the selected root partition.
     def GetInfoOfSelected(what)
       i = Ops.get(@rootPartitions, @selectedRootPartition, {})
@@ -130,9 +127,9 @@ module Yast
 
           # Linux partition, but no root FS found
         elsif Builtins.contains(
-            FileSystems.possible_root_fs,
-            Ops.get_symbol(i, :fs, :nil)
-          )
+          FileSystems.possible_root_fs,
+          Ops.get_symbol(i, :fs, :nil)
+        )
           # label - name of sustem to update
           return _("Unknown Linux System")
 
@@ -147,7 +144,6 @@ module Yast
       end
     end
 
-
     # Set the selected root partition to some valid one. Only
     # make sense if the number of valid root partition is one.
     def SetSelectedToValid
@@ -161,7 +157,6 @@ module Yast
       nil
     end
 
-    #
     def RemoveFromTargetMap
       target_map = Storage.GetTargetMap
       tmp = Builtins.filter(@activated) do |e|
@@ -203,10 +198,10 @@ module Yast
               Report.Error(
                 Builtins.sformat(
                   _(
-                    "Cannot unmount partition %1.\n" +
-                      "\n" +
-                      "It is currently in use. If the partition stays mounted,\n" +
-                      "the data may be lost. Unmount the partition manually\n" +
+                    "Cannot unmount partition %1.\n" \
+                      "\n" \
+                      "It is currently in use. If the partition stays mounted,\n" \
+                      "the data may be lost. Unmount the partition manually\n" \
                       "or restart your computer.\n"
                   ),
                   file
@@ -217,9 +212,9 @@ module Yast
             device = Ops.get_string(info, :device, "")
             # FIXME? is it safe?
             if SCR.Execute(
-                path(".target.bash"),
-                Ops.add("/sbin/swapoff ", device)
-              ) != 0
+              path(".target.bash"),
+              Ops.add("/sbin/swapoff ", device)
+            ) != 0
               Builtins.y2error("Cannot deactivate swap %1", device)
             end
           elsif type == "crypt"
@@ -233,9 +228,9 @@ module Yast
             )
             # FIXME? is it safe?
             if WFM.Execute(
-                path(".local.bash"),
-                Ops.add("cryptsetup remove ", dmname)
-              ) != 0
+              path(".local.bash"),
+              Ops.add("cryptsetup remove ", dmname)
+            ) != 0
               Builtins.y2error("Cannot remove dm device %1", dmname)
             end
           end
@@ -251,7 +246,6 @@ module Yast
       nil
     end
 
-
     # Add information about mounted partition to internal list.
     # @param [Hash{Symbol => String}] partinfo partinfo has to be list with exactly two strings,
     # see description of list "activated"
@@ -263,7 +257,6 @@ module Yast
 
       nil
     end
-
 
     # Check the filesystem of a partition.
     def FSCKPartition(partition)
@@ -285,8 +278,6 @@ module Yast
       nil
     end
 
-
-
     # @param [String] headline (optional; to disable, use "")
     # @param [String] question
     # @param string button (true)
@@ -294,10 +285,10 @@ module Yast
     # @param [String] details (hidden under [Details] button; optional; to disable, use "")
     def AnyQuestionAnyButtonsDetails(headline, question, button_yes, button_no, details)
       has_details = true
-      has_details = false if details == "" || details == nil
+      has_details = false if details == "" || details.nil?
 
       has_heading = true
-      has_heading = false if headline == "" || headline == nil
+      has_heading = false if headline == "" || headline.nil?
 
       heading = has_heading ? VBox(Left(Heading(headline))) : Empty()
 
@@ -413,7 +404,7 @@ module Yast
           end
           if Ops.get_string(cmd, "stderr", "") != ""
             details = Ops.add(
-              Ops.add(details == "" ? "" : "\n", details),
+              Ops.add((details == "") ? "" : "\n", details),
               Ops.get_string(cmd, "stderr", "")
             )
           end
@@ -425,8 +416,8 @@ module Yast
               # popup question (continue/cancel dialog)
               # %1 is a device name such as /dev/hda5
               _(
-                "The file system check of device %1 has failed.\n" +
-                  "\n" +
+                "The file system check of device %1 has failed.\n" \
+                  "\n" \
                   "Do you want to continue mounting the device?\n"
               ),
               device
@@ -450,7 +441,6 @@ module Yast
 
       true
     end
-
 
     # Mount partition on specified mount point
     # @param mount_point [String] path to mount the partition at
@@ -482,13 +472,13 @@ module Yast
 
       error_message = nil
       if !(
-          error_message_ref = arg_ref(error_message);
+          error_message_ref = arg_ref(error_message)
           _RunFSCKonJFS_result = RunFSCKonJFS(
             mount_type,
             device,
             error_message_ref
-          );
-          error_message = error_message_ref.value;
+          )
+          error_message = error_message_ref.value
           _RunFSCKonJFS_result
         )
         return error_message
@@ -522,23 +512,20 @@ module Yast
       end
     end
 
-
-
-
     # Check filesystem on a partition and mount the partition on specified mount
     #  point
     # @param [String] mount_point string mount point to monut the partition at
     # @param [String] device string device to mount
     # @param [String] mount_type string filesystem type to be specified while mounting
     # @return [String] nil on success, error description on fail
-    def FsckAndMount(mount_point, device, mount_type, mntopts="")
+    def FsckAndMount(mount_point, device, mount_type, mntopts = "")
       FSCKPartition(device)
 
       ret = MountPartition(mount_point, device, mount_type, mntopts)
 
-      if ret == nil
+      if ret.nil?
         AddMountedPartition(
-          { :type => "mount", :device => device, :mntpt => mount_point }
+          type: "mount", device: device, mntpt: mount_point
         )
       end
 
@@ -553,10 +540,8 @@ module Yast
       ret
     end
 
-
-
     #  Check that the root filesystem in fstab has the correct device.
-    def check_root_device(partition, fstab, found_partition)
+    def check_root_device(_partition, fstab, found_partition)
       fstab = deep_copy(fstab)
       tmp = Builtins.filter(fstab) do |entry|
         Ops.get_string(entry, "file", "") == "/"
@@ -652,8 +637,8 @@ module Yast
 
         fstab.value = Convert.convert(
           SCR.Read(path(".target.etc.fstab")),
-          :from => "any",
-          :to   => "list <map>"
+          from: "any",
+          to:   "list <map>"
         )
 
         SCR.UnregisterAgent(path(".target.etc.fstab"))
@@ -666,16 +651,15 @@ module Yast
 
     def FstabHasSeparateVar(fstab)
       var_device_fstab = (
-        fstab_ref = arg_ref(fstab.value);
-        _FindPartitionInFstab_result = FindPartitionInFstab(fstab_ref, "/var");
-        fstab.value = fstab_ref.value;
+        fstab_ref = arg_ref(fstab.value)
+        _FindPartitionInFstab_result = FindPartitionInFstab(fstab_ref, "/var")
+        fstab.value = fstab_ref.value
         _FindPartitionInFstab_result
       )
       Builtins.y2milestone("/var partition is %1", var_device_fstab)
 
-      var_device_fstab != nil
+      !var_device_fstab.nil?
     end
-
 
     def FstabUsesKernelDeviceNameForHarddisks(fstab)
       fstab = deep_copy(fstab)
@@ -685,15 +669,15 @@ module Yast
       # Since we are looking at device names of hard disks that may no
       # longer exist all we have at hand is the name.
 
-      Builtins.find(fstab) do |line|
+      !Builtins.find(fstab) do |line|
         spec = Ops.get_string(line, "spec", "error")
         next true if Builtins.regexpmatch(spec, "^/dev/sd[a-z]+[0-9]+$")
         next true if Builtins.regexpmatch(spec, "^/dev/hd[a-z]+[0-9]+$")
         next true if Builtins.regexpmatch(spec, "^/dev/dasd[a-z]+[0-9]+$")
-        false
-      end != nil
-    end
 
+        false
+      end.nil?
+    end
 
     # Reads FSTab and CryptoTab and fills fstab and crtab got as parameters.
     # Uses Installation::destdir as the base mount point.
@@ -701,7 +685,7 @@ module Yast
     # @param list <map> ('pointer' to) fstab
     # @param list <map> ('pointer' to) crtab
     # @param string root device
-    def read_fstab_and_cryptotab(fstab, crtab, root_device_current)
+    def read_fstab_and_cryptotab(fstab, crtab, _root_device_current)
       default_scr = WFM.SCRGetDefault
       new_scr = nil
       @backward_translation = {}
@@ -717,8 +701,8 @@ module Yast
       else
         fstab.value = Convert.convert(
           SCR.Read(path(".etc.fstab")),
-          :from => "any",
-          :to   => "list <map>"
+          from: "any",
+          to:   "list <map>"
         )
       end
 
@@ -726,7 +710,7 @@ module Yast
     end
 
     # bugzilla #258563
-    def CheckBootSize(bootpart)
+    def CheckBootSize(_bootpart)
       min_suggested_bootsize = 65536
       min_suggested_bootsize = 204800 if Arch.ia64
 
@@ -751,7 +735,7 @@ module Yast
         bootsize = Builtins.tointeger(Ops.get(scriptout, 1, "0"))
       end
 
-      if bootsize == nil || bootsize == 0
+      if bootsize.nil? || bootsize == 0
         Builtins.y2error(
           "Cannot find out bootpart size: %1",
           Installation.destdir
@@ -782,11 +766,11 @@ module Yast
           # %2 with the recommended size
           Builtins.sformat(
             _(
-              "Your /boot partition is too small (%1 MB).\n" +
-                "We recommend a size of no less than %2 MB or else the new Kernel may not fit.\n" +
-                "It is safer to either enlarge the partition\n" +
-                "or not use a /boot partition at all.\n" +
-                "\n" +
+              "Your /boot partition is too small (%1 MB).\n" \
+                "We recommend a size of no less than %2 MB or else the new Kernel may not fit.\n" \
+                "It is safer to either enlarge the partition\n" \
+                "or not use a /boot partition at all.\n" \
+                "\n" \
                 "Do you want to continue updating the current system?\n"
             ),
             current_bs,
@@ -812,30 +796,30 @@ module Yast
     # @return [void]
     def mount_specials_in_destdir
       # mount sysfs first
-      if MountPartition("/sys", "sysfs", "sysfs") == nil
+      if MountPartition("/sys", "sysfs", "sysfs").nil?
         AddMountedPartition(
-          { :type => "mount", :device => "sysfs", :mntpt => "/sys" }
+          type: "mount", device: "sysfs", mntpt: "/sys"
         )
       end
 
-      if MountPartition("/proc", "proc", "proc") == nil
+      if MountPartition("/proc", "proc", "proc").nil?
         AddMountedPartition(
-          { :type => "mount", :device => "proc", :mntpt => "/proc" }
+          type: "mount", device: "proc", mntpt: "/proc"
         )
       end
 
       # to have devices like /dev/cdrom and /dev/urandom in the chroot
-      if MountPartition("/dev", "devtmpfs", "devtmpfs") == nil
+      if MountPartition("/dev", "devtmpfs", "devtmpfs").nil?
         AddMountedPartition(
-          { :type => "mount", :device => "devtmpfs", :mntpt => "/dev" }
+          type: "mount", device: "devtmpfs", mntpt: "/dev"
         )
       end
 
       efivars_path = "/sys/firmware/efi/efivars"
       if ::File.exist?(efivars_path)
-        if MountPartition(efivars_path, "efivarfs", "efivarfs") == nil
+        if MountPartition(efivars_path, "efivarfs", "efivarfs").nil?
           AddMountedPartition(
-            { :type => "mount", :device => "efivarfs", :mntpt => efivars_path }
+            type: "mount", device: "efivarfs", mntpt: efivars_path
           )
         end
       end
@@ -843,18 +827,17 @@ module Yast
       # MountPartition does not work here
       # because it turns --bind into -o --bind
       if SCR.Execute(
-          path(".target.mount"),
-          ["/run", ::File.join(Installation.destdir, "run"), Installation.mountlog],
-          "--bind"
-         )
+        path(".target.mount"),
+        ["/run", ::File.join(Installation.destdir, "run"), Installation.mountlog],
+        "--bind"
+      )
         AddMountedPartition(
-          { :type => "mount", :device => "none", :mntpt => "/run" }
+          type: "mount", device: "none", mntpt: "/run"
         )
       end
     end
 
-    #
-    def MountFSTab(fstab, message)
+    def MountFSTab(fstab, _message)
       fstab = deep_copy(fstab)
 
       mount_specials_in_destdir
@@ -875,7 +858,7 @@ module Yast
             mount_type = vfstype if vfstype == "proc"
 
             mount_err = ""
-            while mount_err != nil
+            until mount_err.nil?
               # An encryption device might be probed with a name that does not match with the name
               # indicated in the fstab file. For example, when the fstab entry is:
               #
@@ -888,86 +871,86 @@ module Yast
               # device, the safest device name is used instead, that is, UUID= format or its uuid
               # udev name, see {#safest_device_name}.
               mount_err = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
-              if mount_err != nil
-                Builtins.y2error(
-                  "mounting %1 (type %2) on %3 failed",
-                  spec,
-                  mount_type,
-                  Ops.add(Installation.destdir, fspath)
+              next if mount_err.nil?
+
+              Builtins.y2error(
+                "mounting %1 (type %2) on %3 failed",
+                spec,
+                mount_type,
+                Ops.add(Installation.destdir, fspath)
+              )
+              UI.OpenDialog(
+                VBox(
+                  Label(
+                    Builtins.sformat(
+                      # label in a popup, %1 is device (eg. /dev/hda1),
+                      # %2 is output of the 'mount' command
+                      _(
+                        "The partition %1 could not be mounted.\n" \
+                          "\n" \
+                          "%2\n" \
+                          "\n" \
+                          "If you are sure that the partition is not necessary for the\n" \
+                          "update (not a system partition), click Continue.\n" \
+                          "To check or fix the mount options, click Specify Mount Options.\n" \
+                          "To abort the update, click Cancel.\n"
+                      ),
+                      spec,
+                      mount_err
+                    )
+                  ),
+                  VSpacing(1),
+                  HBox(
+                    PushButton(Id(:cont), Label.ContinueButton),
+                    # push button
+                    PushButton(Id(:cmd), _("&Specify Mount Options")),
+                    PushButton(Id(:cancel), Label.CancelButton)
+                  )
                 )
+              )
+              act = Convert.to_symbol(UI.UserInput)
+              UI.CloseDialog
+              if act == :cancel
+                mount_err = nil
+                success = false
+              elsif act == :cont
+                mount_err = nil
+              elsif act == :cmd
                 UI.OpenDialog(
                   VBox(
-                    Label(
-                      Builtins.sformat(
-                        # label in a popup, %1 is device (eg. /dev/hda1),
-                        # %2 is output of the 'mount' command
-                        _(
-                          "The partition %1 could not be mounted.\n" +
-                            "\n" +
-                            "%2\n" +
-                            "\n" +
-                            "If you are sure that the partition is not necessary for the\n" +
-                            "update (not a system partition), click Continue.\n" +
-                            "To check or fix the mount options, click Specify Mount Options.\n" +
-                            "To abort the update, click Cancel.\n"
-                        ),
-                        spec,
-                        mount_err
-                      )
+                    # popup heading
+                    Heading(_("Mount Options")),
+                    VSpacing(0.6),
+                    # text entry label
+                    TextEntry(Id(:mp), _("&Mount Point"), fspath),
+                    VSpacing(0.4),
+                    # tex entry label
+                    TextEntry(Id(:device), _("&Device"), spec),
+                    VSpacing(0.4),
+                    # text entry label
+                    TextEntry(
+                      Id(:fs),
+                      _("&File System\n(empty for autodetection)"),
+                      mount_type
                     ),
                     VSpacing(1),
                     HBox(
-                      PushButton(Id(:cont), Label.ContinueButton),
-                      # push button
-                      PushButton(Id(:cmd), _("&Specify Mount Options")),
+                      PushButton(Id(:ok), Label.OKButton),
                       PushButton(Id(:cancel), Label.CancelButton)
                     )
                   )
                 )
                 act = Convert.to_symbol(UI.UserInput)
-                UI.CloseDialog
-                if act == :cancel
-                  mount_err = nil
-                  success = false
-                elsif act == :cont
-                  mount_err = nil
-                elsif act == :cmd
-                  UI.OpenDialog(
-                    VBox(
-                      # popup heading
-                      Heading(_("Mount Options")),
-                      VSpacing(0.6),
-                      # text entry label
-                      TextEntry(Id(:mp), _("&Mount Point"), fspath),
-                      VSpacing(0.4),
-                      # tex entry label
-                      TextEntry(Id(:device), _("&Device"), spec),
-                      VSpacing(0.4),
-                      # text entry label
-                      TextEntry(
-                        Id(:fs),
-                        _("&File System\n(empty for autodetection)"),
-                        mount_type
-                      ),
-                      VSpacing(1),
-                      HBox(
-                        PushButton(Id(:ok), Label.OKButton),
-                        PushButton(Id(:cancel), Label.CancelButton)
-                      )
-                    )
+                if act == :ok
+                  fspath = Convert.to_string(UI.QueryWidget(Id(:mp), :Value))
+                  spec = Convert.to_string(
+                    UI.QueryWidget(Id(:device), :Value)
                   )
-                  act = Convert.to_symbol(UI.UserInput)
-                  if act == :ok
-                    fspath = Convert.to_string(UI.QueryWidget(Id(:mp), :Value))
-                    spec = Convert.to_string(
-                      UI.QueryWidget(Id(:device), :Value)
-                    )
-                    mount_type = Convert.to_string(
-                      UI.QueryWidget(Id(:fs), :Value)
-                    )
-                  end
-                  UI.CloseDialog
+                  mount_type = Convert.to_string(
+                    UI.QueryWidget(Id(:fs), :Value)
+                  )
                 end
+                UI.CloseDialog
               end
             end
 
@@ -976,7 +959,7 @@ module Yast
 
               # translates new device name to the old one because
               # storage still returns them in the old way
-              if Ops.get(@backward_translation, spec) != nil
+              if Ops.get(@backward_translation, spec)
                 checkspec = Ops.get(@backward_translation, spec, spec)
               end
 
@@ -999,7 +982,7 @@ module Yast
               if ret_from_shell != 0
                 Builtins.y2error("swapon failed: %1", command)
               else
-                AddMountedPartition({ :type => "swap", :device => spec })
+                AddMountedPartition(type: "swap", device: spec)
               end
             end
           end
@@ -1041,12 +1024,13 @@ module Yast
       device_info = {}
 
       # Creating the list of known partitions
-      Builtins.foreach(Storage.GetOndiskTarget) do |device, description|
+      Builtins.foreach(Storage.GetOndiskTarget) do |_device, description|
         Builtins.foreach(Ops.get_list(description, "partitions", [])) do |partition|
           # Some partitions logically can't be used for /var
           next if Ops.get_symbol(partition, "detected_fs", :unknown) == :swap
           next if Ops.get_symbol(partition, "type", :unknown) == :extended
           next if !Builtins.haskey(partition, "device")
+
           list_of_devices = Builtins.add(
             list_of_devices,
             Ops.get_string(partition, "device", "")
@@ -1057,9 +1041,9 @@ module Yast
             Builtins.sformat(
               # Informational text about selected partition, %x are replaced with values later
               _(
-                "<b>File system:</b> %1, <b>Type:</b> %2,<br>\n" +
-                  "<b>Label:</b> %3, <b>Size:</b> %4,<br>\n" +
-                  "<b>udev IDs:</b> %5,<br>\n" +
+                "<b>File system:</b> %1, <b>Type:</b> %2,<br>\n" \
+                  "<b>Label:</b> %3, <b>Size:</b> %4,<br>\n" \
+                  "<b>udev IDs:</b> %5,<br>\n" \
                   "<b>udev path:</b> %6"
               ),
               # starts with >`<
@@ -1100,9 +1084,9 @@ module Yast
                   Label(
                     _(
                       "Your system uses a separate /var partition which is " \
-                        "required for the upgrade\n" +
+                        "required for the upgrade\n" \
                         "process to detect the disk-naming changes. " \
-                        "Select the /var partition manually\n" +
+                        "Select the /var partition manually\n" \
                         "to continue the upgrade process."
                     )
                   )
@@ -1170,7 +1154,7 @@ module Yast
           Builtins.y2milestone("Trying to mount %1 as /var", var_device)
           mount_error = MountVarPartition(var_device)
 
-          if mount_error != nil
+          if !mount_error.nil?
             Report.Error(mount_error)
             next
           else
@@ -1193,9 +1177,9 @@ module Yast
     def MountVarIfRequired(fstab, manual_var_mount)
       fstab = deep_copy(fstab)
       var_device_fstab = (
-        fstab_ref = arg_ref(fstab);
-        _FindPartitionInFstab_result = FindPartitionInFstab(fstab_ref, "/var");
-        fstab = fstab_ref.value;
+        fstab_ref = arg_ref(fstab)
+        _FindPartitionInFstab_result = FindPartitionInFstab(fstab_ref, "/var")
+        fstab = fstab_ref.value
         _FindPartitionInFstab_result
       )
 
@@ -1234,8 +1218,9 @@ module Yast
       # detect pam_mount encrypted homes
       pam_mount_path = Installation.destdir + "/etc/security/pam_mount.conf.xml"
       return false unless File.exists? pam_mount_path
+
       Builtins.y2milestone("Detected pam_mount.conf, checking existence of encrypted home dirs")
-      pam_mount_conf = SCR.Read(path(".anyxml"), pam_mount_path);
+      pam_mount_conf = SCR.Read(path(".anyxml"), pam_mount_path)
       pam = pam_mount_conf.fetch("pam_mount", [])[0]
       volumes = pam && pam["volume"]
       Builtins.y2milestone("Detected encrypted volumes: %1", volumes)
@@ -1255,8 +1240,8 @@ module Yast
       # popup message, %1 will be replace with the name of the logfile
       message = Builtins.sformat(
         _(
-          "Partitions could not be mounted.\n" +
-            "\n" +
+          "Partitions could not be mounted.\n" \
+            "\n" \
             "Check the log file %1."
         ),
         Ops.add(Directory.logdir, "/y2log")
@@ -1306,9 +1291,9 @@ module Yast
           )
           warning = Builtins.sformat(
             _(
-              "Some partitions in the system on %1 are mounted by kernel-device name. This is\n" +
-                "not reliable for the update since kernel-device names are unfortunately not\n" +
-                "persistent. It is strongly recommended to start the old system and change the\n" +
+              "Some partitions in the system on %1 are mounted by kernel-device name. This is\n" \
+                "not reliable for the update since kernel-device names are unfortunately not\n" \
+                "persistent. It is strongly recommended to start the old system and change the\n" \
                 "mount-by method to any other method for all partitions."
             ),
             root_device_current
@@ -1323,12 +1308,12 @@ module Yast
         if has_pam_mount
           warning = Builtins.sformat(
             _(
-              "Some home directories in the system on %1 are encrypted. This release does not\n" +
+              "Some home directories in the system on %1 are encrypted. This release does not\n" \
                 "support cryptconfig any longer and those home directories " \
-                "will not be accessible\n" +
+                "will not be accessible\n" \
                 "after upgrade. In order to access these home directories, " \
-                "they need to be decrypted\n" +
-                "before performing upgrade.\n" +
+                "they need to be decrypted\n" \
+                "before performing upgrade.\n" \
                 "You can consider encrypting whole volume via LUKS."
             ),
             root_device_current
@@ -1343,7 +1328,7 @@ module Yast
           success = false
         else
           tmp_msg = MountVarIfRequired(fstab, true)
-          if tmp_msg != nil
+          if !tmp_msg.nil?
             Builtins.y2error("failed to mount /var!")
             message = tmp_msg
             success = false
@@ -1351,13 +1336,13 @@ module Yast
             tmp = ""
 
             if !(
-                tmp_ref = arg_ref(tmp);
+                tmp_ref = arg_ref(tmp)
                 check_root_device_result = check_root_device(
                   root_device_current,
                   fstab,
                   tmp_ref
-                );
-                tmp = tmp_ref.value;
+                )
+                tmp = tmp_ref.value
                 check_root_device_result
               )
               Builtins.y2error("fstab has wrong root device!")
@@ -1387,16 +1372,15 @@ module Yast
                     _("The mount points listed below are using legacy filesystems " \
                       "that are not supported anymore:\n\n%1\n\n"                    \
                       "Before upgrade you should migrate all "                 \
-                      "your data to another filesystem.\n"
-                    ),
+                      "your data to another filesystem.\n"),
                     legacy_entries.map { |e| "#{e["file"]} (#{e["vfstype"]})" }.join("\n")
                   )
 
                 success = false
               elsif !(
-                  message_ref = arg_ref(message);
-                  _MountFSTab_result = MountFSTab(fstab, message_ref);
-                  message = message_ref.value;
+                  message_ref = arg_ref(message)
+                  _MountFSTab_result = MountFSTab(fstab, message_ref)
+                  message = message_ref.value
                   _MountFSTab_result
                 )
                 success = false
@@ -1431,8 +1415,8 @@ module Yast
         update_staging!
         if Yast2::FsSnapshot.configured?
           # as of bsc #1092757 snapshot descriptions are not translated
-          snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup: :number,
-            important: true)
+          snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup:   :number,
+                                                                   important: true)
           Yast2::FsSnapshotStore.save("update", snapshot.number)
         end
         Update.clean_backup
@@ -1449,7 +1433,7 @@ module Yast
     # backup them to restore if something goes wrong (bnc#882039)
     BACKUP_DIRS = {
       # use a number prefix to set the execution order
-      "0100-sw_mgmt" => [
+      "0100-sw_mgmt"     => [
         "/var/lib/rpm",
         "/etc/zypp/repos.d",
         "/etc/zypp/services.d",
@@ -1460,7 +1444,7 @@ module Yast
       "0999-resolv_conf" => [
         RESOLV_CONF
       ]
-    }
+    }.freeze
 
     def create_backup
       BACKUP_DIRS.each_pair do |name, paths|
@@ -1494,6 +1478,7 @@ module Yast
         )
       )
       return "unknown" if Ops.get_integer(bash_out, "exit", 1) != 0
+
       Builtins.deletechars(Ops.get_string(bash_out, "stdout", "unknown"), "\n")
     end
 
@@ -1527,8 +1512,6 @@ module Yast
         device.id.to_human_string
       elsif device.is?(:lvm_lv)
         "LV"
-      else
-        nil
       end
     end
 
@@ -1554,13 +1537,13 @@ module Yast
         error_message = nil
         log.debug("Running RunFSCKonJFS with mount_type: #{mount_type} and device: #{p_dev}")
         if !(
-            error_message_ref = arg_ref(error_message);
+            error_message_ref = arg_ref(error_message)
             _RunFSCKonJFS_result = RunFSCKonJFS(
               mount_type,
               p_dev,
               error_message_ref
-            );
-            error_message = error_message_ref.value;
+            )
+            error_message = error_message_ref.value
             _RunFSCKonJFS_result
           )
           freshman[:valid] = false
@@ -1587,12 +1570,12 @@ module Yast
           # Is this a root partition, does /etc/fstab exists?
           log.debug("Checking /etc/fstab in #{Installation.destdir}")
           if Ops.greater_than(
-              SCR.Read(
-                path(".target.size"),
-                Ops.add(Installation.destdir, "/etc/fstab")
-              ),
-              0
-            )
+            SCR.Read(
+              path(".target.size"),
+              Ops.add(Installation.destdir, "/etc/fstab")
+            ),
+            0
+          )
             Builtins.y2milestone("found fstab on %1", p_dev)
 
             fstab = []
@@ -1683,7 +1666,6 @@ module Yast
       deep_copy(freshman)
     end
 
-
     # Find all valid root partitions and place the result in rootPartitions.
     # The partitions are mounted and unmounted again (to Installation::destdir).
     # Loads a bunch of kernel modules.
@@ -1694,25 +1676,25 @@ module Yast
       return if @didSearchForRootPartitions
 
       modules_to_load = {
-        "xfs" => "XFS",
-        "ext3" => "Ext3",
-        "ext4" => "Ext4",
-        "btrfs" => "BtrFS",
-        "raid0" => "Raid 0",
-        "raid1" => "Raid 1",
-        "raid5" => "Raid 5",
-        "raid6" => "Raid 6",
-        "raid10" => "Raid 10",
+        "xfs"          => "XFS",
+        "ext3"         => "Ext3",
+        "ext4"         => "Ext4",
+        "btrfs"        => "BtrFS",
+        "raid0"        => "Raid 0",
+        "raid1"        => "Raid 1",
+        "raid5"        => "Raid 5",
+        "raid6"        => "Raid 6",
+        "raid10"       => "Raid 10",
         "dm-multipath" => "Multipath",
-        "dm-mod" => "DM",
-        "dm-snapshot" => "DM Snapshot",
+        "dm-mod"       => "DM",
+        "dm-snapshot"  => "DM Snapshot"
       }
 
       modules_to_load.each do |module_to_load, show_name|
         ModuleLoading.Load(module_to_load, "", "Linux", show_name, Linuxrc.manual, true)
       end
 
-      #	Storage::ActivateEvms();
+      #  Storage::ActivateEvms();
 
       # prepare progress-bar
       if UI.WidgetExists(Id("search_progress"))
@@ -1750,9 +1732,7 @@ module Yast
       end
 
       # 100%
-      if UI.WidgetExists(Id("search_progress"))
-        UI.ChangeWidget(Id("search_pb"), :Value, 100)
-      end
+      UI.ChangeWidget(Id("search_pb"), :Value, 100) if UI.WidgetExists(Id("search_progress"))
 
       @didSearchForRootPartitions = true
 
@@ -1803,8 +1783,8 @@ module Yast
     IGNORED_OPTIONS = [
       "ro", # in installation do not mount anything RO
       "defaults", # special defaults options in fstab
-      /^locale=.*$/, #avoid locale for NTFS
-    ]
+      /^locale=.*$/ # avoid locale for NTFS
+    ].freeze
 
     def cleaned_mount_options(mount_options)
       elements = mount_options.split(",")
@@ -1822,27 +1802,27 @@ module Yast
       @rootPartitions        = data["partitions"] || {}
     end
 
-    publish :variable => :selectedRootPartition, :type => "string"
-    publish :variable => :previousRootPartition, :type => "string"
-    publish :variable => :rootPartitions, :type => "map <string, map>"
-    publish :variable => :numberOfValidRootPartitions, :type => "integer"
-    publish :variable => :showAllPartitions, :type => "boolean"
-    publish :variable => :didSearchForRootPartitions, :type => "boolean"
-    publish :variable => :targetOk, :type => "boolean"
-    publish :variable => :did_try_mount_partitions, :type => "boolean"
-    publish :function => :GetActivated, :type => "list <map <symbol, string>> ()"
-    publish :function => :Mounted, :type => "boolean ()"
-    publish :function => :GetInfoOfSelected, :type => "string (symbol)"
-    publish :function => :SetSelectedToValid, :type => "void ()"
-    publish :function => :UnmountPartitions, :type => "void (boolean)"
-    publish :function => :AnyQuestionAnyButtonsDetails,
-      :type => "boolean (string, string, string, string, string)"
-    publish :function => :MountPartitions, :type => "boolean (string)"
-    publish :function => :IncompleteInstallationDetected, :type => "boolean (string)"
-    publish :function => :FindRootPartitions, :type => "void ()"
-    publish :function => :GetDistroArch, :type => "string ()"
-    publish :function => :mount_target, :type => "boolean ()"
-    publish :function => :Detect, :type => "void ()"
+    publish variable: :selectedRootPartition, type: "string"
+    publish variable: :previousRootPartition, type: "string"
+    publish variable: :rootPartitions, type: "map <string, map>"
+    publish variable: :numberOfValidRootPartitions, type: "integer"
+    publish variable: :showAllPartitions, type: "boolean"
+    publish variable: :didSearchForRootPartitions, type: "boolean"
+    publish variable: :targetOk, type: "boolean"
+    publish variable: :did_try_mount_partitions, type: "boolean"
+    publish function: :GetActivated, type: "list <map <symbol, string>> ()"
+    publish function: :Mounted, type: "boolean ()"
+    publish function: :GetInfoOfSelected, type: "string (symbol)"
+    publish function: :SetSelectedToValid, type: "void ()"
+    publish function: :UnmountPartitions, type: "void (boolean)"
+    publish function: :AnyQuestionAnyButtonsDetails,
+            type:     "boolean (string, string, string, string, string)"
+    publish function: :MountPartitions, type: "boolean (string)"
+    publish function: :IncompleteInstallationDetected, type: "boolean (string)"
+    publish function: :FindRootPartitions, type: "void ()"
+    publish function: :GetDistroArch, type: "string ()"
+    publish function: :mount_target, type: "boolean ()"
+    publish function: :Detect, type: "void ()"
 
   private
 
@@ -1872,11 +1852,11 @@ module Yast
     # @return [Boolean]
     def fstab_entry_matches?(entry, filesystem)
       spec = entry["spec"]
-      id, value = spec.include?("=") ? spec.split('=') : ["", spec]
+      id, value = spec.include?("=") ? spec.split("=") : ["", spec]
       id.downcase!
 
       if ["label", "uuid"].include?(id)
-        dev_string = id == "label" ? filesystem.label : filesystem.uuid
+        dev_string = (id == "label") ? filesystem.label : filesystem.uuid
         return true if dev_string == value
 
         log.warn("Device does not match fstab (#{id}): #{dev_string} vs. #{value}")
@@ -1979,7 +1959,7 @@ module Yast
       if devicegraph.object_id == staging.object_id
         graph = "staging#" + Y2Storage::StorageManager.instance.staging_revision.to_s
       end
-      log.info("fs_by_devicename(#{graph}, #{device_spec}) = #{'sid#' + fs.sid.to_s if fs}")
+      log.info("fs_by_devicename(#{graph}, #{device_spec}) = #{"sid#" + fs.sid.to_s if fs}")
 
       fs
     end
@@ -1993,6 +1973,7 @@ module Yast
     def fs_by_udev_lookup(devicegraph, name)
       dev = devicegraph.find_by_any_name(name)
       return nil if dev.nil? || !dev.respond_to?(:filesystem)
+
       dev.filesystem
     end
 
@@ -2040,7 +2021,7 @@ module Yast
       "xfs",
       "hpfs",
       "vfat",
-      "auto",
+      "auto"
     ].freeze
     private_constant :ALLOWED_FS
 

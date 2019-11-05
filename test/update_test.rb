@@ -15,7 +15,7 @@ Yast.import "Report"
 include Yast::Logger
 
 DATA_DIR = File.join(
-  File.expand_path(File.dirname(__FILE__)),
+  __dir__,
   "data"
 )
 
@@ -74,8 +74,8 @@ describe Yast::Update do
       allow(::FileUtils).to receive(:chmod)
       allow(::File).to receive(:exist?).and_return(true)
       allow(Pathname).to receive(:new).and_return(double("Pathname", exist?: true))
-      allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /^tar /).
-        and_return({"exit" => 0})
+      allow(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /^tar /)
+        .and_return("exit" => 0)
     end
 
     let(:backup_dir) { "#{Yast::Installation.destdir}/#{Yast::UpdateClass::BACKUP_DIR}" }
@@ -115,21 +115,21 @@ describe Yast::Update do
 
       expect(::FileUtils).to receive(:cp).with(os_release_pathname, anything)
 
-      Yast::Update.create_backup('testing', [])
+      Yast::Update.create_backup("testing", [])
     end
 
     it "does not crash when os-release file does not exists" do
       allow(::FileUtils).to receive(:cp).and_raise(Errno::ENOENT)
 
-      expect { Yast::Update.create_backup('testing', []) }.to_not raise_error
+      expect { Yast::Update.create_backup("testing", []) }.to_not raise_error
     end
 
     it "create tarball including given name with all paths added" do
       name = "test-backup"
       paths = ["a", "b"]
       expect(Yast::SCR).to receive(:Execute)
-        .with(Yast::Path.new(".target.bash_output"), /^tar c.*a.*b.*#{name}.tar.gz/).
-        and_return({"exit" => 0})
+        .with(Yast::Path.new(".target.bash_output"), /^tar c.*a.*b.*#{name}.tar.gz/)
+        .and_return("exit" => 0)
       Yast::Update.create_backup(name, paths)
     end
 
@@ -137,8 +137,8 @@ describe Yast::Update do
       name = "test-backup"
       paths = ["/path_with_slash", "path_without_slash"]
       expect(Yast::SCR).to receive(:Execute)
-        .with(Yast::Path.new(".target.bash_output"), / path_with_slash/).
-        and_return({"exit" => 0})
+        .with(Yast::Path.new(".target.bash_output"), / path_with_slash/)
+        .and_return("exit" => 0)
       Yast::Update.create_backup(name, paths)
     end
 
@@ -146,15 +146,15 @@ describe Yast::Update do
       name = "test-backup"
       paths = ["/path_with_slash"]
       expect(Yast::SCR).to receive(:Execute)
-        .with(Yast::Path.new(".target.bash_output"), /-C '\/mnt'/).
-        and_return({"exit" => 0})
+        .with(Yast::Path.new(".target.bash_output"), /-C '\/mnt'/)
+        .and_return("exit" => 0)
       Yast::Update.create_backup(name, paths)
     end
 
     it "change permission of tarball to be readable only for creator" do
       name = "test-backup"
       paths = ["a", "b"]
-      expect(::FileUtils).to receive(:chmod).with(0600, /test-backup\.tar.gz/)
+      expect(::FileUtils).to receive(:chmod).with(0o600, /test-backup\.tar.gz/)
 
       Yast::Update.create_backup(name, paths)
     end
@@ -162,9 +162,9 @@ describe Yast::Update do
     it "raise exception if creating tarball failed" do
       name = "test-backup"
       paths = ["/path_with_slash"]
-      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /tar/).
-        and_return({"exit" => 1})
-      expect{Yast::Update.create_backup(name, paths)}.to(
+      expect(Yast::SCR).to receive(:Execute).with(Yast::Path.new(".target.bash_output"), /tar/)
+        .and_return("exit" => 1)
+      expect { Yast::Update.create_backup(name, paths) }.to(
         raise_error(RuntimeError, "Failed to create backup")
       )
     end
@@ -181,7 +181,7 @@ describe Yast::Update do
       name = "test-backup"
       paths = ["a", "b"]
 
-      expect(::FileUtils).to receive(:chmod).with(0744, /restore-test-backup\.sh/)
+      expect(::FileUtils).to receive(:chmod).with(0o744, /restore-test-backup\.sh/)
 
       Yast::Update.create_backup(name, paths)
     end
@@ -189,7 +189,7 @@ describe Yast::Update do
 
   describe "#clean_backup" do
     it "removes backup directory with its content" do
-      expect(::FileUtils).to receive(:rm_r).with(/\/mnt.*system-upgrade.*/, anything())
+      expect(::FileUtils).to receive(:rm_r).with(/\/mnt.*system-upgrade.*/, anything)
 
       Yast::Update.clean_backup
     end
@@ -272,7 +272,7 @@ describe Yast::Update do
   describe "#SetDesktopPattern" do
     context "if there is no definition of window manager upgrade path in control file" do
       it "returns true as there is no upgrade path defined" do
-        allow(Yast::ProductFeatures).to receive(:GetFeature).with("software","upgrade")
+        allow(Yast::ProductFeatures).to receive(:GetFeature).with("software", "upgrade")
           .and_return(nil)
 
         expect(Yast::Y2Logger.instance).to receive(:info)\

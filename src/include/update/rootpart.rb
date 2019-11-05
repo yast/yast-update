@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,22 +17,22 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module:	include/installation/rootpart.ycp
+# Module:  include/installation/rootpart.ycp
 #
-# Authors:	Stefan Schubert <schubi@suse.de>
-#		Arvin Schnell <arvin@suse.de>
+# Authors:  Stefan Schubert <schubi@suse.de>
+#    Arvin Schnell <arvin@suse.de>
 #              Jiri Srain <jsrain@suse.cz>
 #
-# Purpose:	Select root partition for update or booting.
-#		RootPart::rootPartitions must be filled before
-#		calling this module.
+# Purpose:  Select root partition for update or booting.
+#    RootPart::rootPartitions must be filled before
+#    calling this module.
 require "yast"
 
 module Yast
   module UpdateRootpartInclude
     include Yast::Logger
 
-    def initialize_update_rootpart(include_target)
+    def initialize_update_rootpart(_include_target)
       Yast.import "UI"
       Yast.import "Pkg"
       textdomain "update"
@@ -68,7 +66,7 @@ module Yast
 
       begin
         Y2Storage::Filesystems::Type.new(partition_fs).root_ok?
-      rescue
+      rescue StandardError
         false
       end
     end
@@ -90,7 +88,7 @@ module Yast
 
       begin
         Y2Storage::Filesystems::Type.new(partition_fs).legacy_root?
-      rescue
+      rescue StandardError
         false
       end
     end
@@ -103,14 +101,14 @@ module Yast
 
         # see bugzilla #288201
         # architecture needs to be valid when updating, not booting
-        arch_is_valid = flavor == :boot ?
+        arch_is_valid = (flavor == :boot) ?
           true :
           Ops.get_boolean(i, :arch_valid, false)
         if withall || Ops.get_boolean(i, :valid, false) && arch_is_valid
           # `ext2, `jfs, ...
           part_fs = Ops.get_symbol(i, :fs)
           part_fs_name = Builtins.tostring(part_fs)
-          if part_fs_name != nil &&
+          if !part_fs_name.nil? &&
               Builtins.regexpmatch(part_fs_name, "^`(.*)$")
             part_fs_name = Builtins.regexpsub(part_fs_name, "^`(.*)$", "\\1")
           end
@@ -118,13 +116,13 @@ module Yast
           system = Ops.get_string(i, :name, "error")
           # unknown system
           if system == "unknown"
-            if part_fs != nil
-              if CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)
+            if !part_fs.nil?
+              system = if CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)
                 # Table item (unknown system)
-                system = _("Unknown Linux")
+                _("Unknown Linux")
               else
                 # Table item (unknown system)
-                system = _("Unknown or Non-Linux")
+                _("Unknown or Non-Linux")
               end
             else
               # Table item (unknown system [neither openSUSE 11.1 nor SLES 14 nor ...])
@@ -139,21 +137,19 @@ module Yast
           # fist, use the name of file system (with short name for Linux)
           # then the file system short name
           # then "Unknown"
-          fs = ""
-
           # is a linux fs, can be a root fs, has a fs name
-          if part_fs != nil &&
-            (CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)) &&
-            part_fs_name != nil
+          fs = if !part_fs.nil? &&
+              (CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)) &&
+              !part_fs_name.nil?
             # We are sure that we have found a valid linux partition for update.
             # In some cases fstype has not been set correctly while previous
             # installation. E.g. Parted (versions older than 3.2) has set
             # fstype to "Microsoft Basic Data" although it is a linux partition.
             # So we are not showing this entry in order to not confusing the
             # user.
-            fs = part_fs_name
+            part_fs_name
           else
-            fs = Ops.get_string(i, :fstype, Ops.get_string(i, :fs, ""))
+            Ops.get_string(i, :fstype, Ops.get_string(i, :fs, ""))
           end
           # Table item (unknown file system)
           fs = _("Unknown") if fs == ""
@@ -207,7 +203,7 @@ module Yast
 
       partition_list = make_partition_list(
         RootPart.showAllPartitions,
-        flavor == :boot_popup ? :boot : :update
+        (flavor == :boot_popup) ? :boot : :update
       )
 
       title = ""
@@ -220,8 +216,8 @@ module Yast
 
         # help text for root partition dialog (for boot)
         help_text = _(
-          "<p>\n" +
-            "Select the partition or system to boot.\n" +
+          "<p>\n" \
+            "Select the partition or system to boot.\n" \
             "</p>\n"
         )
       else
@@ -230,8 +226,8 @@ module Yast
 
         # help text for root partition dialog (for update)
         help_text = _(
-          "<p>\n" +
-            "Select the partition or system to update.\n" +
+          "<p>\n" \
+            "Select the partition or system to update.\n" \
             "</p>\n"
         )
 
@@ -245,9 +241,9 @@ module Yast
       help_text = Ops.add(
         help_text,
         _(
-          "<p>\n" +
-            "<b>Show All Partitions</b> expands the list to a\n" +
-            "general overview of your system's partitions.\n" +
+          "<p>\n" \
+            "<b>Show All Partitions</b> expands the list to a\n" \
+            "general overview of your system's partitions.\n" \
             "</p>\n"
         )
       )
@@ -333,7 +329,6 @@ module Yast
         UI.OpenDialog(full)
       end
 
-
       if Ops.greater_than(Builtins.size(RootPart.selectedRootPartition), 0)
         UI.ChangeWidget(
           Id(:partition),
@@ -344,14 +339,13 @@ module Yast
 
       UI.ChangeWidget(Id(:showall), :Value, RootPart.showAllPartitions)
 
-
       ret = nil
 
       while true
-        if flavor == :update_dialog || flavor == :update_dialog_proposal
-          ret = Wizard.UserInput
+        ret = if flavor == :update_dialog || flavor == :update_dialog_proposal
+          Wizard.UserInput
         else
-          ret = UI.UserInput
+          UI.UserInput
         end
 
         ret = :abort if ret == :cancel
@@ -361,10 +355,10 @@ module Yast
           tmp = Convert.to_string(UI.QueryWidget(Id(:partition), :CurrentItem))
           partition_list = make_partition_list(
             Convert.to_boolean(UI.QueryWidget(Id(:showall), :Value)),
-            flavor == :boot_popup ? :boot : :update
+            (flavor == :boot_popup) ? :boot : :update
           )
           UI.ChangeWidget(Id(:partition), :Items, partition_list)
-          UI.ChangeWidget(Id(:partition), :CurrentItem, tmp) if tmp != nil
+          UI.ChangeWidget(Id(:partition), :CurrentItem, tmp) if !tmp.nil?
           next
         end
         if (flavor == :update_dialog || flavor == :update_popup ||
@@ -397,9 +391,9 @@ module Yast
               )
             )
           elsif !DoArchitecturesMatch(
-              Ops.get_string(freshman, :arch, ""),
-              RootPart.GetDistroArch
-            )
+            Ops.get_string(freshman, :arch, ""),
+            RootPart.GetDistroArch
+          )
             cont = Popup.ContinueCancel(
               # continue-cancel popup
               _(
@@ -431,17 +425,17 @@ module Yast
               # Correctly mounted but incomplete installation found
             elsif RootPart.IncompleteInstallationDetected(Installation.destdir)
               if Popup.AnyQuestion(
-                  Label.WarningMsg,
-                  # pop-up question
-                  _(
-                    "A possibly incomplete installation has been detected on the selected " \
-                      "partition.\nAre sure you want to use it anyway?"
-                  ),
-                  # button label
-                  _("&Yes, Use It"),
-                  Label.CancelButton,
-                  :focus_no
-                )
+                Label.WarningMsg,
+                # pop-up question
+                _(
+                  "A possibly incomplete installation has been detected on the selected " \
+                    "partition.\nAre sure you want to use it anyway?"
+                ),
+                # button label
+                _("&Yes, Use It"),
+                Label.CancelButton,
+                :focus_no
+              )
                 Builtins.y2milestone(
                   "User wants to update possibly incomplete system"
                 )
@@ -471,21 +465,21 @@ module Yast
         # the target distribution from the base product to make the new service
         # repositories compatible with the base product at upgrade (bnc#881320)
         if Pkg.TargetInitializeOptions(Installation.destdir,
-            "target_distro" => target_distribution) != true
+          "target_distro" => target_distribution) != true
           # Target load failed, #466803
           Builtins.y2error("Pkg::TargetInitialize failed")
           if Popup.AnyQuestion(
-              Label.ErrorMsg,
-              _(
-                "Initializing the system for upgrade has failed for unknown reason.\n" +
-                  "It is highly recommended not to continue the upgrade process.\n" +
-                  "\n" +
-                  "Are you sure you want to continue?"
-              ),
-              _("&Yes, Continue"),
-              Label.CancelButton,
-              :focus_no
-            )
+            Label.ErrorMsg,
+            _(
+              "Initializing the system for upgrade has failed for unknown reason.\n" \
+                "It is highly recommended not to continue the upgrade process.\n" \
+                "\n" \
+                "Are you sure you want to continue?"
+            ),
+            _("&Yes, Continue"),
+            Label.CancelButton,
+            :focus_no
+          )
             ret = :back
           else
             Builtins.y2warning(
@@ -500,17 +494,17 @@ module Yast
           if Pkg.TargetLoad != true
             Builtins.y2error("Pkg::TargetLoad failed")
             if Popup.AnyQuestion(
-                Label.ErrorMsg,
-                _(
-                  "Initializing the system for upgrade has failed for unknown reason.\n" +
-                    "It is highly recommended not to continue the upgrade process.\n" +
-                    "\n" +
-                    "Are you sure you want to continue?"
-                ),
-                _("&Yes, Continue"),
-                Label.CancelButton,
-                :focus_no
-              )
+              Label.ErrorMsg,
+              _(
+                "Initializing the system for upgrade has failed for unknown reason.\n" \
+                  "It is highly recommended not to continue the upgrade process.\n" \
+                  "\n" \
+                  "Are you sure you want to continue?"
+              ),
+              _("&Yes, Continue"),
+              Label.CancelButton,
+              :focus_no
+            )
               ret = :back
             else
               Builtins.y2warning(
@@ -534,6 +528,5 @@ module Yast
 
       target_distro
     end
-
   end
 end

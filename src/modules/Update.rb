@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,13 +17,13 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module:		Update.ycp
+# Module:    Update.ycp
 #
-# Authors:		Anas Nashif <nashif@suse.de>
-#			Arvin Schnell <arvin@suse.de>
-#			Lukas Ocilka <locilka@suse.cz>
+# Authors:    Anas Nashif <nashif@suse.de>
+#      Arvin Schnell <arvin@suse.de>
+#      Lukas Ocilka <locilka@suse.cz>
 #
-# Purpose:		Update module
+# Purpose:    Update module
 #
 
 require "yast"
@@ -33,7 +31,6 @@ require "fileutils"
 
 module Yast
   class UpdateClass < Module
-
     include Yast::Logger
 
     def main
@@ -99,13 +96,11 @@ module Yast
       #
       # global map <string, any> updateVersion = $[];
 
-
       # Flag, if the basesystem have to be installed
       @updateBasePackages = false
 
       # counter for installed packages
       @packagesInstalled = 0
-
 
       # see bug #40358
       @manual_interaction = false
@@ -147,13 +142,11 @@ module Yast
       )
 
       default_sdp = nil
-      if default_sdp_a == nil || default_sdp_a == ""
+      if default_sdp_a.nil? || default_sdp_a == ""
         Builtins.y2milestone("software/silently_downgrade_packages not defined")
         return nil
       end
-      if Ops.is_boolean?(default_sdp_a)
-        default_sdp = Convert.to_boolean(default_sdp_a)
-      end
+      default_sdp = Convert.to_boolean(default_sdp_a) if Ops.is_boolean?(default_sdp_a)
 
       installed_system = installed_product
       Builtins.y2milestone(
@@ -162,7 +155,7 @@ module Yast
         Installation.destdir
       )
 
-      if installed_system == nil || installed_system == ""
+      if installed_system.nil? || installed_system == ""
         Builtins.y2error("Cannot find out installed system name")
         return default_sdp
       end
@@ -173,17 +166,16 @@ module Yast
       )
       # No reverse rules defined
       return default_sdp if reverse_sdp_a == ""
+
       # not a list or empty list
       reverse_sdp = Convert.convert(
         reverse_sdp_a,
-        :from => "any",
-        :to   => "list <string>"
+        from: "any",
+        to:   "list <string>"
       )
-      return default_sdp if reverse_sdp == nil || reverse_sdp == []
+      return default_sdp if reverse_sdp.nil? || reverse_sdp == []
 
-      if ListOfRegexpsMatchesProduct(reverse_sdp, installed_system)
-        return !default_sdp
-      end
+      return !default_sdp if ListOfRegexpsMatchesProduct(reverse_sdp, installed_system)
 
       default_sdp
     end
@@ -198,7 +190,7 @@ module Yast
         Installation.destdir
       )
 
-      if installed_system == nil || installed_system == ""
+      if installed_system.nil? || installed_system == ""
         Builtins.y2error("Cannot find out installed system name")
         return false
       end
@@ -215,23 +207,19 @@ module Yast
       # not a list or empty list
       supported_products = Convert.convert(
         supported_products_a,
-        :from => "any",
-        :to   => "list <string>"
+        from: "any",
+        to:   "list <string>"
       )
-      return true if supported_products == nil || supported_products == []
+      return true if supported_products.nil? || supported_products == []
 
-      if ListOfRegexpsMatchesProduct(supported_products, installed_system)
-        return true
-      end
+      return true if ListOfRegexpsMatchesProduct(supported_products, installed_system)
 
       false
     end
 
-
     #-----------------------------------------------------------------------
     # GLOBAL FUNCTIONS
     #-----------------------------------------------------------------------
-
 
     def SelectedProducts
       selected = Pkg.ResolvableProperties("", :product, "")
@@ -258,7 +246,7 @@ module Yast
     # Check if installed product and product to upgrade to are compatible
     # @return [Boolean] true if update is possible
     def ProductsCompatible
-      if @_products_compatible == nil
+      if @_products_compatible.nil?
         if Stage.normal
           # check if name of one of the products on the installation
           # media is same as one of the installed products
@@ -283,9 +271,9 @@ module Yast
           if Ops.greater_than(Builtins.size(to_install), 0)
             equal_product = Builtins.find(inst_names) do |i|
               found = Builtins.find(to_install) { |u| u == i }
-              found != nil
+              !found.nil?
             end
-            @_products_compatible = equal_product != nil
+            @_products_compatible = !equal_product.nil?
             # no product name found
             # bugzilla #218720, valid without testing according to comment #10
           else
@@ -295,7 +283,7 @@ module Yast
             @_products_compatible = true
           end
         else
-          @_products_compatible = true # FIXME this is temporary
+          @_products_compatible = true # FIXME: this is temporary
         end
         Builtins.y2milestone(
           "Products found compatible: %1",
@@ -335,7 +323,7 @@ module Yast
         "dropped_packages"
       )
 
-      if packages_to_drop == nil || packages_to_drop == ""
+      if packages_to_drop.nil? || packages_to_drop == ""
         Builtins.y2milestone("No obsolete packages to drop")
         return
       end
@@ -353,14 +341,13 @@ module Yast
       nil
     end
 
-    #
     def Reset
       Builtins.y2milestone("Calling: UpdateReset()")
 
       InitUpdate()
 
-      #	deleteOldPackages = DeleteOldPackages();
-      #	y2milestone ("deleteOldPackages %1", deleteOldPackages);
+      #  deleteOldPackages = DeleteOldPackages();
+      #  y2milestone ("deleteOldPackages %1", deleteOldPackages);
 
       @disallow_upgrade = false
 
@@ -376,8 +363,6 @@ module Yast
       nil
     end
 
-
-    #
     def fill_version_map(data)
       if Ops.get_string(data.value, "name", "?") == "?" &&
           Ops.get_string(data.value, "version", "?") == "?"
@@ -412,7 +397,6 @@ module Yast
       nil
     end
 
-
     # Read product name and version for the old and new release.
     # Fill Installation::installedVersion and Installation::updateVersion.
     # @return success
@@ -437,7 +421,7 @@ module Yast
       end
 
       p = Builtins.findlastof(old_name, " ")
-      if p == nil
+      if p.nil?
         Builtins.y2error("release info <%1> is screwed", old_name)
         Installation.installedVersion = {}
       else
@@ -460,7 +444,7 @@ module Yast
       # "minor" and "major" version keys
       # bug #153576, "version" == "9" or "10.1" or ...
       inst_ver = Ops.get_string(Installation.installedVersion, "version", "")
-      if inst_ver != "" && inst_ver != nil
+      if inst_ver != "" && !inst_ver.nil?
         # SLE, SLD, OES...
         if Builtins.regexpmatch(inst_ver, "^[0123456789]+$")
           Ops.set(
@@ -525,26 +509,28 @@ module Yast
       Builtins.y2milestone("Known sources: %1", Packages.theSources)
 
       # So-called System Update
-      Builtins.foreach(Packages.theSources) do |source_id|
-        source_map = Pkg.SourceProductData(source_id)
-        # source need to be described
-        if source_map != {}
-          if Ops.get_string(source_map, "productversion", "A") ==
-              Ops.get_string(Installation.installedVersion, "version", "B")
-            Builtins.y2milestone("Found matching product: %1", source_map)
-            update_to_source = source_id
-          else
-            Builtins.y2error("Found non-matching product: %1", source_map)
-            # every invalid product is selected
-            update_to_source = source_id if update_to_source == nil
+      if Stage.normal
+
+        Builtins.foreach(Packages.theSources) do |source_id|
+          source_map = Pkg.SourceProductData(source_id)
+          # source need to be described
+          if source_map != {}
+            if Ops.get_string(source_map, "productversion", "A") ==
+                Ops.get_string(Installation.installedVersion, "version", "B")
+              Builtins.y2milestone("Found matching product: %1", source_map)
+              update_to_source = source_id
+            else
+              Builtins.y2error("Found non-matching product: %1", source_map)
+              # every invalid product is selected
+              update_to_source = source_id if update_to_source.nil?
+            end
           end
         end
-      end if Stage.normal(
-      )
+      end
 
       # fallback for Stage::normal()
       if Stage.normal
-        if update_to_source == nil
+        if update_to_source.nil?
           update_to_source = Ops.get(
             Packages.theSources,
             Ops.subtract(num, 1),
@@ -566,7 +552,7 @@ module Yast
         new_source
       )
 
-      if new_product == nil
+      if new_product.nil?
         Ops.set(Installation.updateVersion, "name", "?")
         Ops.set(Installation.updateVersion, "version", "?")
         Builtins.y2error(
@@ -581,7 +567,7 @@ module Yast
 
       # bugzilla #225256, use "label" first, then a "productname"
       Ops.set(Installation.updateVersion, "show", Ops.get(new_product, "label"))
-      if Ops.get(Installation.updateVersion, "show") == nil
+      if Ops.get(Installation.updateVersion, "show").nil?
         Builtins.y2warning("No 'label' defined in product")
 
         if Ops.get_string(new_product, "productname", "?") == "?" &&
@@ -617,7 +603,7 @@ module Yast
       Installation.updateVersion = updateVersion_ref.value
 
       new_ver = Ops.get_string(Installation.updateVersion, "version", "")
-      if new_ver != "" && new_ver != nil
+      if new_ver != "" && !new_ver.nil?
         # SLE, SLD, OES...
         if Builtins.regexpmatch(new_ver, "^[0123456789]+$")
           Ops.set(
@@ -676,6 +662,7 @@ module Yast
             Ops.get(p, "status") != :available
           next false
         end
+
         # if type != base
         true
       end
@@ -690,7 +677,7 @@ module Yast
     def SetDesktopPattern
       upgrade_settings = ProductFeatures.GetFeature("software", "upgrade")
 
-      if !upgrade_settings.kind_of?(Hash) || !upgrade_settings.has_key?("window_managers")
+      if !upgrade_settings.is_a?(Hash) || !upgrade_settings.key?("window_managers")
         log.info "Desktop upgrade is not handled by this product (settings: #{upgrade_settings})"
         return true
       end
@@ -726,19 +713,18 @@ module Yast
       failed_packages = select_for_installation(:package, install_packages)
 
       failed_patterns.empty? or Report.Error(
-        _("Cannot select these patterns required for installation:\n%{patterns}") %
-        {:patterns => failed_patterns.join("\n")}
+        format(_("Cannot select these patterns required for installation:\n%{patterns}"),
+          patterns: failed_patterns.join("\n"))
       )
 
       failed_packages.empty? or Report.Error(
-        _("Cannot select these packages required for installation:\n%{packages}") %
-        {:packages => failed_packages.join("\n")}
+        format(_("Cannot select these packages required for installation:\n%{packages}"),
+          packages: failed_packages.join("\n"))
       )
 
       failed_patterns.empty? && failed_packages.empty?
     end
 
-    #
     def Detach
       # release mounted devices
       Pkg.SourceReleaseAll
@@ -769,10 +755,10 @@ module Yast
         log.error "Error reading SuSE-release in #{Installation.destdir}: #{e.message}"
       end
 
-      return nil
+      nil
     end
 
-    BACKUP_DIR = "var/adm/backup/system-upgrade"
+    BACKUP_DIR = "var/adm/backup/system-upgrade".freeze
 
     # Creates the backup with name based on `name` containing everything matching globs in `paths`
     #
@@ -810,7 +796,7 @@ module Yast
     # Usefull to clean up **ALL** content in BACKUP_DIR before creating a new backup.
     def clean_backup
       log.info "Cleaning backup dir"
-      ::FileUtils.rm_r(File.join(Installation.destdir, BACKUP_DIR), :force => true, :secure => true)
+      ::FileUtils.rm_r(File.join(Installation.destdir, BACKUP_DIR), force: true, secure: true)
     end
 
     # Restores the available backup(s)
@@ -863,47 +849,47 @@ module Yast
     # @return [String] a string holding the ID and VERSION_ID or empty if something went wrong
     def version_from(file)
       content = file.read
-      id = content[/^ID=.*/].split("=", 2).last.tr('"', '')
-      version_id = content[/^VERSION_ID=.*/].split("=", 2).last.tr('"', '')
+      id = content[/^ID=.*/].split("=", 2).last.tr('"', "")
+      version_id = content[/^VERSION_ID=.*/].split("=", 2).last.tr('"', "")
 
       "#{id}-#{version_id}"
     rescue SystemCallError
       ""
     end
 
-    publish :variable => :packages_to_install, :type => "integer"
-    publish :variable => :packages_to_update, :type => "integer"
-    publish :variable => :packages_to_remove, :type => "integer"
-    publish :variable => :unknown_packages, :type => "integer"
-    publish :variable => :solve_errors, :type => "integer"
-    publish :variable => :silentlyDowngradePackages, :type => "boolean"
-    publish :variable => :keepInstalledPatches, :type => "boolean"
-    publish :variable => :disallow_upgrade, :type => "boolean"
-    publish :variable => :did_init1, :type => "boolean"
-    publish :variable => :did_init2, :type => "boolean"
-    publish :variable => :last_runlevel, :type => "integer"
-    publish :variable => :selected_selection, :type => "string"
-    publish :variable => :products_incompatible, :type => "boolean"
-    publish :variable => :updateBasePackages, :type => "boolean"
-    publish :variable => :packagesInstalled, :type => "integer"
-    publish :variable => :manual_interaction, :type => "boolean"
-    publish :function => :SilentlyDowngradePackages, :type => "boolean ()"
-    publish :function => :IsProductSupportedForUpgrade, :type => "boolean ()"
-    publish :function => :SelectedProducts, :type => "list <string> ()"
-    publish :function => :ProductsCompatible, :type => "boolean ()"
-    publish :function => :IgnoreProductCompatibility, :type => "void ()"
-    publish :function => :InitUpdate, :type => "void ()"
-    publish :function => :DropObsoletePackages, :type => "void ()"
-    publish :function => :Reset, :type => "void ()"
-    publish :function => :fill_version_map, :type => "void (map <string, any> &)"
-    publish :function => :GetProductName, :type => "boolean ()"
-    publish :function => :GetBasePatterns, :type => "list <string> ()"
-    publish :function => :SetDesktopPattern, :type => "void ()"
-    publish :function => :Detach, :type => "void ()"
-    publish :function => :installed_product, :type => "string ()"
-    publish :function => :create_backup, :type => "void (string,list)"
-    publish :function => :clean_backup, :type => "void ()"
-    publish :function => :restore_backup, :type => "void ()"
+    publish variable: :packages_to_install, type: "integer"
+    publish variable: :packages_to_update, type: "integer"
+    publish variable: :packages_to_remove, type: "integer"
+    publish variable: :unknown_packages, type: "integer"
+    publish variable: :solve_errors, type: "integer"
+    publish variable: :silentlyDowngradePackages, type: "boolean"
+    publish variable: :keepInstalledPatches, type: "boolean"
+    publish variable: :disallow_upgrade, type: "boolean"
+    publish variable: :did_init1, type: "boolean"
+    publish variable: :did_init2, type: "boolean"
+    publish variable: :last_runlevel, type: "integer"
+    publish variable: :selected_selection, type: "string"
+    publish variable: :products_incompatible, type: "boolean"
+    publish variable: :updateBasePackages, type: "boolean"
+    publish variable: :packagesInstalled, type: "integer"
+    publish variable: :manual_interaction, type: "boolean"
+    publish function: :SilentlyDowngradePackages, type: "boolean ()"
+    publish function: :IsProductSupportedForUpgrade, type: "boolean ()"
+    publish function: :SelectedProducts, type: "list <string> ()"
+    publish function: :ProductsCompatible, type: "boolean ()"
+    publish function: :IgnoreProductCompatibility, type: "void ()"
+    publish function: :InitUpdate, type: "void ()"
+    publish function: :DropObsoletePackages, type: "void ()"
+    publish function: :Reset, type: "void ()"
+    publish function: :fill_version_map, type: "void (map <string, any> &)"
+    publish function: :GetProductName, type: "boolean ()"
+    publish function: :GetBasePatterns, type: "list <string> ()"
+    publish function: :SetDesktopPattern, type: "void ()"
+    publish function: :Detach, type: "void ()"
+    publish function: :installed_product, type: "string ()"
+    publish function: :create_backup, type: "void (string,list)"
+    publish function: :clean_backup, type: "void ()"
+    publish function: :restore_backup, type: "void ()"
 
   private
 
@@ -924,48 +910,47 @@ module Yast
       # So we have to check this before.
       existing_paths = paths.select { |p| File.exist?(File.join(root, p)) }
 
-      paths_without_prefix = existing_paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
+      paths_without_prefix = existing_paths.map { |p| p.start_with?("/") ? p[1..-1] : p }
 
       command = "tar cv -C '#{root}'"
       # no shell escaping here, but we backup reasonable files and want to allow globs
       command << " " + paths_without_prefix.join(" ")
       # use parallel gzip for faster compression (uses all available CPU cores)
       command << " | pigz - > '#{tarball_path}'"
-      res = SCR.Execute(path(".target.bash_output"),  command)
+      res = SCR.Execute(path(".target.bash_output"), command)
       log.info "backup created with '#{command}' result: #{res}"
-
 
       # tarball can contain sensitive data, so prevent read to non-root
       # do it for sure even if tar failed as it can contain partial content
-      ::FileUtils.chmod(0600, tarball_path) if File.exist?(tarball_path)
+      ::FileUtils.chmod(0o600, tarball_path) if File.exist?(tarball_path)
 
       raise "Failed to create backup" if res["exit"] != 0
     end
 
     def create_restore_script(script_path, tarball_path, paths)
-      paths_without_prefix = paths.map {|p| p.start_with?("/") ? p[1..-1] : p }
+      paths_without_prefix = paths.map { |p| p.start_with?("/") ? p[1..-1] : p }
 
       # remove leading "/" from tarball to allow to run it from different root
       tarball_path = tarball_path[1..-1] if tarball_path.start_with?("/")
-      script_content = <<EOF
-#! /bin/sh
-# change root to first parameter or use / as default
-# it is needed to allow restore in installation
-cd ${1:-/}
-#{paths_without_prefix.map{ |p| "rm -rf #{p}" }.join("\n")}
+      script_content = <<~EOF
+        #! /bin/sh
+        # change root to first parameter or use / as default
+        # it is needed to allow restore in installation
+        cd ${1:-/}
+        #{paths_without_prefix.map { |p| "rm -rf #{p}" }.join("\n")}
 
-tar xvf #{tarball_path} --overwrite
-# return back to original dir
-cd -
-# flush the caches
-sync
-# wait a bit to really write everything to disk (see "man sync")
-sleep 3
-EOF
+        tar xvf #{tarball_path} --overwrite
+        # return back to original dir
+        cd -
+        # flush the caches
+        sync
+        # wait a bit to really write everything to disk (see "man sync")
+        sleep 3
+      EOF
 
       File.write(script_path, script_content)
       # allow execution of script
-      ::FileUtils.chmod(0744, script_path)
+      ::FileUtils.chmod(0o744, script_path)
     end
 
     # Reads the currently selected default desktop from sysconfig
@@ -978,7 +963,7 @@ EOF
       )
 
       if !FileUtils.Exists(windowmanager_sysconfig)
-        log.warn "Sysconfig file #{windowmanager_sysconfig} does not exist, " <<
+        log.warn "Sysconfig file #{windowmanager_sysconfig} does not exist, " \
           "desktop upgrade will not be handled"
         return nil
       end
@@ -1037,7 +1022,6 @@ EOF
 
       desktop_installed
     end
-
   end
 
   Update = UpdateClass.new

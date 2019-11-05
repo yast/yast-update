@@ -18,20 +18,20 @@ describe Yast::RootPart do
     let(:fstab_sda1) do
       [
         {
-          "file"=>"/", "mntops"=>"defaults", "vfstype"=>"btrfs",
-          "spec"=> root_spec
+          "file" => "/", "mntops" => "defaults", "vfstype" => "btrfs",
+          "spec" => root_spec
         },
         {
-          "file"=>"/lib/machines", "mntops"=>"subvol=/@/lib/machines", "vfstype"=>"btrfs",
-          "spec"=> root_spec
+          "file" => "/lib/machines", "mntops" => "subvol=/@/lib/machines", "vfstype" => "btrfs",
+          "spec" => root_spec
         },
         {
-          "file"=>"/var", "mntops"=>"subvol=/@/var", "vfstype"=>"btrfs",
-          "spec"=> root_spec
+          "file" => "/var", "mntops" => "subvol=/@/var", "vfstype" => "btrfs",
+          "spec" => root_spec
         },
         {
-          "file"=>"swap", "mntops"=>"defaults", "vfstype"=>"swap",
-          "spec"=>"/dev/disk/by-uuid/a62e32ec-f58d-4bff-941b-6fb9ea45c016"
+          "file" => "swap", "mntops" => "defaults", "vfstype" => "swap",
+          "spec" => "/dev/disk/by-uuid/a62e32ec-f58d-4bff-941b-6fb9ea45c016"
         }
       ]
     end
@@ -39,24 +39,24 @@ describe Yast::RootPart do
     let(:fstab_sda2) do
       [
         {
-          "file"=>"/", "mntops"=>"defaults", "vfstype"=>"btrfs",
-          "spec"=> root_spec
+          "file" => "/", "mntops" => "defaults", "vfstype" => "btrfs",
+          "spec" => root_spec
         },
         {
-          "file"=>"/usr/local", "mntops"=>"subvol=/@/usr/local", "vfstype"=>"btrfs",
-          "spec"=> root_spec
+          "file" => "/usr/local", "mntops" => "subvol=/@/usr/local", "vfstype" => "btrfs",
+          "spec" => root_spec
         },
         {
-          "file"=>"/tmp", "mntops"=>"subvol=/@/tmp", "vfstype"=>"btrfs",
-          "spec"=> root_spec
+          "file" => "/tmp", "mntops" => "subvol=/@/tmp", "vfstype" => "btrfs",
+          "spec" => root_spec
         },
         {
-          "file"=>"/.snapshots", "mntops"=>"subvol=/@/.snapshots", "vfstype"=>"btrfs",
-          "spec"=> root_spec
+          "file" => "/.snapshots", "mntops" => "subvol=/@/.snapshots", "vfstype" => "btrfs",
+          "spec" => root_spec
         },
         {
-          "file"=>"swap", "mntops"=>"defaults", "vfstype"=>"swap",
-          "spec"=>"UUID=a62e32ec-f58d-4bff-941b-6fb9ea45c016"
+          "file" => "swap", "mntops" => "defaults", "vfstype" => "swap",
+          "spec" => "UUID=a62e32ec-f58d-4bff-941b-6fb9ea45c016"
         }
       ]
     end
@@ -123,8 +123,8 @@ describe Yast::RootPart do
       let(:fstab) do
         fstab_sda2 + [
           {
-            "file"=>"/var", "mntops"=>"defaults", "vfstype"=>"xfs",
-            "spec"=> var_spec
+            "file" => "/var", "mntops" => "defaults", "vfstype" => "xfs",
+            "spec" => var_spec
           }
         ]
       end
@@ -165,8 +165,8 @@ describe Yast::RootPart do
       let(:fstab) do
         fstab_sda2 + [
           {
-            "file"=>"/var", "mntops"=>"defaults", "vfstype"=>"xfs",
-            "spec"=> var_spec
+            "file" => "/var", "mntops" => "defaults", "vfstype" => "xfs",
+            "spec" => var_spec
           }
         ]
       end
@@ -228,7 +228,7 @@ describe Yast::RootPart do
     let(:fstab) do
       [
         {
-          "file"=>"/home", "mntops"=>"defaults", "vfstype"=>"ext4", "spec"=> device_spec
+          "file" => "/home", "mntops" => "defaults", "vfstype" => "ext4", "spec" => device_spec
         }
       ]
     end

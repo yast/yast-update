@@ -1,4 +1,4 @@
-ENV["Y2DIR"] = File.join(File.expand_path(File.dirname(__FILE__)), "../src/")
+ENV["Y2DIR"] = File.join(__dir__, "../src/")
 
 require "yast"
 require "yast/rspec"
@@ -21,7 +21,7 @@ if ENV["COVERAGE"]
     add_filter "/test/"
   end
 
-  src_location = File.expand_path("../../src", __FILE__)
+  src_location = File.expand_path("../src", __dir__)
   # track all ruby files under src
   SimpleCov.track_files("#{src_location}/**/*.rb")
 
@@ -34,4 +34,3 @@ if ENV["COVERAGE"]
     ]
   end
 end
-

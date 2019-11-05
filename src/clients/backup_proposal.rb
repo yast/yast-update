@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,12 +17,12 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module:	backup_proposal.ycp
+# Module:  backup_proposal.ycp
 #
-# Author:	Arvin Schnell <arvin@suse.de>
-#		Lukas Ocilka <locilka@suse.cz>
+# Author:  Arvin Schnell <arvin@suse.de>
+#    Lukas Ocilka <locilka@suse.cz>
 #
-# Purpose:	Let user choose backup during update.
+# Purpose:  Let user choose backup during update.
 #
 # $Id$
 module Yast

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # ------------------------------------------------------------------------------
 # Copyright (c) 2006-2012 Novell, Inc. All Rights Reserved.
 #
@@ -19,13 +17,13 @@
 # current contact information at www.novell.com.
 # ------------------------------------------------------------------------------
 
-# Module: 	inst_backup.ycp
+# Module:   inst_backup.ycp
 #
-# Authors:	Stefan Schubert <schubi@suse.de>
-#		Arvin Schnell <arvin@suse.de>
-#		Lukas Ocilka <locilka@suse.cz>
+# Authors:  Stefan Schubert <schubi@suse.de>
+#    Arvin Schnell <arvin@suse.de>
+#    Lukas Ocilka <locilka@suse.cz>
 #
-# Purpose:	Ask the user for backups during the update.
+# Purpose:  Ask the user for backups during the update.
 #
 # $Id$
 module Yast
@@ -41,12 +39,11 @@ module Yast
       Yast.import "Popup"
       Yast.import "Installation"
 
-
       # Get information about available partitions
       @partition = Convert.convert(
         SpaceCalculation.GetPartitionInfo,
-        :from => "list",
-        :to   => "list <map>"
+        from: "list",
+        to:   "list <map>"
       )
       Builtins.y2milestone("evaluate partitions: %1", @partition)
 
@@ -121,8 +118,8 @@ module Yast
       @help_text = Ops.add(
         @help_text,
         _(
-          "<p><b>Create a Complete Backup of\n" +
-            "/etc/sysconfig:</b> This covers all configuration files that are part of the\n" +
+          "<p><b>Create a Complete Backup of\n" \
+            "/etc/sysconfig:</b> This covers all configuration files that are part of the\n" \
             "sysconfig mechanism, even those that will not be replaced.</p>\n"
         )
       )
@@ -131,9 +128,9 @@ module Yast
       @help_text = Ops.add(
         @help_text,
         _(
-          "<p><b>Remove Old Backups from the Backup\n" +
-            "Directory:</b> If your current system already is the result of an earlier\n" +
-            "update, there may be old configuration file backups. Select this option to\n" +
+          "<p><b>Remove Old Backups from the Backup\n" \
+            "Directory:</b> If your current system already is the result of an earlier\n" \
+            "update, there may be old configuration file backups. Select this option to\n" \
             "remove them.</p>\n"
         )
       )
@@ -146,7 +143,6 @@ module Yast
           Installation.update_backup_path
         )
       )
-
 
       Wizard.SetContents(
         @title,
@@ -185,21 +181,20 @@ module Yast
         @tmp = Convert.to_boolean(UI.QueryWidget(Id(:modified), :Value)) ||
           Convert.to_boolean(UI.QueryWidget(Id(:sysconfig), :Value))
 
-        if @ret == :next || @ret == :ok
-          next if @tmp && !check_backup_path(@partition)
+        next unless @ret == :next || @ret == :ok
+        next if @tmp && !check_backup_path(@partition)
 
-          Installation.update_backup_modified = Convert.to_boolean(
-            UI.QueryWidget(Id(:modified), :Value)
-          )
-          Installation.update_backup_sysconfig = Convert.to_boolean(
-            UI.QueryWidget(Id(:sysconfig), :Value)
-          )
-          Installation.update_remove_old_backups = Convert.to_boolean(
-            UI.QueryWidget(Id(:remove), :Value)
-          )
+        Installation.update_backup_modified = Convert.to_boolean(
+          UI.QueryWidget(Id(:modified), :Value)
+        )
+        Installation.update_backup_sysconfig = Convert.to_boolean(
+          UI.QueryWidget(Id(:sysconfig), :Value)
+        )
+        Installation.update_remove_old_backups = Convert.to_boolean(
+          UI.QueryWidget(Id(:remove), :Value)
+        )
 
-          break
-        end
+        break
       end
 
       Wizard.CloseDialog
