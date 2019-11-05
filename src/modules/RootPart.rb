@@ -1775,7 +1775,10 @@ module Yast
 
     def cleaned_mount_options(mount_options)
       elements = mount_options.split(",")
+      # rubocop:disable Style/CaseEquality
+      # disabled to use feature that `===` match against regexp
       elements.delete_if { |e| IGNORED_OPTIONS.any? { |o| o === e } }
+      # rubocop:enable Style/CaseEquality
       elements.join(",")
     end
 

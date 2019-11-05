@@ -89,11 +89,6 @@ Naming/VariableNumber:
     - 'src/include/update/rootpart.rb'
 
 # Offense count: 1
-Style/CaseEquality:
-  Exclude:
-    - 'src/modules/RootPart.rb'
-
-# Offense count: 1
 Style/CommentedKeyword:
   Exclude:
     - 'src/modules/RootPart.rb'
