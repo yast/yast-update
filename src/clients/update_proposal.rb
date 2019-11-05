@@ -462,11 +462,7 @@ module Yast
       sys_patterns = Packages.ComputeSystemPatternList
       sys_patterns.each { |pat| Pkg.ResolvableInstall(pat, :pattern) }
 
-      Update.solve_errors = if Pkg.PkgSolve(false)
-        0
-      else
-        Pkg.PkgSolveErrors
-      end
+      Update.solve_errors = Pkg.PkgSolve(false) ? 0 : Pkg.PkgSolveErrors
 
       log.info "Update compatibility: " \
         "Update.ProductsCompatible: #{Update.ProductsCompatible}, " \

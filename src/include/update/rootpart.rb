@@ -168,16 +168,8 @@ module Yast
     def DoArchitecturesMatch(arch1, arch2)
       ppc_archs = ["ppc", "ppc64"]
 
-      # exact match
-      if arch1 == arch2
-        true
-        # ppc exception
-      elsif Builtins.contains(ppc_archs, arch1) &&
-          Builtins.contains(ppc_archs, arch2)
-        true
-      else
-        false
-      end
+      # exact match or ppc exception
+      arch1 == arch2 || (ppc_archs.include?(arch1) && ppc_archs.include?(arch2))
     end
 
     def UmountMountedPartition
