@@ -117,11 +117,6 @@ Style/GuardClause:
     - 'src/modules/RootPart.rb'
 
 # Offense count: 1
-Style/IfInsideElse:
-  Exclude:
-    - 'src/include/update/rootpart.rb'
-
-# Offense count: 1
 Style/MixinUsage:
   Exclude:
     - 'test/update_test.rb'

@@ -124,9 +124,9 @@ module Yast
                 # Table item (unknown system)
                 _("Unknown or Non-Linux")
               end
-            else
-              # Table item (unknown system [neither openSUSE 11.1 nor SLES 14 nor ...])
-              system = _("Unknown") if system == "unknown"
+            # Table item (unknown system [neither openSUSE 11.1 nor SLES 14 nor ...])
+            elsif system == "unknown"
+              system = _("Unknown") 
             end
           end
 
