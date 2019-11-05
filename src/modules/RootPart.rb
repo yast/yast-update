@@ -1934,7 +1934,7 @@ module Yast
     # @return [Y2Storage::Filesystems::Base, nil]
     #
     def fs_by_devicename(devicegraph, device_spec)
-      fs = devicegraph.filesystems.find { |fs| fs.match_fstab_spec?(device_spec) }
+      fs = devicegraph.filesystems.find { |f| f.match_fstab_spec?(device_spec) }
       # If the previous search returned nil, there is still a last chance to
       # find the device. Maybe 'device_spec' is one of the udev names discarded
       # by libstorage-ng
