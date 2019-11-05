@@ -23,6 +23,8 @@
 # $Id:$
 
 require "yaml"
+require "y2packager/medium_type"
+require "y2packager/product_control_product"
 
 module Yast
   class InstUpdatePartitionAutoClient < Client
@@ -70,7 +72,7 @@ module Yast
           )
           UmountMountedPartition()
         elsif !(Pkg.TargetInitializeOptions(Installation.destdir,
-          "target_distro" => target_distribution) && Pkg.TargetLoad)
+          "target_distro" => target_distro) && Pkg.TargetLoad)
 
           Report.Error("Initializing the target system failed")
           UmountMountedPartition()
@@ -105,6 +107,17 @@ module Yast
       end
 
       partitions.size == 1 ? target_root : nil
+    end
+
+    # special version that respect online specific target distro
+    def target_distro
+      if Y2Packager::MediumType.online?
+        control_products = Y2Packager::ProductControlProduct.products
+        # currently all products have the same "register_target" value
+        control_products.first&.register_target || ""
+      else
+        target_distribution
+      end
     end
   end
 end
