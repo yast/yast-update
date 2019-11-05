@@ -17,11 +17,6 @@ Lint/UnderscorePrefixedVariableName:
   Exclude:
     - 'src/modules/RootPart.rb'
 
-# Offense count: 9
-Lint/UselessAssignment:
-  Exclude:
-    - 'src/modules/RootPart.rb'
-
 # Offense count: 25
 Metrics/AbcSize:
   Max: 188

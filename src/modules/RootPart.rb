@@ -562,7 +562,7 @@ module Yast
     def FindPartitionInFstab(fstab, mountpoint)
       # Removing the "/" and then adding it again in the comparison below looks
       # weird, but let's don't change this ancient code too much.
-      mountpoints = mountpoint.chomp("/")
+      mountpoint = mountpoint.chomp("/")
 
       tmp = fstab.value.select do |entry|
         file = entry.fetch("file", "")
@@ -685,8 +685,6 @@ module Yast
     # @param list <map> ('pointer' to) crtab
     # @param string root device
     def read_fstab_and_cryptotab(fstab, crtab, _root_device_current)
-      default_scr = WFM.SCRGetDefault
-      new_scr = nil
       @backward_translation = {}
       # /etc/cryptotab was deprecated in favor of /etc/crypttab
       #
@@ -1177,9 +1175,7 @@ module Yast
       fstab = deep_copy(fstab)
       var_device_fstab = (
         fstab_ref = arg_ref(fstab)
-        _FindPartitionInFstab_result = FindPartitionInFstab(fstab_ref, "/var")
-        fstab = fstab_ref.value
-        _FindPartitionInFstab_result
+        FindPartitionInFstab(fstab_ref, "/var")
       )
 
       # At this point, var_device_fstab contains the spec column of fstab
@@ -1259,8 +1255,6 @@ module Yast
         fstab_ref = arg_ref(fstab)
         crtab_ref = arg_ref(crtab)
         read_fstab_and_cryptotab(fstab_ref, crtab_ref, root_device_current)
-        fstab = fstab_ref.value
-        crtab = crtab_ref.value
 
         # Encryption names indicated in the crypttab file are stored in its correspondig encryption
         # device to make possible to find a device by using the name specified in a fstab file,
@@ -1542,8 +1536,6 @@ module Yast
               p_dev,
               error_message_ref
             )
-            error_message = error_message_ref.value
-            _RunFSCKonJFS_result
           )
           freshman[:valid] = false
           log.debug("Returning not valid partition: #{freshman}")
@@ -1584,7 +1576,6 @@ module Yast
             crtab_ref = arg_ref(crtab)
             read_fstab_and_cryptotab(fstab_ref, crtab_ref, p_dev)
             fstab = fstab_ref.value
-            crtab = crtab_ref.value
             Update.GetProductName
 
             fstab = Builtins.filter(fstab) do |p|
@@ -1714,14 +1705,11 @@ module Yast
       # all formatted partitions and lvs on all devices
       filesystems = probed.blk_filesystems.reject { |fs| fs.type.is?(:swap) }
 
-      counter = 0
       filesystems.each_with_index do |fs, counter|
         if UI.WidgetExists(Id("search_progress"))
           percent = 100 * (counter + 1 / filesystems.size)
           UI.ChangeWidget(Id("search_pb"), :Value, percent)
         end
-
-        freshman = {}
 
         log.debug("Checking filesystem: #{fs}")
         freshman = CheckPartition(fs)
