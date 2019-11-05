@@ -1217,7 +1217,7 @@ module Yast
     def has_pam_mount
       # detect pam_mount encrypted homes
       pam_mount_path = Installation.destdir + "/etc/security/pam_mount.conf.xml"
-      return false unless File.exists? pam_mount_path
+      return false unless File.exist? pam_mount_path
 
       Builtins.y2milestone("Detected pam_mount.conf, checking existence of encrypted home dirs")
       pam_mount_conf = SCR.Read(path(".anyxml"), pam_mount_path)
