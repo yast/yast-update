@@ -932,7 +932,7 @@ module Yast
 
       # remove leading "/" from tarball to allow to run it from different root
       tarball_path = tarball_path[1..-1] if tarball_path.start_with?("/")
-      script_content = <<~EOF
+      script_content = <<~SCRIPT
         #! /bin/sh
         # change root to first parameter or use / as default
         # it is needed to allow restore in installation
@@ -946,7 +946,7 @@ module Yast
         sync
         # wait a bit to really write everything to disk (see "man sync")
         sleep 3
-      EOF
+      SCRIPT
 
       File.write(script_path, script_content)
       # allow execution of script

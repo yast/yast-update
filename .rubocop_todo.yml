@@ -50,13 +50,6 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Max: 55
 
-# Offense count: 1
-# Configuration parameters: Blacklist.
-# Blacklist: (?-mix:(^|\s)(EO[A-Z]{1}|END)(\s|$))
-Naming/HeredocDelimiterNaming:
-  Exclude:
-    - 'src/modules/Update.rb'
-
 # Offense count: 49
 # Configuration parameters: EnforcedStyle.
 # SupportedStyles: snake_case, camelCase
