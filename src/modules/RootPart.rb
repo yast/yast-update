@@ -899,7 +899,8 @@ module Yast
                   VBox(
                     Label(
                       Builtins.sformat(
-                        # label in a popup, %1 is device (eg. /dev/hda1), %2 is output of the 'mount' command
+                        # label in a popup, %1 is device (eg. /dev/hda1),
+                        # %2 is output of the 'mount' command
                         _(
                           "The partition %1 could not be mounted.\n" +
                             "\n" +
@@ -1098,8 +1099,10 @@ module Yast
                 Left(
                   Label(
                     _(
-                      "Your system uses a separate /var partition which is required for the upgrade\n" +
-                        "process to detect the disk-naming changes. Select the /var partition manually\n" +
+                      "Your system uses a separate /var partition which is " \
+                        "required for the upgrade\n" +
+                        "process to detect the disk-naming changes. " \
+                        "Select the /var partition manually\n" +
                         "to continue the upgrade process."
                     )
                   )
@@ -1321,8 +1324,10 @@ module Yast
           warning = Builtins.sformat(
             _(
               "Some home directories in the system on %1 are encrypted. This release does not\n" +
-                "support cryptconfig any longer and those home directories will not be accessible\n" +
-                "after upgrade. In order to access these home directories, they need to be decrypted\n" +
+                "support cryptconfig any longer and those home directories " \
+                "will not be accessible\n" +
+                "after upgrade. In order to access these home directories, " \
+                "they need to be decrypted\n" +
                 "before performing upgrade.\n" +
                 "You can consider encrypting whole volume via LUKS."
             ),
@@ -1426,7 +1431,8 @@ module Yast
         update_staging!
         if Yast2::FsSnapshot.configured?
           # as of bsc #1092757 snapshot descriptions are not translated
-          snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup: :number, important: true)
+          snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup: :number,
+            important: true)
           Yast2::FsSnapshotStore.save("update", snapshot.number)
         end
         Update.clean_backup
@@ -1829,7 +1835,8 @@ module Yast
     publish :function => :GetInfoOfSelected, :type => "string (symbol)"
     publish :function => :SetSelectedToValid, :type => "void ()"
     publish :function => :UnmountPartitions, :type => "void (boolean)"
-    publish :function => :AnyQuestionAnyButtonsDetails, :type => "boolean (string, string, string, string, string)"
+    publish :function => :AnyQuestionAnyButtonsDetails,
+      :type => "boolean (string, string, string, string, string)"
     publish :function => :MountPartitions, :type => "boolean (string)"
     publish :function => :IncompleteInstallationDetected, :type => "boolean (string)"
     publish :function => :FindRootPartitions, :type => "void ()"
@@ -1969,7 +1976,9 @@ module Yast
       # log which devicegraph we operate on
       graph = "?"
       graph = "probed" if devicegraph.object_id == probed.object_id
-      graph = "staging#" + Y2Storage::StorageManager.instance.staging_revision.to_s if devicegraph.object_id == staging.object_id
+      if devicegraph.object_id == staging.object_id
+        graph = "staging#" + Y2Storage::StorageManager.instance.staging_revision.to_s
+      end
       log.info("fs_by_devicename(#{graph}, #{device_spec}) = #{'sid#' + fs.sid.to_s if fs}")
 
       fs

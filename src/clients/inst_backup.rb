@@ -89,14 +89,16 @@ module Yast
 
       # help text for backup dialog during update 1/7
       @help_text = _(
-        "<p>To avoid any loss of information during update,\ncreate a <b>backup</b> prior to updating.</p>\n"
+        "<p>To avoid any loss of information during update,\n" \
+          "create a <b>backup</b> prior to updating.</p>\n"
       )
 
       # help text for backup dialog during update 2/7
       @help_text = Ops.add(
         @help_text,
         _(
-          "<p><b>Warning:</b> This will not be a complete\nbackup. Only modified files will be saved.</p>\n"
+          "<p><b>Warning:</b> This will not be a complete\n" \
+            "backup. Only modified files will be saved.</p>\n"
         )
       )
 
@@ -110,7 +112,8 @@ module Yast
       @help_text = Ops.add(
         @help_text,
         _(
-          "<p><b>Create a Backup of Modified Files:</b>\nStores only those modified files that will be replaced during update.</p>\n"
+          "<p><b>Create a Backup of Modified Files:</b>\n" \
+            "Stores only those modified files that will be replaced during update.</p>\n"
         )
       )
 

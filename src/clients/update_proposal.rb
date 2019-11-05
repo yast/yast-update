@@ -146,7 +146,8 @@ module Yast
               # TRANSLATORS: proposal error, %1 is the version of installed system
               # %2 is the version being installed
               _(
-                "Updating system to another version (%1 -> %2) is not supported on the running system.<br>\n" +
+                "Updating system to another version (%1 -> %2) is not supported on " \
+                  "the running system.<br>\n" +
                   "Boot from the installation media and use a normal upgrade\n" +
                   "or disable software repositories of products with different versions.\n"
               ),
@@ -186,7 +187,8 @@ module Yast
 
         products = Pkg.ResolvableProperties("", :product, "")
         # stores the proposal text output
-        @summary_text = Packages.product_update_summary(products).map{|item| "<li>#{item}</li>"}.join
+        @summary_text = Packages.product_update_summary(products)
+          .map{|item| "<li>#{item}</li>"}.join
 
         # recalculate the disk space usage data
         SpaceCalculation.GetPartitionInfo
@@ -344,7 +346,8 @@ module Yast
                 )
               ),
               HBox(
-                PushButton(Id(:abort), Label.AbortButton), # disabled button - bugzilla #148105, comments #22 - #28
+                PushButton(Id(:abort), Label.AbortButton),
+                # disabled button - bugzilla #148105, comments #22 - #28
                 # `PushButton (`id(`ignore), Label::IgnoreButton())
                 PushButton(Id(:retry), Label.RetryButton)
               )

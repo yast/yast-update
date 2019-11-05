@@ -392,7 +392,8 @@ module Yast
             Popup.Error(
               # error popup
               _(
-                "No installed system that can be upgraded with this product was found\non the selected partition."
+                "No installed system that can be upgraded with this product was found\n" \
+                  "on the selected partition."
               )
             )
           elsif !DoArchitecturesMatch(
@@ -402,7 +403,8 @@ module Yast
             cont = Popup.ContinueCancel(
               # continue-cancel popup
               _(
-                "The architecture of the system installed in the selected partition\nis different from the one of this product.\n"
+                "The architecture of the system installed in the selected partition\n " \
+                  "is different from the one of this product.\n"
               )
             )
           end
@@ -432,7 +434,8 @@ module Yast
                   Label.WarningMsg,
                   # pop-up question
                   _(
-                    "A possibly incomplete installation has been detected on the selected partition.\nAre sure you want to use it anyway?"
+                    "A possibly incomplete installation has been detected on the selected " \
+                      "partition.\nAre sure you want to use it anyway?"
                   ),
                   # button label
                   _("&Yes, Use It"),

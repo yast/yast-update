@@ -300,7 +300,7 @@ Metrics/AbcSize:
 # Configuration parameters: CountComments, ExcludedMethods.
 # ExcludedMethods: refine
 Metrics/BlockLength:
-  Max: 257
+  Max: 300
 
 # Offense count: 18
 # Configuration parameters: CountBlocks.
@@ -310,28 +310,21 @@ Metrics/BlockNesting:
 # Offense count: 3
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
-  Max: 1391
+  Max: 1400
 
 # Offense count: 25
 Metrics/CyclomaticComplexity:
   Max: 46
 
-# Offense count: 38
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect, AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
-# URISchemes: http, https
-Metrics/LineLength:
-  Max: 138
-
 # Offense count: 27
 # Configuration parameters: CountComments, ExcludedMethods.
 Metrics/MethodLength:
-  Max: 256
+  Max: 300
 
 # Offense count: 1
 # Configuration parameters: CountComments.
 Metrics/ModuleLength:
-  Max: 362
+  Max: 400
 
 # Offense count: 24
 Metrics/PerceivedComplexity:
