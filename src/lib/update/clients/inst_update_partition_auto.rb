@@ -113,12 +113,8 @@ module Yast
     def target_distro
       if Y2Packager::MediumType.online?
         control_products = Y2Packager::ProductControlProduct.products
-        if control_products.empty?
-          ""
-        else
-        # curently all products have the same "register_target" value
-          control_products.first.register_target || ""
-        end
+        # currently all products have the same "register_target" value
+        control_products.first&.register_target || ""
       else
         target_distribution
       end
