@@ -341,7 +341,7 @@ module Yast
 
       ret = nil
 
-      while true
+      loop do
         ret = if flavor == :update_dialog || flavor == :update_dialog_proposal
           Wizard.UserInput
         else

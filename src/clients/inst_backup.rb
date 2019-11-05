@@ -170,7 +170,7 @@ module Yast
 
       @ret = nil
 
-      while true
+      loop do
         @ret = Wizard.UserInput
 
         break if @ret == :abort && Popup.ConfirmAbort(:painless)

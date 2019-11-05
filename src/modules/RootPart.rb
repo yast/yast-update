@@ -327,10 +327,9 @@ module Yast
       )
       UI.SetFocus(Id(:yes))
 
-      userinput = nil
       ret = nil
 
-      while true
+      loop do
         userinput = UI.UserInput
 
         if userinput == :yes
@@ -1068,7 +1067,7 @@ module Yast
       list_of_devices = Builtins.sort(list_of_devices)
       Builtins.y2milestone("Known devices: %1", list_of_devices)
 
-      while true
+      loop do
         UI.OpenDialog(
           VBox(
             MarginBox(
@@ -1130,7 +1129,7 @@ module Yast
         )
 
         # to handle switching the combo-box or [OK]/[Cancel]
-        while true
+        loop do
           ret = UI.UserInput
           var_device = Convert.to_string(
             UI.QueryWidget(Id("var_device"), :Value)
