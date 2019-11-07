@@ -1243,6 +1243,7 @@ module Yast
         fstab_ref = arg_ref(fstab)
         crtab_ref = arg_ref(crtab)
         read_fstab_and_cryptotab(fstab_ref, crtab_ref, root_device_current)
+        fstab = fstab_ref.value
 
         # Encryption names indicated in the crypttab file are stored in its correspondig encryption
         # device to make possible to find a device by using the name specified in a fstab file,
