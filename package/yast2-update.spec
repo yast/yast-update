@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.2.8
+Version:        4.2.9
 Release:        0
 Summary:        YaST2 - Update
 Group:          System/YaST
