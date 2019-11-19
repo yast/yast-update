@@ -31,8 +31,7 @@ BuildRequires:  yast2-devtools >= 4.2.2
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
 # Y2Packager::ProductUpgrade.remove_obsolete_upgrades
 BuildRequires:  yast2 >= 4.2.1
-# product_update_summary, product_update_warning
-BuildRequires:  yast2-packager >= 3.2.33
+BuildRequires:  yast2-packager
 # xmllint
 BuildRequires:  libxml2-tools
 # control.rng
