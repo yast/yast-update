@@ -31,8 +31,8 @@ BuildRequires:  yast2-devtools >= 4.2.2
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
 # Y2Packager::ProductUpgrade.remove_obsolete_upgrades
 BuildRequires:  yast2 >= 4.2.1
-# Packages#proposal_for_update
-BuildRequires:  yast2-packager >= 3.2.13
+# product_update_summary, product_update_warning
+BuildRequires:  yast2-packager >= 3.2.33
 # xmllint
 BuildRequires:  libxml2-tools
 # control.rng
@@ -47,8 +47,8 @@ Requires:       yast2-storage-ng >= 4.2.42
 # Y2Packager::ProductUpgrade.remove_obsolete_upgrades
 Requires:       yast2 >= 4.2.1
 Requires:       yast2-installation
-# handle bind mount at /mnt/dev
-Requires:       yast2-packager >= 4.0.61
+# product_update_summary, product_update_warning
+Requires:       yast2-packager >= 4.2.33
 # Pkg.TargetInitializeOptions()
 Requires:       yast2-pkg-bindings >= 3.1.14
 Requires:       yast2-ruby-bindings >= 1.0.0
