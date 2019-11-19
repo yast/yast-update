@@ -28,6 +28,7 @@
 
 require "yast"
 require "fileutils"
+require "y2packager/resolvable"
 
 module Yast
   class UpdateClass < Module
@@ -222,24 +223,15 @@ module Yast
     #-----------------------------------------------------------------------
 
     def SelectedProducts
-      selected = Pkg.ResolvableProperties("", :product, "")
-      selected = Builtins.filter(selected) do |p|
-        Ops.get(p, "status") == :selected
-      end
-      Builtins.maplist(selected) do |p|
-        Ops.get_locale(
-          p,
-          "display_name",
-          Ops.get_locale(
-            p,
-            "summary",
-            Ops.get_locale(
-              p,
-              "name",
-              Ops.get_locale(p, "version", _("Unknown Product"))
-            )
-          )
-        )
+      selected = Y2Packager::Resolvable.find(kind: :product, status: :selected)
+
+      selected.map do |p|
+        next p.display_name unless p.display_name.empty?
+        next p.summary unless p.summary.empty?
+        next p.name unless p.name.empty?
+        next p.version unless p.version.empty?
+
+        _("Unknown Product")
       end
     end
 
@@ -252,11 +244,7 @@ module Yast
           # media is same as one of the installed products
           # assuming that multiple products on installation media
           # are compatible and compatibility is transitive
-          inst = Pkg.ResolvableProperties("", :product, "")
-          inst = Builtins.filter(inst) { |p| Ops.get(p, "status") == :installed }
-          inst_names = Builtins.maplist(inst) do |p|
-            Ops.get_string(p, "name", "")
-          end
+          inst_names = Y2Packager::Resolvable.find(kind: :product, status: :installed).map(&:name)
           to_install = Builtins.maplist(Pkg.SourceGetCurrent(true)) do |src|
             prod_info = Pkg.SourceProductData(src)
             Ops.get_string(prod_info, "name", "")
@@ -656,10 +644,10 @@ module Yast
 
     def GetBasePatterns
       # get available base patterns
-      patterns = Pkg.ResolvableProperties("", :pattern, "")
+      patterns = Y2Packager::Resolvable.find(kind: :pattern)
       patterns = Builtins.filter(patterns) do |p|
-        if Ops.get(p, "status") != :selected &&
-            Ops.get(p, "status") != :available
+        if p.status != :selected &&
+            p.status != :available
           next false
         end
 

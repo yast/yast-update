@@ -26,6 +26,7 @@
 
 require "cgi/util"
 require "y2packager/product_upgrade"
+require "y2packager/resolvable"
 
 module Yast
   class UpdateProposalClient < Client
@@ -184,7 +185,7 @@ module Yast
           )
         end
 
-        products = Pkg.ResolvableProperties("", :product, "")
+        products = Y2Packager::Resolvable.find(kind: :product)
         # stores the proposal text output
         @summary_text = Packages.product_update_summary(products)
           .map { |item| "<li>#{item}</li>" }.join
@@ -423,13 +424,11 @@ module Yast
         # products to reselect after reset
         restore = []
 
-        Pkg.ResolvableProperties("", :product, "").each do |product|
+        Y2Packager::Resolvable.find(kind: :product).each do |product|
           # only selected items but ignore the selections done by solver,
           # during restoration they would be changed to be selected by YaST and they
           # will be selected by solver again anyway
-          if product["status"] == :selected && product["transact_by"] != :solver
-            restore << product["name"]
-          end
+          restore << product.name if product.status == :selected && product.transact_by != :solver
         end
 
         Pkg.PkgApplReset
