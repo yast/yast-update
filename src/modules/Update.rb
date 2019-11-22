@@ -229,7 +229,6 @@ module Yast
         next p.display_name unless p.display_name.empty?
         next p.summary unless p.summary.empty?
         next p.name unless p.name.empty?
-        next p.version unless p.version.empty?
 
         _("Unknown Product")
       end

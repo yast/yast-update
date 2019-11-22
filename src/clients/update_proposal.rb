@@ -424,11 +424,11 @@ module Yast
         # products to reselect after reset
         restore = []
 
-        Y2Packager::Resolvable.find(kind: :product).each do |product|
+        Y2Packager::Resolvable.find(kind: :product, status: :selected).each do |product|
           # only selected items but ignore the selections done by solver,
           # during restoration they would be changed to be selected by YaST and they
           # will be selected by solver again anyway
-          restore << product.name if product.status == :selected && product.transact_by != :solver
+          restore << product.name if product.transact_by != :solver
         end
 
         Pkg.PkgApplReset
