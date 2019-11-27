@@ -24,6 +24,9 @@
 # Purpose:  Let user choose packages during update.
 #
 # $Id$
+
+require "y2packager/resolvable"
+
 module Yast
   unless defined?(PackagesProposalClient)
     class PackagesProposalClient < Client
@@ -177,7 +180,7 @@ module Yast
 
           Builtins.y2milestone(
             "Products: %1",
-            Pkg.ResolvableProperties("", :product, "")
+            Y2Packager::Resolvable.find(kind: :product)
           )
           ret_ref = arg_ref(@ret)
           Packages.CheckOldAddOns(ret_ref)
