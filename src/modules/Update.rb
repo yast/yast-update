@@ -225,10 +225,10 @@ module Yast
     def SelectedProducts
       selected = Y2Packager::Resolvable.find(kind: :product, status: :selected)
 
-      selected.map do |p|
-        next p.display_name unless p.display_name.empty?
-        next p.summary unless p.summary.empty?
-        next p.name unless p.name.empty?
+      selected.map do |product|
+        next product.display_name unless product.display_name.empty?
+        next product.summary unless product.summary.empty?
+        next product.name unless product.name.empty?
 
         _("Unknown Product")
       end
