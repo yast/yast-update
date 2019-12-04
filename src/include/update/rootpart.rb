@@ -512,7 +512,7 @@ module Yast
 
     def target_distribution
       # FIXME: this is the same as in src/lib/update/clients/inst_update_partition_auto.rb:113
-      if Y2Packager::MediumType.offline?
+      if Y2Packager::MediumType.offline? || Y2Packager::MediumType.online?
         control_products = Y2Packager::ProductControlProduct.products
         # currently all products have the same "register_target" value
         return control_products.first&.register_target || ""
