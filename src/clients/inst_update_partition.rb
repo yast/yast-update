@@ -51,7 +51,7 @@ module Yast
         save_installation_repos
       end
 
-      restore_installed_system()
+      restore_installed_system
 
       RootPart.Detect
 
@@ -65,7 +65,7 @@ module Yast
         @ret = :finish if @ret == :next
       end
 
-      restore_installed_system() if @ret == :abort
+      restore_installed_system if @ret == :abort
 
       @ret
     end
