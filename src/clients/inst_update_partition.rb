@@ -53,11 +53,7 @@ module Yast
         save_installation_repos
       end
 
-      if RootPart.Mounted
-        Update.restore_backup
-        Update.Detach
-        RootPart.UnmountPartitions(false)
-      end
+      restore_installed_system()
 
       RootPart.Detect
 
@@ -71,10 +67,22 @@ module Yast
         @ret = :finish if @ret == :next
       end
 
+      restore_installed_system() if @ret == :abort
+
       @ret
     end
 
   private
+
+    # Restoring old settings in the mounted, installed system
+    # which have already been changed while the upgrade process.
+    def restore_installed_system
+      if RootPart.Mounted
+        Update.restore_backup
+        Update.Detach
+        RootPart.UnmountPartitions(false)
+      end
+    end
 
     # restore the repository setup from the saved config
     def restore_installation_repos
