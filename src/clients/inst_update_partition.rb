@@ -77,11 +77,11 @@ module Yast
     # Restoring old settings in the mounted, installed system
     # which have already been changed while the upgrade process.
     def restore_installed_system
-      if RootPart.Mounted
-        Update.restore_backup
-        Update.Detach
-        RootPart.UnmountPartitions(false)
-      end
+      return unless RootPart.Mounted
+
+      Update.restore_backup
+      Update.Detach
+      RootPart.UnmountPartitions(false)
     end
 
     # restore the repository setup from the saved config
