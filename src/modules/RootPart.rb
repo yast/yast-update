@@ -803,6 +803,13 @@ module Yast
         )
       end
 
+      # bind-mount /run into chroot (bsc#1152530)
+      if MountPartition("/run", "/run", "none", "bind").nil?
+        AddMountedPartition(
+          type: "mount", device: "none", mntpt: "/run"
+        )
+      end
+
       efivars_path = "/sys/firmware/efi/efivars"
       if ::File.exist?(efivars_path)
         if MountPartition(efivars_path, "efivarfs", "efivarfs").nil?
@@ -822,28 +829,6 @@ module Yast
         AddMountedPartition(
           type: "mount", device: "none", mntpt: "/run"
         )
-      end
-    end
-
-    def MountFSTab(fstab, _message)
-      fstab = deep_copy(fstab)
-
-      mount_specials_in_destdir
-
-      # bind-mount /run into chroot (bsc#1152530)
-      if MountPartition("/run", "/run", "none", "bind").nil?
-        AddMountedPartition(
-          type: "mount", device: "none", mntpt: "/run"
-        )
-      end
-
-      efivars_path = "/sys/firmware/efi/efivars"
-      if ::File.exist?(efivars_path)
-        if MountPartition(efivars_path, "efivarfs", "efivarfs").nil?
-          AddMountedPartition(
-            type: "mount", device: "efivarfs", mntpt: efivars_path
-          )
-        end
       end
     end
 
