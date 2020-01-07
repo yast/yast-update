@@ -235,14 +235,14 @@ describe Yast::RootPart do
 
     let(:device_spec) { nil }
 
-    it "mounts /dev, /proc and /sys" do
+    it "mounts /dev, /proc, /run, and /sys" do
       allow(subject).to receive(:AddMountedPartition)
 
-      ["/dev", "/proc", "/sys"].each do |d|
-        expect(subject).to receive(:MountPartition).with(d, anything, anything)
+      ["/dev", "/proc", "/run", "/sys"].each do |d|
+        expect(subject).to receive(:MountPartition).with(d, anything, anything, any_args)
       end
 
-      # call with empty list to only test the /dev, /proc and /sys mounting
+      # call with empty list to only test the /dev, /proc, /run, and /sys mounting
       fstab = []
       subject.MountFSTab(fstab, "")
     end

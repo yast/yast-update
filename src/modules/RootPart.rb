@@ -34,7 +34,7 @@ require "fileutils"
 module Yast
   class RootPartClass < Module
     include Logger
-    NON_MODULAR_FS = ["devtmpfs", "proc", "sysfs"].freeze
+    NON_MODULAR_FS = ["devtmpfs", "none", "proc", "sysfs"].freeze
 
     def main
       Yast.import "UI"
@@ -490,6 +490,7 @@ module Yast
       mnt_opts << " -t #{mount_type}" if mount_type != ""
 
       Builtins.y2milestone("mount options '#{mnt_opts}'")
+      Builtins.y2milestone("mount #{mnt_opts} #{device} #{Installation.destdir + mount_point}")
 
       ret = Convert.to_boolean(
         SCR.Execute(
@@ -523,7 +524,7 @@ module Yast
       end
 
       Builtins.y2milestone(
-        "mounting (%1, %2, %3) yield %4",
+        "mounting (%1, %2, %3) yields %4",
         Ops.add(Installation.destdir, mount_point),
         device,
         mount_type,
@@ -799,6 +800,13 @@ module Yast
       if MountPartition("/dev", "devtmpfs", "devtmpfs").nil?
         AddMountedPartition(
           type: "mount", device: "devtmpfs", mntpt: "/dev"
+        )
+      end
+
+      # bind-mount /run into chroot (bsc#1152530)
+      if MountPartition("/run", "/run", "none", "bind").nil?
+        AddMountedPartition(
+          type: "mount", device: "none", mntpt: "/run"
         )
       end
 
