@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Wed Oct  9 08:57:14 UTC 2019 - Martin Vidner <mvidner@suse.com>
+
+- Backport: At upgrade time, mount also /run and efivars in the
+  target, to fix hanging LVM tools (bsc#1148500, bsc#1136463)
+- 3.2.3
+
+-------------------------------------------------------------------
+Thu Jun 20 14:18:15 UTC 2019 - Josef Reidinger <jreidinger@suse.com>
+
+- Backport: Fixed unmounting /mnt/dev when going back to the
+  partition selection dialog (fix up for the bsc#1089643)
+
+-------------------------------------------------------------------
 Wed Apr 19 14:38:34 UTC 2017 - lslezak@suse.cz
 
 - Fixed parsing whitespace lines in the original /etc/fstab

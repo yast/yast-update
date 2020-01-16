@@ -33,7 +33,7 @@ require "yast2/fs_snapshot_store"
 module Yast
   class RootPartClass < Module
     include Logger
-    NON_MODULAR_FS = ["proc", "sysfs"]
+    NON_MODULAR_FS = ["devtmpfs", "proc", "sysfs"]
 
     def main
       Yast.import "UI"
@@ -1201,9 +1201,57 @@ module Yast
       end
     end
 
+    # Mount /sys /proc and the like inside Installation.destdir
+    # @return [void]
+    def mount_specials_in_destdir
+      # mount sysfs first
+      if MountPartition("/sys", "sysfs", "sysfs") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "sysfs", :mntpt => "/sys" }
+        )
+      end
+
+      if MountPartition("/proc", "proc", "proc") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "proc", :mntpt => "/proc" }
+        )
+      end
+
+      # to have devices like /dev/cdrom and /dev/urandom in the chroot
+      if MountPartition("/dev", "devtmpfs", "devtmpfs") == nil
+        AddMountedPartition(
+          { :type => "mount", :device => "devtmpfs", :mntpt => "/dev" }
+        )
+      end
+
+      efivars_path = "/sys/firmware/efi/efivars"
+      if ::File.exist?(efivars_path)
+        if MountPartition(efivars_path, "efivarfs", "efivarfs") == nil
+          AddMountedPartition(
+            { :type => "mount", :device => "efivarfs", :mntpt => efivars_path }
+          )
+        end
+      end
+
+      # MountPartition does not work here
+      # because it turns --bind into -o --bind
+      if SCR.Execute(
+          path(".target.mount"),
+          ["/run", ::File.join(Installation.destdir, "run"), Installation.mountlog],
+          "--bind"
+         )
+        AddMountedPartition(
+          { :type => "mount", :device => "none", :mntpt => "/run" }
+        )
+      end
+    end
+
     #
     def MountFSTab(fstab, message)
       fstab = deep_copy(fstab)
+
+      mount_specials_in_destdir
+
       allowed_fs = [
         "ext",
         "ext2",
@@ -1219,19 +1267,6 @@ module Yast
         "vfat",
         "auto",
       ]
-
-      # mount sysfs first
-      if MountPartition("/sys", "sysfs", "sysfs") == nil
-        AddMountedPartition(
-          { :type => "mount", :device => "sysfs", :mntpt => "/sys" }
-        )
-      end
-
-      if MountPartition("/proc", "proc", "proc") == nil
-        AddMountedPartition(
-          { :type => "mount", :device => "proc", :mntpt => "/proc" }
-        )
-      end
 
       success = true
 
