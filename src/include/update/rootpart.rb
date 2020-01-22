@@ -30,6 +30,7 @@ require "yast"
 
 require "y2packager/medium_type"
 require "y2packager/product_control_product"
+require "y2packager/original_repository_setup"
 
 module Yast
   module UpdateRootpartInclude
@@ -504,6 +505,15 @@ module Yast
               )
             end
           end
+        end
+
+        if ret != :back
+          # force reloading the repositories
+          Yast::Pkg.SourceFinishAll
+          Yast::Pkg.SourceRestore
+
+          # remember the original repositories
+          Y2Packager::OriginalRepositorySetup.instance.read
         end
       end
 
