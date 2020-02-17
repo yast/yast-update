@@ -286,7 +286,11 @@ module Yast
       )
 
       # at least one must be there, the second one is for RPM v3
-      rpm_db_files = ["/var/lib/rpm/Packages", "/var/lib/rpm/packages.rpm"]
+      rpm_db_files = [
+        "/var/lib/rpm/Packages",
+        "/var/lib/rpm/packages.rpm",
+        "/var/lib/rpm/Packages.db"
+      ]
       ret = false
       file_found_or_error_skipped = false
 
