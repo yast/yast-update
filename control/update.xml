@@ -68,7 +68,7 @@ textdomain="update"
     </workflows>
     <inst_finish_stages config:type="list">
 	<inst_finish_stage>
-	    <label>Update Configuration</label>
+	    <label>Configure Online Update</label>
 	    <steps config:type="list">
 		<step>pkg</step>
 	    </steps>
