@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Feb 19 14:43:22 UTC 2020 - Ladislav Slezák <lslezak@suse.cz>
+
+- Switch from Autotools based build to Rake
+
+-------------------------------------------------------------------
 Wed Feb 19 09:57:26 UTC 2020 - Stefan Hundhammer <shundhammer@suse.com>
 
 - Fixed user-visible messages (bsc#1084015)
