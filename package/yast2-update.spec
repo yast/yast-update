@@ -39,6 +39,7 @@ BuildRequires:  libxml2-tools
 BuildRequires:  yast2-installation-control
 # Needed for tests
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:rspec)
+BuildRequires:  rubygem(%{rb_default_ruby_abi}:yast-rake)
 # Y2Storage::Crypttab.save_encryption_names
 BuildRequires:  yast2-storage-ng >= 4.2.42
 
@@ -87,7 +88,9 @@ Use this component if you wish to update your system.
 %setup -q
 
 %build
-%yast_build
+
+%check
+%yast_check
 
 %install
 %yast_install
@@ -115,5 +118,7 @@ Use this component if you wish to update your system.
 %{yast_clientdir}/update.rb
 %{yast_clientdir}/run_update.rb
 %license COPYING
+%doc %{yast_docdir}/README.md
+%doc %{yast_docdir}/CONTRIBUTING.md
 
 %changelog
