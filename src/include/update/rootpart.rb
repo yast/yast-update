@@ -508,11 +508,9 @@ module Yast
         end
 
         if ret != :back
-          # force reloading the repositories
-          Yast::Pkg.SourceFinishAll
+          # load the repositories from the system
           Yast::Pkg.SourceRestore
-
-          # remember the original repositories
+          # remember the original setup
           Y2Packager::OriginalRepositorySetup.instance.read
         end
       end

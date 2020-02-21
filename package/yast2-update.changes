@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb 21 09:06:01 UTC 2020 - Ladislav Slezák <lslezak@suse.cz>
+
+- Fixed repository loading to not remove the initial installation
+  repository (bsc#1163081)
+- 4.2.17
+
+-------------------------------------------------------------------
 Wed Feb 19 14:43:22 UTC 2020 - Ladislav Slezák <lslezak@suse.cz>
 
 - Switch from Autotools based build to Rake
