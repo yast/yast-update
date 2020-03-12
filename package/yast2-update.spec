@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.2.17
+Version:        4.2.18
 Release:        0
 Summary:        YaST2 - Update
 Group:          System/YaST
@@ -30,7 +30,7 @@ BuildRequires:  update-desktop-files
 BuildRequires:  yast2-devtools >= 4.2.2
 BuildRequires:  yast2-ruby-bindings >= 1.0.0
 # Y2Packager::OriginalRepositorySetup
-BuildRequires:  yast2 >= 4.2.60
+BuildRequires:  yast2 >= 4.2.71
 # Packages#proposal_for_update
 BuildRequires:  yast2-packager >= 3.2.13
 # xmllint
@@ -46,7 +46,7 @@ BuildRequires:  yast2-storage-ng >= 4.2.42
 # Y2Storage::Crypttab.save_encryption_names
 Requires:       yast2-storage-ng >= 4.2.42
 # Y2Packager::OriginalRepositorySetup
-Requires:       yast2 >= 4.2.60
+Requires:       yast2 >= 4.2.71
 Requires:       yast2-installation
 # product_update_summary, product_update_warning
 Requires:       yast2-packager >= 4.2.33

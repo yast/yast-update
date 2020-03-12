@@ -29,8 +29,9 @@
 require "yast"
 
 require "y2packager/medium_type"
-require "y2packager/product_control_product"
 require "y2packager/original_repository_setup"
+require "y2packager/product_control_product"
+require "y2packager/repository"
 
 module Yast
   module UpdateRootpartInclude
@@ -508,10 +509,12 @@ module Yast
         end
 
         if ret != :back
+          install_repos = Y2Packager::Repository.all
+          log.info "Installation repositories (#{install_repos.size}): #{install_repos.map(&:url)}"
           # load the repositories from the system
           Yast::Pkg.SourceRestore
-          # remember the original setup
-          Y2Packager::OriginalRepositorySetup.instance.read
+          # remember the original setup, ignore the installation repositories
+          Y2Packager::OriginalRepositorySetup.instance.read(install_repos)
         end
       end
 
