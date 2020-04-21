@@ -1,4 +1,6 @@
 require "yast/rake"
+
+Yast::Tasks.submit_to :sle15sp2
 require "shellwords"
 
 Yast::Tasks.configuration do |conf|
