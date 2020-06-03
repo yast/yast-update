@@ -341,10 +341,10 @@ describe Yast::RootPart do
       before do
         allow(File).to receive(:exist?).and_return(true)
         allow(File).to receive(:read).and_return(<<~CONTENT
-            <pam_mount>
-            </pam_mount>
-          CONTENT
-        )
+          <pam_mount>
+          </pam_mount>
+        CONTENT
+                                                )
       end
 
       it "returns false" do
@@ -356,24 +356,22 @@ describe Yast::RootPart do
       before do
         allow(File).to receive(:exist?).and_return(true)
         allow(File).to receive(:read).and_return(<<~CONTENT
-            <pam_mount>
-              <!-- Generic encrypted partition example -->
-              <volume user="USERNAME" fstype="auto" path="/dev/sdaX" mountpoint="/home" options="fsck,noatime" />
-
-              <!-- Example using CIFS -->
-              <volume
-                fstype="cifs"
-                server="server.example.com"
-                path="share_name"
-                mountpoint="~/mnt/share_name"
-                uid="10000-19999"
-                options="sec=krb5i,vers=3.0,cruid=%(USERUID)"
-              />
-              <mkmountpoint enable="1" remove="true" />
-
-            </pam_mount>
-          CONTENT
-        )
+          <pam_mount>
+            <!-- Generic encrypted partition example -->
+            <volume user="USERNAME" fstype="auto" path="/dev/sdaX" mountpoint="/home" options="fsck,noatime" />
+             <!-- Example using CIFS -->
+            <volume
+              fstype="cifs"
+              server="server.example.com"
+              path="share_name"
+              mountpoint="~/mnt/share_name"
+              uid="10000-19999"
+              options="sec=krb5i,vers=3.0,cruid=%(USERUID)"
+            />
+            <mkmountpoint enable="1" remove="true" />
+           </pam_mount>
+        CONTENT
+                                                )
       end
 
       it "returns true" do
