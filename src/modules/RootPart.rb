@@ -30,6 +30,7 @@ require "yast2/fs_snapshot_store"
 require "y2storage"
 
 require "fileutils"
+require "nokogiri"
 
 module Yast
   class RootPartClass < Module
@@ -1210,11 +1211,11 @@ module Yast
       pam_mount_path = Installation.destdir + "/etc/security/pam_mount.conf.xml"
       return false unless File.exist? pam_mount_path
 
+      doc = Nokogiri::XML(File.read(pam_mount_path), &:strict)
+
       Builtins.y2milestone("Detected pam_mount.conf, checking existence of encrypted home dirs")
-      pam_mount_conf = SCR.Read(path(".anyxml"), pam_mount_path)
-      pam = pam_mount_conf.fetch("pam_mount", [])[0]
-      volumes = pam && pam["volume"]
-      Builtins.y2milestone("Detected encrypted volumes: %1", volumes)
+      volumes = doc.xpath("/pam_mount/volume")
+      Builtins.y2milestone("Detected encrypted volumes: %1", volumes.inspect)
       !(volumes.nil? || volumes.empty?)
     end
 

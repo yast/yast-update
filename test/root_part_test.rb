@@ -221,6 +221,9 @@ describe Yast::RootPart do
       # Mock the system lookup executed as last resort when the devicegraph
       # doesn't contain the searched information
       allow(Y2Storage::BlkDevice).to receive(:find_by_any_name)
+
+      # avoid test on real FS
+      allow(::File).to receive(:exist?).and_return(false)
     end
 
     let(:scenario) { "two-disks-two-btrfs.xml" }
@@ -319,6 +322,60 @@ describe Yast::RootPart do
         expect(FileUtils).to_not receive(:copy_entry)
           .with("/etc/resolv.conf", "/mnt/etc/resolv.conf", false, false, true)
         subject.inject_intsys_files
+      end
+    end
+  end
+
+  describe "#has_pam_mount" do
+    context "pam_mount.conf.xml does not exist" do
+      before do
+        allow(File).to receive(:exist?).and_return(false)
+      end
+
+      it "returns false" do
+        expect(subject.has_pam_mount).to eq false
+      end
+    end
+
+    context "pam_mount.conf.xml exists and does not contain any volumes" do
+      before do
+        allow(File).to receive(:exist?).and_return(true)
+        allow(File).to receive(:read).and_return(<<~CONTENT
+          <pam_mount>
+          </pam_mount>
+        CONTENT
+                                                )
+      end
+
+      it "returns false" do
+        expect(subject.has_pam_mount).to eq false
+      end
+    end
+
+    context "pam_mount.conf.xml exists and contains volumes" do
+      before do
+        allow(File).to receive(:exist?).and_return(true)
+        allow(File).to receive(:read).and_return(<<~CONTENT
+          <pam_mount>
+            <!-- Generic encrypted partition example -->
+            <volume user="USERNAME" fstype="auto" path="/dev/sdaX" mountpoint="/home" options="fsck,noatime" />
+             <!-- Example using CIFS -->
+            <volume
+              fstype="cifs"
+              server="server.example.com"
+              path="share_name"
+              mountpoint="~/mnt/share_name"
+              uid="10000-19999"
+              options="sec=krb5i,vers=3.0,cruid=%(USERUID)"
+            />
+            <mkmountpoint enable="1" remove="true" />
+           </pam_mount>
+        CONTENT
+                                                )
+      end
+
+      it "returns true" do
+        expect(subject.has_pam_mount).to eq true
       end
     end
   end
