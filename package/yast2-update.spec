@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.3.0
+Version:        4.3.1
 Release:        0
 Summary:        YaST2 - Update
 Group:          System/YaST
@@ -68,6 +68,8 @@ Provides:       yast2-installation:/usr/share/YaST2/clients/vendor.ycp
 Conflicts:      yast2-pkg-bindings < 2.15.11
 # Storage::DeviceMatchFstab (#244117)
 Conflicts:      yast2-storage < 2.15.4
+
+Supplements:    autoyast(update)
 
 %description
 Use this component if you wish to update your system.
