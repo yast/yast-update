@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Mon Aug 10 18:09:02 CEST 2020 - schubi@suse.de
 
-- AutoYaST: Added supplements: autoyast(update) into the spec file
+- AutoYaST: Added supplements: autoyast(upgrade) into the spec file
   in order to install this packages if the section has been defined
   in the AY configuration file (bsc#1146494).
 - 4.3.1

@@ -69,7 +69,7 @@ Conflicts:      yast2-pkg-bindings < 2.15.11
 # Storage::DeviceMatchFstab (#244117)
 Conflicts:      yast2-storage < 2.15.4
 
-Supplements:    autoyast(update)
+Supplements:    autoyast(upgrade)
 
 %description
 Use this component if you wish to update your system.
