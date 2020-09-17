@@ -17,7 +17,7 @@
 
 
 Name:           yast2-update
-Version:        4.2.18
+Version:        4.2.19
 Release:        0
 Summary:        YaST2 - Update
 Group:          System/YaST
@@ -50,8 +50,8 @@ Requires:       yast2 >= 4.2.71
 Requires:       yast2-installation
 # product_update_summary, product_update_warning
 Requires:       yast2-packager >= 4.2.33
-# Improved Pkg.SourceRestore()
-Requires:       yast2-pkg-bindings >= 4.2.6
+# Pkg::SetAdditionalVendors
+Requires:       yast2-pkg-bindings >= 4.3.1
 Requires:       yast2-ruby-bindings >= 1.0.0
 # use parallel gzip when crating backup (much faster)
 Requires:       pigz
