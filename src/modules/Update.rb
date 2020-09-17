@@ -132,6 +132,17 @@ module Yast
       ret
     end
 
+    # Set vendors which are compatilbe (defined in the product description).
+    # Do not report an error if there is a vendor change while
+    # the update between these defined vendors.
+    def SetCompatibleVendors
+      vendors = ProductFeatures.GetFeature("software", "compatible_vendors")
+      return unless vendors.is_a?(Array)
+
+      log.info("Defined compatible vendors: #{vendors}")
+      Pkg.SetAdditionalVendors(vendors)
+    end
+
     # Returns whether upgrade process should silently downgrade packages if needed.
     # 'true' means that packages might be downgraded, 'nil' is returned when
     # the feature is not supported in the control file.
@@ -290,13 +301,12 @@ module Yast
     # Set initial values for variables that user can't change.
     # They are defined in the control file.
     def InitUpdate
-      Builtins.y2milestone("Calling: InitUpdate()")
+      log.info("Calling: InitUpdate()")
 
       @silentlyDowngradePackages = SilentlyDowngradePackages()
-      Builtins.y2milestone(
-        "silentlyDowngradePackages: %1",
-        @silentlyDowngradePackages
-      )
+      log.info("silentlyDowngradePackages: #{@silentlyDowngradePackages}")
+
+      SetCompatibleVendors()
 
       nil
     end
