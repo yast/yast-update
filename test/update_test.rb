@@ -384,4 +384,33 @@ describe Yast::Update do
       expect(Yast::Update.IsProductSupportedForUpgrade).to be(false)
     end
   end
+
+  describe "#InitUpdate" do
+    context "no compatile vendors are defined in the control file" do
+      before do
+        allow(Yast::ProductFeatures).to receive(:GetFeature)
+          .with("software", "compatible_vendors")
+          .and_return(nil)
+      end
+
+      it "does nothing" do
+        expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
+        Yast::Update.InitUpdate()
+      end
+    end
+
+    context "compatilbe vendors are defined in the control file" do
+      before do
+        allow(Yast::ProductFeatures).to receive(:GetFeature)
+          .with("software", "compatible_vendors")
+          .and_return(["openSUSE", "SLES"])
+      end
+
+      it "set it in the solver" do
+        expect(Yast::Pkg).to receive(:SetAdditionalVendors).with(kind_of(Array))
+        Yast::Update.InitUpdate()
+      end
+    end
+  end
+
 end
