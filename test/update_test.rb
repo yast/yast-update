@@ -391,6 +391,9 @@ describe Yast::Update do
         allow(Yast::ProductFeatures).to receive(:GetFeature)
           .with("software", "compatible_vendors")
           .and_return(nil)
+        allow(Yast::ProductFeatures).to receive(:GetFeature)
+          .with("software", "silently_downgrade_packages")
+          .and_return(true)
       end
 
       it "does nothing" do
@@ -404,6 +407,9 @@ describe Yast::Update do
         allow(Yast::ProductFeatures).to receive(:GetFeature)
           .with("software", "compatible_vendors")
           .and_return(["openSUSE", "SLES"])
+        allow(Yast::ProductFeatures).to receive(:GetFeature)
+          .with("software", "silently_downgrade_packages")
+          .and_return(true)
       end
 
       it "set it in the solver" do
