@@ -136,11 +136,42 @@ module Yast
     # Do not report an error if there is a vendor change while
     # the update between these defined vendors.
     def SetCompatibleVendors
-      vendors = ProductFeatures.GetFeature("software", "compatible_vendors")
-      return unless vendors.is_a?(Array)
+      return unless Mode.update # Update mode only
 
-      log.info("Defined compatible vendors: #{vendors}")
-      Pkg.SetAdditionalVendors(vendors)
+      upgrade_settings = ProductFeatures.GetFeature("software", "upgrade")
+      # compatible vendors are not defined
+      if !upgrade_settings.is_a?(Hash) ||
+          !upgrade_settings.key?("compatible_vendors") ||
+          !upgrade_settings["compatible_vendors"] ||
+          !upgrade_settings["compatible_vendors"].is_a?(Array)
+        return
+      end
+
+      # It will not be set if the product will not be changed.
+      # e.g. SLES->SLES upgrade
+
+      # e.g. "SUSE Linux Enterprise Server 15 SP1"
+      installed_version = Installation.installedVersion["nameandversion"]
+
+      # evaluting corresponding update product
+      updated = Packages.group_products_by_status(
+        Y2Packager::Resolvable.find(kind: :product)
+      )[:updated]
+      no_product_change = updated.find do |old_product, new_product|
+        old_product.display_name == installed_version &&
+          old_product.name == new_product.name # e.g. "SLES" == "SLES"
+      end
+
+      vendors = upgrade_settings["compatible_vendors"]
+
+      if no_product_change
+        log.info("The product \"#{no_product_change[0].display_name}\" will be updated"\
+                 " by product \"#{no_product_change[1].display_name}\".")
+        log.info("So the automatic vendor change \"#{vendors}\" is disabled.")
+      else
+        log.info("Set defined compatible vendors in libzypp: #{vendors}")
+        Pkg.SetAdditionalVendors(vendors)
+      end
     end
 
     # Returns whether upgrade process should silently downgrade packages if needed.
