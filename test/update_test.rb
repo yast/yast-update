@@ -387,11 +387,6 @@ describe Yast::Update do
   end
 
   describe "#InitUpdate" do
-    before do
-      allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
-        .and_return(all_products)      
-    end
-    
     context "installation mode" do
       before do
         allow(Yast::Mode).to receive(:update).and_return(false)
@@ -420,12 +415,13 @@ describe Yast::Update do
             YAML.load_file(File.join(__dir__,
               "../data/zypp/opensuse_sles.yml"))
           end
-
           let(:all_products) do
             all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
           end
           allow(Yast::Installation).to receive(:installedVersion)
             .and_return("nameandversion" => "openSUSE 15.1")
+          allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
+            .and_return(all_products)          
         end
 
         context "no compatile vendors are defined in the control file" do
