@@ -411,13 +411,9 @@ describe Yast::Update do
 
       context "product change openSUSE->SLES" do
         before do
-          let(:all_products_hash) do
-            YAML.load_file(File.join(__dir__,
+          all_products_hash = YAML.load_file(File.join(__dir__,
               "../data/zypp/opensuse_sles.yml"))
-          end
-          let(:all_products) do
-            all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
-          end
+          all_products = all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
           allow(Yast::Installation).to receive(:installedVersion)
             .and_return("nameandversion" => "openSUSE 15.1")
           allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
