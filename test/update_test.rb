@@ -387,6 +387,11 @@ describe Yast::Update do
   end
 
   describe "#InitUpdate" do
+    before do
+      allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
+        .and_return(all_products)      
+    end
+    
     context "installation mode" do
       before do
         allow(Yast::Mode).to receive(:update).and_return(false)
@@ -404,8 +409,6 @@ describe Yast::Update do
         allow(Yast::ProductFeatures).to receive(:GetFeature)
           .with("software", "silently_downgrade_packages")
           .and_return(true)
-        allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
-          .and_return(all_products)
       end
 
       #      context "no product change SLES->SLES" do
