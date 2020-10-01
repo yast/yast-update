@@ -413,8 +413,11 @@ describe Yast::Update do
           all_products = all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
           allow(Yast::Installation).to receive(:installedVersion)
             .and_return("nameandversion"=>"SUSE Linux Enterprise Server 15 SP1")
-          allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
-            .and_return(all_products)
+          allow(Yast::Packages).to receive(:group_products_by_status)
+            .and_return(updated: { all_products.first=>all_products.last })
+          allow(Yast::ProductFeatures).to receive(:GetFeature)
+            .with("software", "upgrade")
+            .and_return("compatible_vendors" =>["openSUSE", "SLES"])
         end
 
         it "does not set compatible vendors at all" do
@@ -430,8 +433,8 @@ describe Yast::Update do
           all_products = all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
           allow(Yast::Installation).to receive(:installedVersion)
             .and_return("nameandversion" => "openSUSE 15.1")
-          allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
-            .and_return(all_products)
+          allow(Yast::Packages).to receive(:group_products_by_status)
+            .and_return(updated: { all_products.first=>all_products.last })
         end
 
         context "no compatible vendors are defined in the control file" do
