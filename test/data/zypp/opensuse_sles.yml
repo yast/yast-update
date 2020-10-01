@@ -18,7 +18,7 @@
   - http://doc.opensuse.org/release-notes/x86_64/openSUSE/15.1/release-notes-openSUSE.rpm
   short_name: openSUSE
   source: -1
-  status: :installed
+  status: :removed
   summary: openSUSE 15.1 
   transact_by: :solver
   type: base
@@ -38,7 +38,7 @@
             offers common management tools and technology
             certifications across the platform, and
             each product is enterprise-class.
-  display_name: SUSE Linux Enterprise Server 12 SP3
+  display_name: SUSE Linux Enterprise Server 15 SP2
   download_size: 0
   eol: 1730332800
   flags: []
@@ -58,7 +58,7 @@
   - https://www.suse.com/releasenotes/x86_64/SUSE-SLES/15-SP2/release-notes-sles.rpm
   short_name: SLES15-SP2
   source: -1
-  status: :removed
+  status: :selected
   summary: SUSE Linux Enterprise Server 15 SP2
   transact_by: :solver
   type: base

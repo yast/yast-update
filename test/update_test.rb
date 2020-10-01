@@ -143,7 +143,7 @@ describe Yast::Update do
       Yast::Update.create_backup(name, paths)
     end
 
-    it "do not store mount prefix in tarball" do
+    it "does not store mount prefix in tarball" do
       name = "test-backup"
       paths = ["/path_with_slash"]
       expect(Yast::SCR).to receive(:Execute)
@@ -392,7 +392,7 @@ describe Yast::Update do
         allow(Yast::Mode).to receive(:update).and_return(false)
       end
 
-      it "do not set compatible vendors at all" do
+      it "does not set compatible vendors at all" do
         expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
         Yast::Update.InitUpdate()
       end
@@ -406,28 +406,42 @@ describe Yast::Update do
           .and_return(true)
       end
 
-      #      context "no product change SLES->SLES" do
-      #      end
+      context "no product change SLES->SLES" do
+        before do
+          all_products_hash = YAML.load_file(File.join(DATA_DIR,
+            "zypp", "sles_sles.yml"))
+          all_products = all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
+          allow(Yast::Installation).to receive(:installedVersion)
+            .and_return("nameandversion"=>"SUSE Linux Enterprise Server 15 SP1")
+          allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
+            .and_return(all_products)
+        end
+
+        it "does not set compatible vendors at all" do
+          expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
+          Yast::Update.InitUpdate()
+        end
+      end
 
       context "product change openSUSE->SLES" do
         before do
           all_products_hash = YAML.load_file(File.join(DATA_DIR,
-              "zypp","opensuse_sles.yml"))
+            "zypp", "opensuse_sles.yml"))
           all_products = all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
           allow(Yast::Installation).to receive(:installedVersion)
             .and_return("nameandversion" => "openSUSE 15.1")
           allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
-            .and_return(all_products)          
+            .and_return(all_products)
         end
 
-        context "no compatile vendors are defined in the control file" do
+        context "no compatible vendors are defined in the control file" do
           before do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
               .and_return({})
           end
 
-          it "do not set compatible vendors at all" do
+          it "does not set compatible vendors at all" do
             expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
             Yast::Update.InitUpdate()
           end
