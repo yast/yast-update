@@ -1,6 +1,7 @@
 #!/usr/bin/env rspec
 
 require_relative "test_helper"
+require "y2packager/product"
 
 Yast.import "Update"
 Yast.import "Installation"
@@ -386,35 +387,69 @@ describe Yast::Update do
   end
 
   describe "#InitUpdate" do
-    context "no compatile vendors are defined in the control file" do
+    context "installation mode" do
       before do
-        allow(Yast::ProductFeatures).to receive(:GetFeature)
-          .with("software", "compatible_vendors")
-          .and_return(nil)
-        allow(Yast::ProductFeatures).to receive(:GetFeature)
-          .with("software", "silently_downgrade_packages")
-          .and_return(true)
+        allow(Yast::Mode).to receive(:update).and_return(false)
       end
 
-      it "does nothing" do
+      it "do not set compatible vendors at all" do
         expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
         Yast::Update.InitUpdate()
       end
     end
 
-    context "compatilbe vendors are defined in the control file" do
+    context "upgrade mode" do
       before do
-        allow(Yast::ProductFeatures).to receive(:GetFeature)
-          .with("software", "compatible_vendors")
-          .and_return(["openSUSE", "SLES"])
+        allow(Yast::Mode).to receive(:update).and_return(true)
         allow(Yast::ProductFeatures).to receive(:GetFeature)
           .with("software", "silently_downgrade_packages")
           .and_return(true)
+        allow(Y2Packager::Resolvable).to receive(:find).with(kind: :product)
+          .and_return(all_products)
       end
 
-      it "set it in the solver" do
-        expect(Yast::Pkg).to receive(:SetAdditionalVendors).with(kind_of(Array))
-        Yast::Update.InitUpdate()
+      #      context "no product change SLES->SLES" do
+      #      end
+
+      context "product change openSUSE->SLES" do
+        before do
+          let(:all_products_hash) do
+            YAML.load_file(File.join(__dir__,
+              "../data/zypp/opensuse_sles.yml"))
+          end
+
+          let(:all_products) do
+            all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
+          end
+          allow(Yast::Installation).to receive(:installedVersion)
+            .and_return("nameandversion" => "openSUSE 15.1")
+        end
+
+        context "no compatile vendors are defined in the control file" do
+          before do
+            allow(Yast::ProductFeatures).to receive(:GetFeature)
+              .with("software", "upgrade")
+              .and_return({})
+          end
+
+          it "do not set compatible vendors at all" do
+            expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
+            Yast::Update.InitUpdate()
+          end
+        end
+
+        context "compatilbe vendors are defined in the control file" do
+          before do
+            allow(Yast::ProductFeatures).to receive(:GetFeature)
+              .with("software", "upgrade")
+              .and_return("compatible_vendors" =>["openSUSE", "SLES"])
+          end
+
+          it "set it in the solver" do
+            expect(Yast::Pkg).to receive(:SetAdditionalVendors).with(kind_of(Array))
+            Yast::Update.InitUpdate()
+          end
+        end
       end
     end
   end
