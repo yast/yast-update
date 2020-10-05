@@ -134,21 +134,33 @@ module Yast
 
     # Set vendors which are compatilbe (defined in the product description).
     # Do not report an error if there is a vendor change while
-    # the update between these defined vendors.
+    # the update between these defined vendors and products.
     def SetCompatibleVendors
       return unless Mode.update # Update mode only
 
       upgrade_settings = ProductFeatures.GetFeature("software", "upgrade")
+      return unless upgrade_settings
+
+      product_upgrade = upgrade_settings["product_upgrade"]
+
       # compatible vendors are not defined
-      if !upgrade_settings.is_a?(Hash) ||
-          !upgrade_settings.key?("compatible_vendors") ||
-          !upgrade_settings["compatible_vendors"] ||
-          !upgrade_settings["compatible_vendors"].is_a?(Array)
+      if !product_upgrade.is_a?(Hash) ||
+          !product_upgrade.key?("compatible_vendors") ||
+          !product_upgrade["compatible_vendors"] ||
+          !product_upgrade["compatible_vendors"].is_a?(Array)
         return
       end
 
-      # It will not be set if the product will not be changed.
-      # e.g. SLES->SLES upgrade
+      if !product_upgrade["from"]
+        log.erro("Aksing for all vendor changes because product_updgrade/from is not set.")
+        return
+      end
+      if !product_upgrade["to"]
+        log.erro("Aksing for all vendor changes because product_updgrade/to is not set.")
+        return
+      end
+
+      # It will not be set if it is no product upgrade defined in from/to
 
       # e.g. "SUSE Linux Enterprise Server 15 SP1"
       installed_version = Installation.installedVersion["nameandversion"]
@@ -157,16 +169,18 @@ module Yast
       updated = Packages.group_products_by_status(
         Y2Packager::Resolvable.find(kind: :product)
       )[:updated]
-      no_product_change = updated.find do |old_product, new_product|
+      product_change = updated.find do |old_product, new_product|
         old_product.display_name == installed_version &&
-          old_product.name == new_product.name # e.g. "SLES" == "SLES"
+          old_product.name == product_upgrade["from"] &&
+          new_product.name == product_upgrade["to"]
       end
 
-      vendors = upgrade_settings["compatible_vendors"]
+      vendors = product_upgrade["compatible_vendors"]
 
-      if no_product_change
+      if !product_change || product_change
         log.info("The product \"#{no_product_change[0].display_name}\" will be updated"\
                  " by product \"#{no_product_change[1].display_name}\".")
+        log.info("This is not defined in the upgrade/product_updgrade section.")
         log.info("So the automatic vendor change \"#{vendors}\" is disabled.")
       else
         log.info("Set defined compatible vendors in libzypp: #{vendors}")
