@@ -51,7 +51,7 @@ Requires:       yast2-installation
 # product_update_summary, product_update_warning
 Requires:       yast2-packager >= 4.2.33
 # Pkg::SetAdditionalVendors
-Requires:       yast2-pkg-bindings >= 4.3.2
+Requires:       yast2-pkg-bindings >= 4.3.3
 Requires:       yast2-ruby-bindings >= 1.0.0
 # use parallel gzip when crating backup (much faster)
 Requires:       pigz
