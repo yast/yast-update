@@ -161,29 +161,16 @@ module Yast
       end
 
       # It will be set if there is an product upgrade which is defined in from/to.
-
-      # e.g. "SUSE Linux Enterprise Server 15 SP1"
-      installed_version = Installation.installedVersion["nameandversion"]
-
-      # evaluting corresponding update product
-      updated = Packages.group_products_by_status(
-        Y2Packager::Resolvable.find(kind: :product)
-      )[:updated]
-      product_change = updated.find do |old_product, new_product|
-        old_product.display_name == installed_version &&
-          old_product.name == product_upgrade["from"] &&
-          new_product.name == product_upgrade["to"]
-      end
-
       vendors = product_upgrade["compatible_vendors"]
 
-      if !product_change || product_change.empty?
-        log.info("No upgrade from \"#{product_upgrade["from"]}\" to"\
-                 " \"##{product_upgrade["to"]}\" found.")
-        log.info("So the automatic vendor change \"#{vendors}\" is disabled.")
-      else
+      if Installation.installedVersion["name"] == product_upgrade["from"] &&
+          Installation.updateVersion["name"] == product_upgrade["to"]
         log.info("Set defined compatible vendors in libzypp: #{vendors}")
         Pkg.SetAdditionalVendors(vendors)
+      else
+        log.info("No upgrade from \"#{product_upgrade["from"]}\" to"\
+                 " \"#{product_upgrade["to"]}\" found.")
+        log.info("So the automatic vendor change \"#{vendors}\" is disabled.")
       end
     end
 
