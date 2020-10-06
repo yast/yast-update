@@ -417,7 +417,11 @@ describe Yast::Update do
             .and_return(updated: { all_products.first=>all_products.last })
           allow(Yast::ProductFeatures).to receive(:GetFeature)
             .with("software", "upgrade")
-            .and_return("compatible_vendors" =>["openSUSE", "SLES"])
+            .and_return("product_upgrade" => {
+                          "from"               => "openSUSE",
+                          "to"                 => "SLES",
+                          "compatible_vendors" => ["openSUSE", "SLES LCC"]
+                        })
         end
 
         it "does not set compatible vendors at all" do
@@ -432,7 +436,7 @@ describe Yast::Update do
             "zypp", "opensuse_sles.yml"))
           all_products = all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
           allow(Yast::Installation).to receive(:installedVersion)
-            .and_return("nameandversion" => "openSUSE 15.1")
+            .and_return("nameandversion" => "openSUSE (INSTALLED)")
           allow(Yast::Packages).to receive(:group_products_by_status)
             .and_return(updated: { all_products.first=>all_products.last })
         end
@@ -441,7 +445,10 @@ describe Yast::Update do
           before do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
-              .and_return({})
+              .and_return("product_upgrade" => {
+                            "from" => "openSUSE",
+                            "to"   => "SLES"
+                          })
           end
 
           it "does not set compatible vendors at all" do
@@ -454,7 +461,11 @@ describe Yast::Update do
           before do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
-              .and_return("compatible_vendors" =>["openSUSE", "SLES"])
+              .and_return("product_upgrade" => {
+                            "from"               => "openSUSE",
+                            "to"                 => "SLES",
+                            "compatible_vendors" => ["openSUSE", "SLES LCC"]
+                          })
           end
 
           it "set it in the solver" do

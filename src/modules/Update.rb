@@ -160,7 +160,7 @@ module Yast
         return
       end
 
-      # It will not be set if it is no product upgrade defined in from/to
+      # It will be set if there is an product upgrade which is defined in from/to.
 
       # e.g. "SUSE Linux Enterprise Server 15 SP1"
       installed_version = Installation.installedVersion["nameandversion"]
@@ -177,10 +177,9 @@ module Yast
 
       vendors = product_upgrade["compatible_vendors"]
 
-      if !product_change || product_change
-        log.info("The product \"#{no_product_change[0].display_name}\" will be updated"\
-                 " by product \"#{no_product_change[1].display_name}\".")
-        log.info("This is not defined in the upgrade/product_updgrade section.")
+      if !product_change || product_change.empty?
+        log.info("No upgrade from \"#{product_upgrade["from"]}\" to"\
+                 " \"##{product_upgrade["to"]}\" found.")
         log.info("So the automatic vendor change \"#{vendors}\" is disabled.")
       else
         log.info("Set defined compatible vendors in libzypp: #{vendors}")
