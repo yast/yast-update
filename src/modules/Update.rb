@@ -152,11 +152,11 @@ module Yast
       end
 
       if !product_upgrade["from"]
-        log.erro("Aksing for all vendor changes because product_updgrade/from is not set.")
+        log.error("Asking for all vendor changes because product_updgrade/from is not set.")
         return
       end
       if !product_upgrade["to"]
-        log.erro("Aksing for all vendor changes because product_updgrade/to is not set.")
+        log.error("Asking for all vendor changes because product_updgrade/to is not set.")
         return
       end
 

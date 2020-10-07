@@ -404,17 +404,23 @@ describe Yast::Update do
         allow(Yast::ProductFeatures).to receive(:GetFeature)
           .with("software", "silently_downgrade_packages")
           .and_return(true)
+        allow(Yast::Installation).to receive(:installedVersion)
+          .and_return(
+            {"show"=>"openSUSE Leap 15.1",
+             "name"=>"openSUSE Leap",
+             "version"=>"15.1",
+             "nameandversion"=>"openSUSE Leap 15.1", "major"=>15,
+             "minor"=>1})
+        allow(Yast::Installation).to receive(:updateVersion)
+          .and_return(
+            {"show"=>"openSUSE Jump 15.2.1",
+             "name"=>"openSUSE Jump",
+             "version"=>"15.2.1",
+             "nameandversion"=>"openSUSE Jump 15.2.1 15.2.1"})
       end
 
-      context "no product change SLES->SLES" do
+      context "no valid product update defined" do
         before do
-          all_products_hash = YAML.load_file(File.join(DATA_DIR,
-            "zypp", "sles_sles.yml"))
-          all_products = all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
-          allow(Yast::Installation).to receive(:installedVersion)
-            .and_return("nameandversion"=>"SUSE Linux Enterprise Server 15 SP1")
-          allow(Yast::Packages).to receive(:group_products_by_status)
-            .and_return(updated: { all_products.first=>all_products.last })
           allow(Yast::ProductFeatures).to receive(:GetFeature)
             .with("software", "upgrade")
             .and_return("product_upgrade" => {
@@ -430,24 +436,14 @@ describe Yast::Update do
         end
       end
 
-      context "product change openSUSE->SLES" do
-        before do
-          all_products_hash = YAML.load_file(File.join(DATA_DIR,
-            "zypp", "opensuse_sles.yml"))
-          all_products = all_products_hash.map { |p| Y2Packager::Resolvable.new(p) }
-          allow(Yast::Installation).to receive(:installedVersion)
-            .and_return("nameandversion" => "openSUSE (INSTALLED)")
-          allow(Yast::Packages).to receive(:group_products_by_status)
-            .and_return(updated: { all_products.first=>all_products.last })
-        end
-
+      context "product change is defined" do
         context "no compatible vendors are defined in the control file" do
           before do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
               .and_return("product_upgrade" => {
-                            "from" => "openSUSE",
-                            "to"   => "SLES"
+                            "from" => "openSUSE Leap",
+                            "to"   => "openSUSE Jump"
                           })
           end
 
@@ -462,8 +458,8 @@ describe Yast::Update do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
               .and_return("product_upgrade" => {
-                            "from"               => "openSUSE",
-                            "to"                 => "SLES",
+                            "from" => "openSUSE Leap",
+                            "to"   => "openSUSE Jump",
                             "compatible_vendors" => ["openSUSE", "SLES LCC"]
                           })
           end
