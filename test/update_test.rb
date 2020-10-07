@@ -406,17 +406,19 @@ describe Yast::Update do
           .and_return(true)
         allow(Yast::Installation).to receive(:installedVersion)
           .and_return(
-            {"show"=>"openSUSE Leap 15.1",
-             "name"=>"openSUSE Leap",
-             "version"=>"15.1",
-             "nameandversion"=>"openSUSE Leap 15.1", "major"=>15,
-             "minor"=>1})
+            "show" => "openSUSE Leap 15.1",
+            "name" => "openSUSE Leap",
+            "version" => "15.1",
+            "nameandversion" => "openSUSE Leap 15.1", "major" => 15,
+            "minor" => 1
+          )
         allow(Yast::Installation).to receive(:updateVersion)
           .and_return(
-            {"show"=>"openSUSE Jump 15.2.1",
-             "name"=>"openSUSE Jump",
-             "version"=>"15.2.1",
-             "nameandversion"=>"openSUSE Jump 15.2.1 15.2.1"})
+            "show"           => "openSUSE Jump 15.2.1",
+            "name"           => "openSUSE Jump",
+            "version"        => "15.2.1",
+            "nameandversion" => "openSUSE Jump 15.2.1 15.2.1"
+          )
       end
 
       context "no valid product update defined" do
@@ -458,8 +460,8 @@ describe Yast::Update do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
               .and_return("product_upgrade" => {
-                            "from" => "openSUSE Leap",
-                            "to"   => "openSUSE Jump",
+                            "from"               => "openSUSE Leap",
+                            "to"                 => "openSUSE Jump",
                             "compatible_vendors" => ["openSUSE", "SLES LCC"]
                           })
           end
