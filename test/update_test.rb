@@ -1,7 +1,6 @@
 #!/usr/bin/env rspec
 
 require_relative "test_helper"
-require "y2packager/product"
 
 Yast.import "Update"
 Yast.import "Installation"
