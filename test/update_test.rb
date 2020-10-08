@@ -425,11 +425,11 @@ describe Yast::Update do
         before do
           allow(Yast::ProductFeatures).to receive(:GetFeature)
             .with("software", "upgrade")
-            .and_return("product_upgrade" => {
+            .and_return("product_upgrades" => [{
                           "from"               => "openSUSE",
                           "to"                 => "SLES",
                           "compatible_vendors" => ["openSUSE", "SLES LCC"]
-                        })
+                        }])
         end
 
         it "does not set compatible vendors at all" do
@@ -443,10 +443,10 @@ describe Yast::Update do
           before do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
-              .and_return("product_upgrade" => {
+              .and_return("product_upgrades" => [{
                             "from" => "openSUSE Leap",
                             "to"   => "openSUSE Jump"
-                          })
+                          }])
           end
 
           it "does not set compatible vendors at all" do
@@ -459,11 +459,11 @@ describe Yast::Update do
           before do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
-              .and_return("product_upgrade" => {
+              .and_return("product_upgrades" => [{
                             "from"               => "openSUSE Leap",
                             "to"                 => "openSUSE Jump",
                             "compatible_vendors" => ["openSUSE", "SLES LCC"]
-                          })
+                          }])
           end
 
           it "set it in the solver" do
