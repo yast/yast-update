@@ -141,36 +141,43 @@ module Yast
       upgrade_settings = ProductFeatures.GetFeature("software", "upgrade")
       return unless upgrade_settings
 
-      product_upgrade = upgrade_settings["product_upgrade"]
+      product_upgrades = upgrade_settings["product_upgrades"]
+      return unless product_upgrades
 
-      # compatible vendors are not defined
-      if !product_upgrade.is_a?(Hash) ||
-          !product_upgrade.key?("compatible_vendors") ||
-          !product_upgrade["compatible_vendors"] ||
-          !product_upgrade["compatible_vendors"].is_a?(Array)
+      unless product_upgrades.is_a?(Array)
+        log.error("software/upgrade/product_upgrade in control.xml is not an array")
         return
       end
 
-      if !product_upgrade["from"]
-        log.error("Asking for all vendor changes because product_updgrade/from is not set.")
-        return
-      end
-      if !product_upgrade["to"]
-        log.error("Asking for all vendor changes because product_updgrade/to is not set.")
-        return
-      end
+      product_upgrades.each do |product_upgrade|
+        log.info("Set compatible vendors defined in control.xml: #{product_upgrade}")
 
-      # It will be set if there is an product upgrade which is defined in from/to.
-      vendors = product_upgrade["compatible_vendors"]
+        if !product_upgrade.is_a?(Hash) ||
+            !product_upgrade["compatible_vendors"] ||
+            !product_upgrade["compatible_vendors"].is_a?(Array)
+          log.error("compatible_vendors are not defined.")
+          next
+        end
+        if !product_upgrade["from"]
+          log.error("Asking for all vendor changes because product_updgrade/from is not set.")
+          next
+        end
+        if !product_upgrade["to"]
+          log.error("Asking for all vendor changes because product_updgrade/to is not set.")
+          next
+        end
 
-      if Installation.installedVersion["name"] == product_upgrade["from"] &&
-          Installation.updateVersion["name"] == product_upgrade["to"]
-        log.info("Set defined compatible vendors in libzypp: #{vendors}")
-        Pkg.SetAdditionalVendors(vendors)
-      else
-        log.info("No upgrade from \"#{product_upgrade["from"]}\" to"\
-                 " \"#{product_upgrade["to"]}\" found.")
-        log.info("So the automatic vendor change \"#{vendors}\" is disabled.")
+        # It will be set if there is an product upgrade which is defined in from/to.
+        vendors = product_upgrade["compatible_vendors"]
+        if Installation.installedVersion["name"] == product_upgrade["from"] &&
+            Installation.updateVersion["name"] == product_upgrade["to"]
+          log.info("Set defined compatible vendors in libzypp: #{vendors}")
+          Pkg.SetAdditionalVendors(vendors)
+        else
+          log.info("No upgrade from \"#{product_upgrade["from"]}\" to"\
+                   " \"#{product_upgrade["to"]}\" found.")
+          log.info("So the automatic vendor change \"#{vendors}\" is disabled.")
+        end
       end
     end
 
