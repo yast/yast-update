@@ -132,6 +132,50 @@ module Yast
       ret
     end
 
+    # Set vendors which are compatilbe (defined in the product description).
+    # Do not report an error if there is a vendor change while
+    # the update between these defined vendors and products.
+    def SetCompatibleVendors
+      return unless Mode.update # Update mode only
+
+      upgrade_settings = ProductFeatures.GetFeature("software", "upgrade")
+      return unless upgrade_settings
+
+      product_upgrades = upgrade_settings["product_upgrades"]
+      return unless product_upgrades
+
+      unless product_upgrades.is_a?(Array)
+        log.error("software/upgrade/product_upgrade in control.xml is not an array")
+        return
+      end
+
+      product_upgrades.each do |product_upgrade|
+        log.info("Set compatible vendors defined in control.xml: #{product_upgrade}")
+
+        if !product_upgrade["compatible_vendors"].is_a?(Array)
+          log.error("compatible_vendors are not defined.")
+          next
+        end
+        if !product_upgrade["from"] || !product_upgrade["to"]
+          log.error("The vendor setting does not define 'from' or 'to'"\
+                    "value: #{product_upgrade.inspect}")
+          next
+        end
+
+        # It will be set if there is an product upgrade which is defined in from/to.
+        vendors = product_upgrade["compatible_vendors"]
+        if Installation.installedVersion["name"] == product_upgrade["from"] &&
+            Installation.updateVersion["name"] == product_upgrade["to"]
+          log.info("Set defined compatible vendors in libzypp: #{vendors}")
+          Pkg.SetAdditionalVendors(vendors)
+        else
+          log.info("No upgrade from \"#{product_upgrade["from"]}\" to"\
+                   " \"#{product_upgrade["to"]}\" found.")
+          log.info("So the automatic vendor change \"#{vendors}\" is disabled.")
+        end
+      end
+    end
+
     # Returns whether upgrade process should silently downgrade packages if needed.
     # 'true' means that packages might be downgraded, 'nil' is returned when
     # the feature is not supported in the control file.
@@ -290,13 +334,12 @@ module Yast
     # Set initial values for variables that user can't change.
     # They are defined in the control file.
     def InitUpdate
-      Builtins.y2milestone("Calling: InitUpdate()")
+      log.info("Calling: InitUpdate()")
 
       @silentlyDowngradePackages = SilentlyDowngradePackages()
-      Builtins.y2milestone(
-        "silentlyDowngradePackages: %1",
-        @silentlyDowngradePackages
-      )
+      log.info("silentlyDowngradePackages: #{@silentlyDowngradePackages}")
+
+      SetCompatibleVendors()
 
       nil
     end

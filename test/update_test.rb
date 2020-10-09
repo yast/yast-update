@@ -142,7 +142,7 @@ describe Yast::Update do
       Yast::Update.create_backup(name, paths)
     end
 
-    it "do not store mount prefix in tarball" do
+    it "does not store mount prefix in tarball" do
       name = "test-backup"
       paths = ["/path_with_slash"]
       expect(Yast::SCR).to receive(:Execute)
@@ -384,4 +384,96 @@ describe Yast::Update do
       expect(Yast::Update.IsProductSupportedForUpgrade).to be(false)
     end
   end
+
+  describe "#InitUpdate" do
+    context "installation mode" do
+      before do
+        allow(Yast::Mode).to receive(:update).and_return(false)
+      end
+
+      it "does not set compatible vendors at all" do
+        expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
+        Yast::Update.InitUpdate()
+      end
+    end
+
+    context "upgrade mode" do
+      before do
+        allow(Yast::Mode).to receive(:update).and_return(true)
+        allow(Yast::ProductFeatures).to receive(:GetFeature)
+          .with("software", "silently_downgrade_packages")
+          .and_return(true)
+        allow(Yast::Installation).to receive(:installedVersion)
+          .and_return(
+            "show" => "openSUSE Leap 15.1",
+            "name" => "openSUSE Leap",
+            "version" => "15.1",
+            "nameandversion" => "openSUSE Leap 15.1", "major" => 15,
+            "minor" => 1
+          )
+        allow(Yast::Installation).to receive(:updateVersion)
+          .and_return(
+            "show"           => "openSUSE Jump 15.2.1",
+            "name"           => "openSUSE Jump",
+            "version"        => "15.2.1",
+            "nameandversion" => "openSUSE Jump 15.2.1 15.2.1"
+          )
+      end
+
+      context "no valid product update defined" do
+        before do
+          allow(Yast::ProductFeatures).to receive(:GetFeature)
+            .with("software", "upgrade")
+            .and_return("product_upgrades" => [{
+                          "from"               => "openSUSE",
+                          "to"                 => "SLES",
+                          "compatible_vendors" => ["openSUSE", "SLES LCC"]
+                        }])
+        end
+
+        it "does not set compatible vendors at all" do
+          expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
+          Yast::Update.InitUpdate()
+        end
+      end
+
+      context "product change is defined" do
+        context "no compatible vendors are defined in the control file" do
+          before do
+            allow(Yast::ProductFeatures).to receive(:GetFeature)
+              .with("software", "upgrade")
+              .and_return("product_upgrades" => [{
+                            "from" => "openSUSE Leap",
+                            "to"   => "openSUSE Jump"
+                          }])
+          end
+
+          it "does not set compatible vendors at all" do
+            expect(Yast::Pkg).to_not receive(:SetAdditionalVendors)
+            Yast::Update.InitUpdate()
+          end
+        end
+
+        context "compatilbe vendors are defined in the control file" do
+          before do
+            allow(Yast::ProductFeatures).to receive(:GetFeature)
+              .with("software", "upgrade")
+              .and_return("product_upgrades" => [{
+                            "from"               => "openSUSE Leap",
+                            "to"                 => "openSUSE Jump",
+                            "compatible_vendors" => ["openSUSE", "SLES LCC"]
+                          }])
+          end
+
+          it "set it in the solver" do
+            expect(Yast::Pkg).to receive(:SetAdditionalVendors) do |args|
+              expect(args).to contain_exactly("openSUSE", "SLES LCC")
+            end
+            Yast::Update.InitUpdate()
+          end
+        end
+      end
+    end
+  end
+
 end
