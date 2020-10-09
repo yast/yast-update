@@ -466,8 +466,9 @@ describe Yast::Update do
           end
 
           it "set it in the solver" do
-            expect(Yast::Pkg).to receive(:SetAdditionalVendors)
-              .with(["openSUSE", "SLES LCC"])
+            expect(Yast::Pkg).to receive(:SetAdditionalVendors) do |args|
+              expect(args).to contain_exactly("openSUSE", "SLES LCC")
+            end
             Yast::Update.InitUpdate()
           end
         end
