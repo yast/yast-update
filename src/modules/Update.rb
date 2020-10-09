@@ -152,18 +152,13 @@ module Yast
       product_upgrades.each do |product_upgrade|
         log.info("Set compatible vendors defined in control.xml: #{product_upgrade}")
 
-        if !product_upgrade.is_a?(Hash) ||
-            !product_upgrade["compatible_vendors"] ||
-            !product_upgrade["compatible_vendors"].is_a?(Array)
+        if !product_upgrade["compatible_vendors"].is_a?(Array)
           log.error("compatible_vendors are not defined.")
           next
         end
-        if !product_upgrade["from"]
-          log.error("Asking for all vendor changes because product_updgrade/from is not set.")
-          next
-        end
-        if !product_upgrade["to"]
-          log.error("Asking for all vendor changes because product_updgrade/to is not set.")
+        if !product_upgrade["from"] || !product_upgrade["to"]
+          log.error("The vendor setting does not define 'from' or 'to'"\
+                    "value: #{product_upgrade.inspect}")
           next
         end
 
