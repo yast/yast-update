@@ -24,7 +24,9 @@ Metrics/AbcSize:
 # Configuration parameters: CountComments, ExcludedMethods.
 # ExcludedMethods: refine
 Metrics/BlockLength:
-  Max: 300
+  Max: 120
+  Exclude: # exclude rspec tests
+    - "test/**/*.rb"
 
 # Offense count: 18
 # Configuration parameters: CountBlocks.
