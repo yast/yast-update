@@ -14,7 +14,6 @@ module Helpers
     allow(subject).to receive(:UmountMountedPartition)
     allow(subject).to receive(:target_distribution).and_return("sle-12-x86_64")
     allow(subject).to receive(:initialize_update_rootpart)
-    allow(subject).to receive(:load_data)
   end
 
   def stub_storage(devicegraph_file)
