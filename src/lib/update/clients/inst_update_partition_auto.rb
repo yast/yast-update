@@ -30,7 +30,7 @@ module Yast
 
     DATA_PATH = "/var/lib/YaST2/update_partition_auto.yaml".freeze
 
-    def main
+    def initialize
       Yast.import "Pkg"
       Yast.import "UI"
 
@@ -40,7 +40,9 @@ module Yast
       Yast.import "RootPart"
 
       Yast.include self, "update/rootpart.rb"
+    end
 
+    def main
       if RootPart.Mounted
         log.debug("RootPart is mounted, detaching Update & unmounting partitions")
         Update.Detach

@@ -15,7 +15,7 @@ describe Yast::InstUpdatePartitionAutoClient do
       stub_const("Yast::FileSystems", double)
       allow(Yast::Update)
       allow(Yast::Installation).to receive(:destdir).and_return("/mnt")
-      allow(Yast::Report).to receive(:error)
+      allow(Yast::Report).to receive(:Error)
       allow(Yast::Pkg).to receive(:TargetInitializeOptions)
       allow(Yast::Pkg).to receive(:TargetFinish)
       allow(Yast::Pkg).to receive(:TargetLoad).and_return(true)
