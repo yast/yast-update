@@ -2438,6 +2438,9 @@ module Yast
     def create_pre_snapshot
       return unless Yast2::FsSnapshot.configured?
 
+      original_scr = WFM.SCRGetDefault()
+      chroot_scr = WFM.SCROpen("chroot=#{Installation.destdir}:scr", false)
+      WFM.SCRSetDefault(chroot_scr)
       # as of bsc #1092757 snapshot descriptions are not translated
       snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup: :number, important: true)
       Yast2::FsSnapshotStore.save("update", snapshot.number)
@@ -2447,6 +2450,8 @@ module Yast
           "installation, but beware that you cannot roll back to a pre-update state " \
           "unless you have created a snapshot manually.")
       )
+    ensure
+      WFM.SCRSetDefault(original_scr) if original_scr
     end
   end
 
