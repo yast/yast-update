@@ -236,7 +236,27 @@ describe Yast::RootPart do
   end
 
   describe "#MountFSTab" do
-    it "mounts /dev, /proc and /sys" do
+    before do
+      stub_storage(scenario)
+      # Mock the system lookup executed as last resort when the devicegraph
+      # doesn't contain the searched information
+      allow(Y2Storage::BlkDevice).to receive(:find_by_any_name)
+    end
+
+    let(:scenario) { "two-disks-two-btrfs.xml" }
+
+    let(:fstab) do
+      [
+        {
+          "file"=>"/home", "mntops"=>"defaults", "vfstype"=>"ext4", "spec"=> device_spec
+        }
+      ]
+    end
+
+    let(:device_spec) { nil }
+
+    it "mounts /dev, /proc, /run, and /sys" do
+      allow(subject).to receive(:MountPartition)
       allow(subject).to receive(:AddMountedPartition)
 
       ["/dev", "/proc", "/sys"].each do |d|
