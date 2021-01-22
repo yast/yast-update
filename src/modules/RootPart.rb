@@ -2447,8 +2447,8 @@ module Yast
     rescue Yast2::SnapshotCreationFailed => error
       log.error("Error creating a pre-update snapshot: #{error}")
       Yast::Report.Error(
-        _("A pre-update snapshot could not be created. You can continue with the " \
-          "installation, but beware that you cannot roll back to a pre-update state " \
+        _("A pre-update snapshot could not be created. You can continue with the \n" \
+          "installation, but beware that you cannot roll back to a pre-update state \n" \
           "unless you have created a snapshot manually.")
       )
     ensure
