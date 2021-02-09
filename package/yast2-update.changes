@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Dec 21 10:57:20 UTC 2020 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Do not rely on the 'installation-helper' binary to create
+  snapshots after installation or offline upgrade (bsc#1180142).
+- Do not crash when it is not possible to create a snapshot before
+  upgrading the system (related to bsc#1180142).
+- 4.1.13
+
+-------------------------------------------------------------------
 Fri Jan  3 14:51:57 CET 2020 - schubi@suse.de
 
 - Aborting upgrade: Restoring old settings e.g. RPM database
