@@ -239,6 +239,7 @@ describe Yast::RootPart do
     let(:device_spec) { nil }
 
     it "mounts /dev, /proc, /run, and /sys" do
+      allow(File).to receive(:exist?).with("/sys/firmware/efi/efivars").and_return(false)
       allow(subject).to receive(:AddMountedPartition)
 
       ["/dev", "/proc", "/run", "/sys"].each do |d|
