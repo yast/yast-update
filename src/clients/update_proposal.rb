@@ -428,7 +428,9 @@ module Yast
         # products to reselect after reset
         restore = []
 
-        Y2Packager::Resolvable.find(kind: :product, status: :selected).each do |product|
+        # preload the "transact_by" attribute to avoid querying libzypp again (see bsc#1176276)
+        Y2Packager::Resolvable.find({ kind: :product, status: :selected }, [:transact_by])
+          .each do |product|
           # only selected items but ignore the selections done by solver,
           # during restoration they would be changed to be selected by YaST and they
           # will be selected by solver again anyway
