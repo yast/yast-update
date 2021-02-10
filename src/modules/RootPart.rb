@@ -2035,8 +2035,8 @@ module Yast
       # as of bsc #1092757 snapshot descriptions are not translated
       snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup: :number, important: true)
       Yast2::FsSnapshotStore.save("update", snapshot.number)
-    rescue Yast2::SnapshotCreationFailed => error
-      log.error("Error creating a pre-update snapshot: #{error}")
+    rescue Yast2::SnapshotCreationFailed => e
+      log.error("Error creating a pre-update snapshot: #{e}")
       Yast::Report.Error(
         _("A pre-update snapshot could not be created. You can continue with the \n" \
           "installation, but beware that you cannot roll back to a pre-update state \n" \
