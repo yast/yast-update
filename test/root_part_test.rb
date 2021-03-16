@@ -255,7 +255,7 @@ describe Yast::RootPart do
 
     let(:device_spec) { nil }
 
-    it "mounts /dev, /proc, /run, and /sys" do
+    it "mounts /dev, /proc and /sys" do
       allow(subject).to receive(:MountPartition)
       allow(subject).to receive(:AddMountedPartition)
 
