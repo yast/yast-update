@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Mar 16 13:45:55 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
+
+- Do not rely on the 'installation-helper' binary to create
+  snapshots after installation or offline upgrade (bsc#1180142).
+- Do not crash when it is not possible to create a snapshot before
+  upgrading the system (related to bsc#1180142).
+- 4.0.19
+
+-------------------------------------------------------------------
 Wed Jul 25 13:21:22 CEST 2018 - schubi@suse.de
 
 - Wrong fstype "Windows Data Partition" will not be shown anymore
