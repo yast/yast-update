@@ -1579,7 +1579,7 @@ module Yast
               Builtins.y2warning("Cannot find / entry in fstab %1", fstab)
             end
 
-            freshman[:valid] = fstab_entry_matches?(fstab[0], filesystem)
+            freshman[:valid] = fstab_entry_matches?(fstab[0], filesystem) if fstab[0]
 
             if Mode.autoinst
               # we dont care about the other checks in autoinstallation
