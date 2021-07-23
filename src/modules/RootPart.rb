@@ -819,18 +819,6 @@ module Yast
           )
         end
       end
-
-      # MountPartition does not work here
-      # because it turns --bind into -o --bind
-      if SCR.Execute(
-        path(".target.mount"),
-        ["/run", ::File.join(Installation.destdir, "run"), Installation.mountlog],
-        "--bind"
-      )
-        AddMountedPartition(
-          type: "mount", device: "none", mntpt: "/run"
-        )
-      end
     end
 
     def MountFSTab(fstab, _message)

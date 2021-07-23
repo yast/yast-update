@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul 23 08:56:04 UTC 2021 - José Iván López González <jlopez@suse.com>
+
+- Avoid to bind-mount /run twice (bsc#1181066).
+- 4.3.3
+
+-------------------------------------------------------------------
 Wed Feb 10 09:12:10 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Do not rely on the 'installation-helper' binary to create
