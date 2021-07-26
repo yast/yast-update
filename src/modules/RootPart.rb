@@ -812,25 +812,10 @@ module Yast
       end
 
       efivars_path = "/sys/firmware/efi/efivars"
-      if ::File.exist?(efivars_path)
-        if MountPartition(efivars_path, "efivarfs", "efivarfs").nil?
-          AddMountedPartition(
-            type: "mount", device: "efivarfs", mntpt: efivars_path
-          )
-        end
-      end
+      return unless ::File.exist?(efivars_path)
+      return unless MountPartition(efivars_path, "efivarfs", "efivarfs").nil?
 
-      # MountPartition does not work here
-      # because it turns --bind into -o --bind
-      if SCR.Execute(
-        path(".target.mount"),
-        ["/run", ::File.join(Installation.destdir, "run"), Installation.mountlog],
-        "--bind"
-      )
-        AddMountedPartition(
-          type: "mount", device: "none", mntpt: "/run"
-        )
-      end
+      AddMountedPartition(type: "mount", device: "efivarfs", mntpt: efivars_path)
     end
 
     def MountFSTab(fstab, _message)
