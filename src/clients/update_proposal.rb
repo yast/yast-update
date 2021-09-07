@@ -392,6 +392,8 @@ module Yast
       PackageCallbacks.SetConvertDBCallbacks
 
       Pkg.TargetInit(Installation.destdir, false)
+      # sync the YaST and libzypp repositories to avoid possible crashes (bsc#1189590)
+      Pkg.SourceSaveAll
 
       Update.GetProductName
 
