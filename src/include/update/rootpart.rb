@@ -30,7 +30,7 @@ require "yast"
 
 require "y2packager/medium_type"
 require "y2packager/original_repository_setup"
-require "y2packager/product_control_product"
+require "y2packager/product_spec"
 require "y2packager/repository"
 
 module Yast
@@ -523,10 +523,11 @@ module Yast
 
     def target_distribution
       # FIXME: this is the same as in src/lib/update/clients/inst_update_partition_auto.rb:113
-      if Y2Packager::MediumType.offline? || Y2Packager::MediumType.online?
-        control_products = Y2Packager::ProductControlProduct.products
+      if Y2Packager::MediumType.online?
+        control_product = Y2Packager::ProductSpec.base_products
+          .find { |p| p.respond_to?(:register_target) }
         # currently all products have the same "register_target" value
-        return control_products.first&.register_target || ""
+        return control_product.register_target || ""
       end
 
       base_products = Product.FindBaseProducts

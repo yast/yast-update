@@ -21,6 +21,7 @@ describe Yast::InstUpdatePartitionAutoClient do
       allow(Yast::Pkg).to receive(:TargetLoad).and_return(true)
       allow(Y2Packager::MediumType).to receive(:online?).and_return(false)
       stub_subject(subject)
+      allow(Y2Packager::ProductSpec).to receive(:base_products).and_return([])
     end
 
     context "when root partition is mounted" do
