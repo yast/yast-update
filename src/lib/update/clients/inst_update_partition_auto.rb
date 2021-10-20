@@ -22,7 +22,7 @@
 
 require "yaml"
 require "y2packager/medium_type"
-require "y2packager/product_control_product"
+require "y2packager/product_spec"
 
 module Yast
   class InstUpdatePartitionAutoClient < Client
@@ -111,10 +111,9 @@ module Yast
 
     # special version that respect online specific target distro
     def target_distro
-      if Y2Packager::MediumType.online?
-        control_products = Y2Packager::ProductControlProduct.products
-        # currently all products have the same "register_target" value
-        control_products.first&.register_target || ""
+      product = Y2Packager::ProductSpec.base_products.find { |p| p.respond_to?(:register_target) }
+      if product
+        product.register_target || ""
       else
         target_distribution
       end
