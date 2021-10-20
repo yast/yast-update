@@ -117,13 +117,6 @@ module Yast
       else
         target_distribution
       end
-      # if Y2Packager::MediumType.online?
-      #   control_products = Y2Packager::ProductControlProduct.products
-      #   # currently all products have the same "register_target" value
-      #   control_products.first&.register_target || ""
-      # else
-      #   target_distribution
-      # end
     end
   end
 end

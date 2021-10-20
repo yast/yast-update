@@ -527,7 +527,7 @@ module Yast
         control_product = Y2Packager::ProductSpec.base_products
           .find { |p| p.respond_to?(:register_target) }
         # currently all products have the same "register_target" value
-        return control_product.register_target || ""
+        return control_product&.register_target || ""
       end
 
       base_products = Product.FindBaseProducts
