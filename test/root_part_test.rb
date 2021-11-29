@@ -5,13 +5,20 @@ require_relative "test_helper"
 Yast.import "RootPart"
 
 describe Yast::RootPart do
-  describe "#MountVarIfRequired" do
+  describe "#MountFSTab" do
     before do
       stub_storage(scenario)
+      allow(subject).to receive(:FsckAndMount)
+      allow(Yast::UI).to receive(:OpenDialog)
+      allow(Yast::UI).to receive(:UserInput).twice.and_return(user_input, :ok)
       # Mock the system lookup executed as last resort when the devicegraph
       # doesn't contain the searched information
       allow(Y2Storage::BlkDevice).to receive(:find_by_any_name)
     end
+
+    let(:user_input) { :cancel }
+
+    let(:message) { Yast.arg_ref("") }
 
     let(:scenario) { "two-disks-two-btrfs.xml" }
 
@@ -61,142 +68,155 @@ describe Yast::RootPart do
       ]
     end
 
-    RSpec.shared_examples "mounting result" do
-      context "and mounting /var fails with an error message" do
-        before do
-          allow(subject).to receive(:FsckAndMount).with("/var", any_args)
-            .and_return "an error"
-        end
+    context "mounting /var" do
+      let(:fsck_and_mount_result) { nil }
 
-        it "returns a string including the device and the error " do
-          result = subject.MountVarIfRequired(fstab, false)
-          expect(result).to be_a(String)
-          expect(result).to include("an error")
-          expect(result).to include(var_spec)
+      before do
+        allow(subject).to receive(:FsckAndMount).with("/var", any_args)
+          .and_return(fsck_and_mount_result)
+      end
+
+      RSpec.shared_examples "mounting /var fails" do
+        context "fails with an error message" do
+          let(:fsck_and_mount_result) { "an error while mounting" }
+
+          it "displays a dialog informing the user about it" do
+            expect(Yast::UI).to receive(:OpenDialog) do |content|
+              label = content.nested_find { |e| e.is_a?(Yast::Term) && e.value == :Label }
+              text = label.params.first
+
+              expect(text).to include(var_spec)
+              expect(text).to include("could not be mounted")
+              expect(text).to include(fsck_and_mount_result)
+            end
+
+            subject.MountFSTab(fstab, message)
+          end
+
+          context "but the user decides to continue anyway" do
+            let(:user_input) { :cont }
+
+            it "returns true" do
+              result = subject.MountFSTab(fstab, message)
+              expect(result).to eq(true)
+            end
+          end
+
+          context "and the user decides to cancel" do
+            let(:user_input) { :cancel }
+
+            it "returns false" do
+              result = subject.MountFSTab(fstab, message)
+              expect(result).to eq(false)
+            end
+          end
+
+          context "and the user decides to check or fix the mount options" do
+            let(:user_input) { :cmd }
+
+            it "displays the mount options dialog" do
+              expect(Yast::UI).to receive(:OpenDialog) # Let's skip the first dialog
+              expect(Yast::UI).to receive(:OpenDialog) do |content|
+                heading = content.nested_find { |e| e.is_a?(Yast::Term) && e.value == :Heading }
+                text = heading.params.first
+
+                expect(text).to include("Mount Options")
+              end
+
+              subject.MountFSTab(fstab, message)
+            end
+          end
         end
       end
 
-      context "and mounting /var succeeds" do
-        before do
-          allow(subject).to receive(:FsckAndMount).with("/var", any_args).and_return nil
-        end
+      RSpec.shared_examples "mounting /var succeeds" do
+        context "and mounting /var succeeds" do
+          let(:fsck_and_mount_result) { nil }
 
-        it "returns nil" do
-          expect(subject.MountVarIfRequired(fstab, false)).to be_nil
+          it "returns true" do
+            result = subject.MountFSTab(fstab, message)
+            expect(result).to eq(true)
+          end
         end
       end
-    end
 
-    context "if there is no separate partition" do
-      context "and no @/var subvolume" do
-        let(:fstab) { fstab_sda2 }
-        let(:root_spec) { "UUID=d6e5c710-3067-48de-8363-433e54a9d0b5" }
-
+      RSpec.shared_examples "mounting /var does not happen" do
         it "does not try to mount /var" do
-          expect(subject).to_not receive(:FsckAndMount)
-          subject.MountVarIfRequired(fstab, false)
-        end
+          expect(subject).to_not receive(:FsckAndMount).with("/var", any_args)
 
-        it "returns nil" do
-          expect(subject.MountVarIfRequired(fstab, false)).to be_nil
+          subject.MountFSTab(fstab, message)
         end
       end
 
-      context "and there is a @/var subvolume" do
-        let(:fstab) { fstab_sda1 }
-        let(:root_spec) { "UUID=0a0ebfa7-e1a8-45f2-ad53-495e192fcc8d" }
+      context "if there is no separate partition" do
+        context "and no @/var subvolume" do
+          let(:fstab) { fstab_sda2 }
+          let(:root_spec) { "UUID=d6e5c710-3067-48de-8363-433e54a9d0b5" }
 
-        # The old code did not support Btrfs properly, so it mounted the /var
-        # subvolume as a partition, which produced big breakage.
-        it "does not try to mount /var" do
-          expect(subject).to_not receive(:FsckAndMount)
-          subject.MountVarIfRequired(fstab, false)
+          include_examples "mounting /var does not happen"
         end
 
-        it "returns nil" do
-          expect(subject.MountVarIfRequired(fstab, false)).to be_nil
-        end
-      end
-    end
+        context "and there is a @/var subvolume" do
+          let(:fstab) { fstab_sda1 }
+          let(:root_spec) { "UUID=0a0ebfa7-e1a8-45f2-ad53-495e192fcc8d" }
 
-    context "if /var is a separate partition" do
-      let(:fstab) do
-        fstab_sda2 + [
-          {
-            "file" => "/var", "mntops" => "defaults", "vfstype" => "xfs",
-            "spec" => var_spec
-          }
-        ]
-      end
-
-      context "and the device is found in the system" do
-        let(:root_spec) { "UUID=d6e5c710-3067-48de-8363-433e54a9d0b5" }
-
-        let(:var_spec) { "UUID=c9510dc7-fb50-4f7b-bd84-886965c821f6" }
-
-        it "tries to mount /var" do
-          expect(subject).to receive(:FsckAndMount).with("/var", var_spec, "")
-          subject.MountVarIfRequired(fstab, false)
-        end
-
-        include_examples "mounting result"
-      end
-
-      context "and the device is not found in the system" do
-        let(:root_spec) { "/dev/sda2" }
-
-        let(:var_spec) { "/dev/sdc1" }
-
-        it "does not try to mount /var" do
-          expect(subject).to_not receive(:FsckAndMount)
-          subject.MountVarIfRequired(fstab, false)
-        end
-
-        it "returns an error" do
-          expect(subject.MountVarIfRequired(fstab, false))
-            .to match(/Unable to mount/)
+          include_examples "mounting /var succeeds"
         end
       end
-    end
 
-    context "if /var is a separate LVM logical volume" do
-      let(:scenario) { "trivial-lvm.yml" }
-
-      let(:fstab) do
-        fstab_sda2 + [
-          {
-            "file" => "/var", "mntops" => "defaults", "vfstype" => "xfs",
-            "spec" => var_spec
-          }
-        ]
-      end
-
-      context "and the LVM logical volume is found in the system" do
-        let(:root_spec) { "/dev/vg0/root" }
-
-        let(:var_spec) { "/dev/disk/by-uuid/4b85-3de0" }
-
-        it "tries to mount /var" do
-          expect(subject).to receive(:FsckAndMount).with("/var", var_spec, "")
-          subject.MountVarIfRequired(fstab, false)
+      context "if /var is a separate partition" do
+        let(:fstab) do
+          fstab_sda2 + [
+            {
+              "file" => "/var", "mntops" => "defaults", "vfstype" => "xfs",
+              "spec" => var_spec
+            }
+          ]
         end
 
-        include_examples "mounting result"
-      end
+        context "and the device is found in the system" do
+          let(:root_spec) { "UUID=d6e5c710-3067-48de-8363-433e54a9d0b5" }
 
-      context "and the LVM logical volume is not found in the system" do
-        let(:root_spec) { "/dev/vg0/root" }
+          let(:var_spec) { "UUID=c9510dc7-fb50-4f7b-bd84-886965c821f6" }
 
-        let(:var_spec) { "/dev/disk/by-uuid/not-found" }
-
-        it "does not try to mount /var" do
-          expect(subject).to_not receive(:FsckAndMount)
-          subject.MountVarIfRequired(fstab, false)
+          include_examples "mounting /var succeeds"
         end
 
-        it "returns an error" do
-          expect(subject.MountVarIfRequired(fstab, false))
-            .to match(/Unable to mount/)
+        context "and the device is not found in the system" do
+          let(:root_spec) { "/dev/sda2" }
+
+          let(:var_spec) { "/dev/sdc1" }
+
+          include_examples "mounting /var fails"
+        end
+      end
+
+      context "if /var is a separate LVM logical volume" do
+        let(:scenario) { "trivial-lvm.yml" }
+
+        let(:fstab) do
+          fstab_sda2 + [
+            {
+              "file" => "/var", "mntops" => "defaults", "vfstype" => "xfs",
+              "spec" => var_spec
+            }
+          ]
+        end
+
+        context "and the LVM logical volume is found in the system" do
+          let(:root_spec) { "/dev/vg0/root" }
+
+          let(:var_spec) { "/dev/disk/by-uuid/4b85-3de0" }
+
+          include_examples "mounting /var succeeds"
+        end
+
+        context "and the LVM logical volume is not found in the system" do
+          let(:root_spec) { "/dev/vg0/root" }
+
+          let(:var_spec) { "/dev/disk/by-uuid/not-found" }
+
+          include_examples "mounting /var fails"
         end
       end
     end

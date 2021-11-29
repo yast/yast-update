@@ -100,10 +100,6 @@ module Yast
       #   `mntpt    The mount point, only for `type = "mount".  Does not
       #             include Installation::destdir.
       @activated = []
-
-      # translation from new to old device names
-      # such as /dev/sdc4 -> /dev/hdb4
-      @backward_translation = {}
     end
 
     # Returns currently activated partitions.
@@ -644,18 +640,6 @@ module Yast
       nil
     end
 
-    def FstabHasSeparateVar(fstab)
-      var_device_fstab = (
-        fstab_ref = arg_ref(fstab.value)
-        _FindPartitionInFstab_result = FindPartitionInFstab(fstab_ref, "/var")
-        fstab.value = fstab_ref.value
-        _FindPartitionInFstab_result
-      )
-      Builtins.y2milestone("/var partition is %1", var_device_fstab)
-
-      !var_device_fstab.nil?
-    end
-
     def FstabUsesKernelDeviceNameForHarddisks(fstab)
       fstab = deep_copy(fstab)
       # We just want to check the use of kernel device names for hard
@@ -681,7 +665,6 @@ module Yast
     # @param list <map> ('pointer' to) crtab
     # @param string root device
     def read_fstab_and_cryptotab(fstab, crtab, _root_device_current)
-      @backward_translation = {}
       # /etc/cryptotab was deprecated in favor of /etc/crypttab
       #
       # crypttab file is processed by storage-ng, see {#MountPartitions}.
@@ -825,146 +808,70 @@ module Yast
 
       success = true
 
-      Builtins.foreach(fstab) do |mounts|
-        vfstype = Ops.get_string(mounts, "vfstype", "")
-        mntops = Ops.get_string(mounts, "mntops", "")
-        spec = Ops.get_string(mounts, "spec", "")
-        fspath = Ops.get_string(mounts, "file", "")
+      return success if Mode.test
+
+      fstab.each do |mounts|
+        vfstype = mounts.fetch("vfstype", "")
+        mntops  = mounts.fetch("mntops", "")
+        spec    = mounts.fetch("spec", "")
+        fspath  = mounts.fetch("file", "")
 
         if mount_regular_fstab_entry?(mounts)
-          Builtins.y2milestone("mounting %1 to %2", spec, fspath)
+          log.info("mounting #{spec} to #{fspath}")
 
-          if !Mode.test
-            mount_type = ""
-            mount_type = vfstype if vfstype == "proc"
+          mount_type = ""
+          mount_type = vfstype if vfstype == "proc"
 
-            mount_err = ""
-            until mount_err.nil?
-              # An encryption device might be probed with a name that does not match with the name
-              # indicated in the fstab file. For example, when the fstab entry is:
-              #
-              #   /dev/mapper/cr_home   /home   ext4  defaults  0   0
-              #
-              # and that encryption device was probed as /dev/mapper/cr-auto-1.
-              #
-              # In that case, to mount /dev/mapper/cr_home would fail because there is not a device
-              # in the inst-sys with such name. To avoid possible failures when mounting the fstab
-              # device, the safest device name is used instead, that is, UUID= format or its uuid
-              # udev name, see {#safest_device_name}.
-              mount_err = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
-              next if mount_err.nil?
+          loop do
+            # An encryption device might be probed with a name that does not match with the name
+            # indicated in the fstab file. For example, when the fstab entry is:
+            #
+            #   /dev/mapper/cr_home   /home   ext4  defaults  0   0
+            #
+            # and that encryption device was probed as /dev/mapper/cr-auto-1.
+            #
+            # In that case, to mount /dev/mapper/cr_home would fail because there is not a device
+            # in the inst-sys with such name. To avoid possible failures when mounting the fstab
+            # device, the safest device name is used instead, that is, UUID= format or its uuid
+            # udev name, see {#safest_device_name}.
+            mount_error = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
+            break if mount_error.nil?
 
-              Builtins.y2error(
-                "mounting %1 (type %2) on %3 failed",
-                spec,
-                mount_type,
-                Ops.add(Installation.destdir, fspath)
-              )
-              UI.OpenDialog(
-                VBox(
-                  Label(
-                    Builtins.sformat(
-                      # label in a popup, %1 is device (eg. /dev/hda1),
-                      # %2 is output of the 'mount' command
-                      _(
-                        "The partition %1 could not be mounted.\n" \
-                          "\n" \
-                          "%2\n" \
-                          "\n" \
-                          "If you are sure that the partition is not necessary for the\n" \
-                          "update (not a system partition), click Continue.\n" \
-                          "To check or fix the mount options, click Specify Mount Options.\n" \
-                          "To abort the update, click Cancel.\n"
-                      ),
-                      spec,
-                      mount_err
-                    )
-                  ),
-                  VSpacing(1),
-                  HBox(
-                    PushButton(Id(:cont), Label.ContinueButton),
-                    # push button
-                    PushButton(Id(:cmd), _("&Specify Mount Options")),
-                    PushButton(Id(:cancel), Label.CancelButton)
-                  )
-                )
-              )
-              act = Convert.to_symbol(UI.UserInput)
-              UI.CloseDialog
-              if act == :cancel
-                mount_err = nil
-                success = false
-              elsif act == :cont
-                mount_err = nil
-              elsif act == :cmd
-                UI.OpenDialog(
-                  VBox(
-                    # popup heading
-                    Heading(_("Mount Options")),
-                    VSpacing(0.6),
-                    # text entry label
-                    TextEntry(Id(:mp), _("&Mount Point"), fspath),
-                    VSpacing(0.4),
-                    # tex entry label
-                    TextEntry(Id(:device), _("&Device"), spec),
-                    VSpacing(0.4),
-                    # text entry label
-                    TextEntry(
-                      Id(:fs),
-                      _("&File System\n(empty for autodetection)"),
-                      mount_type
-                    ),
-                    VSpacing(1),
-                    HBox(
-                      PushButton(Id(:ok), Label.OKButton),
-                      PushButton(Id(:cancel), Label.CancelButton)
-                    )
-                  )
-                )
-                act = Convert.to_symbol(UI.UserInput)
-                if act == :ok
-                  fspath = Convert.to_string(UI.QueryWidget(Id(:mp), :Value))
-                  spec = Convert.to_string(
-                    UI.QueryWidget(Id(:device), :Value)
-                  )
-                  mount_type = Convert.to_string(
-                    UI.QueryWidget(Id(:fs), :Value)
-                  )
-                end
-                UI.CloseDialog
-              end
-            end
+            mount_path = "#{Installation.destdir}/#{fspath}"
+            log.error("mounting #{spec} (type #{mount_type}) on #{mount_path} failed")
 
-            if fspath == "/boot" || fspath == "/boot/"
-              checkspec = spec
+            action = mount_failed_action(spec, mount_error)
 
-              # translates new device name to the old one because
-              # storage still returns them in the old way
-              if Ops.get(@backward_translation, spec)
-                checkspec = Ops.get(@backward_translation, spec, spec)
-              end
-
-              success = false if !CheckBootSize(checkspec)
+            case action
+            when :cont
+              break
+            when :cancel
+              success = false
+              break
+            when :cmd
+              fspath, spec, mount_type = user_mount_options(fspath, spec, mount_type)
             end
           end
+
+          if fspath == "/boot" || fspath == "/boot/"
+            success = false unless CheckBootSize(spec)
+          end
         elsif vfstype == "swap" && fspath == "swap"
-          Builtins.y2milestone("mounting %1 to %2", spec, fspath)
+          log.info("mounting #{spec} to #{fspath}")
 
-          if !Mode.test
-            command = "/sbin/swapon "
-            if spec != ""
-              # swap-partition
-              command = Ops.add(command, spec)
+          command = "/sbin/swapon "
+          if spec != ""
+            # swap-partition
+            command = Ops.add(command, spec)
 
-              # run /sbin/swapon
-              ret_from_shell = Convert.to_integer(
-                SCR.Execute(path(".target.bash"), command)
-              )
-              if ret_from_shell != 0
-                Builtins.y2error("swapon failed: %1", command)
-              else
-                AddMountedPartition(type: "swap", device: spec)
-              end
+            # run /sbin/swapon
+            ret_from_shell = Convert.to_integer(
+              SCR.Execute(path(".target.bash"), command)
+            )
+            if ret_from_shell != 0
+              log.error("swapon failed: #{command}")
+            else
+              AddMountedPartition(type: "swap", device: spec)
             end
           end
         end
@@ -973,222 +880,99 @@ module Yast
       success
     end
 
-    # Mount /var partition
+    # Displays a warning dialog to the suer when mount failed
     #
-    # @param device [String] name of the device holding /var
-    # @return [String, nil] nil on success, error description on fail
-    def MountVarPartition(device)
-      mount_err = FsckAndMount("/var", device, "")
-
-      return nil unless mount_err
-
-      log.error("failed to mount /var")
-
-      # TRANSLATORS: error message when /var partition cannot be mounted. %{device}
-      # is replaced by a device name (e.g., /dev/sda2) and %{error} is replaced by
-      # error details.
-      format(
-        _("The /var partition %{device} could not be mounted.\n\n%{error}"),
-        device: device,
-        error:  mount_err
-      )
-    end
-
-    # <-- BNC #448577, Cannot find /var partition automatically
-    # returns if successful
-    def MountUserDefinedVarPartition
-      # function return value
-      manual_mount_successful = false
-
-      list_of_devices = []
-      # $[ "/dev/sda3" : "Label: My_Partition" ]
-      device_info = {}
-
-      # Creating the list of known partitions
-      Builtins.foreach(Storage.GetOndiskTarget) do |_device, description|
-        Builtins.foreach(Ops.get_list(description, "partitions", [])) do |partition|
-          # Some partitions logically can't be used for /var
-          next if Ops.get_symbol(partition, "detected_fs", :unknown) == :swap
-          next if Ops.get_symbol(partition, "type", :unknown) == :extended
-          next if !Builtins.haskey(partition, "device")
-
-          list_of_devices = Builtins.add(
-            list_of_devices,
-            Ops.get_string(partition, "device", "")
-          )
-          Ops.set(
-            device_info,
-            Ops.get_string(partition, "device", ""),
-            Builtins.sformat(
-              # Informational text about selected partition, %x are replaced with values later
-              _(
-                "<b>File system:</b> %1, <b>Type:</b> %2,<br>\n" \
-                  "<b>Label:</b> %3, <b>Size:</b> %4,<br>\n" \
-                  "<b>udev IDs:</b> %5,<br>\n" \
-                  "<b>udev path:</b> %6"
-              ),
-              # starts with >`<
-              Builtins.substring(
-                Builtins.tostring(
-                  Ops.get_symbol(partition, "detected_fs", :unknown)
-                ),
-                1
-              ),
-              Ops.get_locale(partition, "fstype", _("Unknown")),
-              Ops.get_locale(partition, "label", _("None")),
-              String.FormatSize(
-                Ops.multiply(Ops.get_integer(partition, "size_k", 0), 1024)
-              ),
-              Builtins.mergestring(Ops.get_list(partition, "udev_id", []), ", "),
-              Ops.get_locale(partition, "udev_path", _("Unknown"))
-            )
-          )
-        end
-      end
-
-      list_of_devices = Builtins.sort(list_of_devices)
-      Builtins.y2milestone("Known devices: %1", list_of_devices)
-
-      loop do
-        UI.OpenDialog(
-          VBox(
-            MarginBox(
-              1,
-              0,
-              VBox(
-                # a popup caption
-                Left(
-                  Heading(_("Unable to find the /var partition automatically"))
-                ),
-                # a popup message
-                Left(
-                  Label(
-                    _(
-                      "Your system uses a separate /var partition which is " \
-                        "required for the upgrade\n" \
-                        "process to detect the disk-naming changes. " \
-                        "Select the /var partition manually\n" \
-                        "to continue the upgrade process."
-                    )
-                  )
-                ),
-                VSpacing(1),
-                Left(
-                  ComboBox(
-                    Id("var_device"),
-                    Opt(:notify),
-                    # a combo-box label
-                    _("&Select /var Partition Device"),
-                    list_of_devices
-                  )
-                ),
-                VSpacing(0.5),
-                # an informational rich-text widget label
-                Left(Label(_("Device Info"))),
-                MinHeight(3, RichText(Id("device_info"), "")),
-                VSpacing(1)
-              )
-            ),
-            MarginBox(
-              1,
-              0,
-              ButtonBox(
-                PushButton(Id(:ok), Opt(:okButton), Label.OKButton),
-                PushButton(Id(:cancel), Opt(:cancelButton), Label.CancelButton)
-              )
-            )
-          )
-        )
-
-        ret = nil
-
-        # initial device
-        var_device = Convert.to_string(UI.QueryWidget(Id("var_device"), :Value))
-        UI.ChangeWidget(
-          Id("device_info"),
-          :Value,
-          Ops.get(device_info, var_device, "")
-        )
-
-        # to handle switching the combo-box or [OK]/[Cancel]
-        loop do
-          ret = UI.UserInput
-          var_device = Convert.to_string(
-            UI.QueryWidget(Id("var_device"), :Value)
-          )
-
-          break if ret != "var_device"
-
-          UI.ChangeWidget(
-            Id("device_info"),
-            :Value,
-            Ops.get(device_info, var_device, "")
-          )
-        end
-
-        UI.CloseDialog
-
-        # Trying user-selection
-        if ret == :ok
-          Builtins.y2milestone("Trying to mount %1 as /var", var_device)
-          mount_error = MountVarPartition(var_device)
-
-          if !mount_error.nil?
-            Report.Error(mount_error)
-            next
-          else
-            Builtins.y2milestone("Manual mount (/var) successful")
-            manual_mount_successful = true
-            break
-          end
-          # `cancel
-        else
-          Builtins.y2warning(
-            "User doesn't want to enter the /var partition device"
-          )
-          break
-        end
-      end
-
-      manual_mount_successful
-    end
-
-    def MountVarIfRequired(fstab, manual_var_mount)
-      fstab = deep_copy(fstab)
-      var_device_fstab = (
-        fstab_ref = arg_ref(fstab)
-        FindPartitionInFstab(fstab_ref, "/var")
-      )
-
-      # At this point, var_device_fstab contains the spec column of fstab
-      # for the /var mount point. E.g. "/dev/sda1", "/dev/system/var" or  "UUID=00x00x00x"
-
-      # No need to mount "/var", it's not separate == already mounted with "/"
-      if var_device_fstab.nil?
-        Builtins.y2milestone("Not a separate /var...")
-        return nil
-      end
-
-      filesystem = find_filesystem_by_fstab_spec(var_device_fstab)
-
-      # Try to mount /var if any filesystem matches the fstab specification
-      return MountVarPartition(var_device_fstab) if filesystem
-
-      # BNC #448577: cannot find /var partition automatically, so ask the user
-      return nil if manual_var_mount && MountUserDefinedVarPartition()
-
-      # Everything else failed, return error message
-      log.error "Unable to mount /var partition"
-
-      _("Unable to mount /var partition with this disk configuration.\n")
-    end
-
-    # Finds a filesystem that matches the given fstab spec
+    # Apart from informing, it lets on the user the next actions: to ignore the error and continue,
+    # to check and/or specify the mount options, or to abort the update.
+    #
+    # FIXME: this dialog should live in its own class. However, extracting it to a method
+    # looks like a good compromise in the context of the PBI it has been addressed. So please,
+    # feel free to make it a first-class citizen in future changes.
     #
     # @param spec [String]
-    # @return [Y2Storage::Filesystem, nil]
-    def find_filesystem_by_fstab_spec(spec)
-      probed.blk_filesystems.find { |f| f.match_fstab_spec?(spec) }
+    # @param error [String] the error returned by {#FsckAndMount}
+    # @return [Symbol] the action chosen by the user, namely
+    #   :cont if decides to continue because the partition is not necessary for the update
+    #   :cmd when wants to check or specify the mount options
+    #   :cancel whether goes for aborting the update process
+    def mount_failed_action(spec, error)
+      UI.OpenDialog(
+        VBox(
+          Label(
+            Builtins.sformat(
+              # label in a popup, %1 is device (eg. /dev/hda1),
+              # %2 is output of the 'mount' command
+              _(
+                "The partition %1 could not be mounted.\n" \
+                  "\n" \
+                  "%2\n" \
+                  "\n" \
+                  "If you are sure that the partition is not necessary for the\n" \
+                  "update (not a system partition), click Continue.\n" \
+                  "To check or fix the mount options, click Specify Mount Options.\n" \
+                  "To abort the update, click Cancel.\n"
+              ),
+              spec,
+              error
+            )
+          ),
+          VSpacing(1),
+          HBox(
+            PushButton(Id(:cont), Label.ContinueButton),
+            PushButton(Id(:cmd), _("&Specify Mount Options")),
+            PushButton(Id(:cancel), Label.CancelButton)
+          )
+        )
+      )
+
+      action = UI.UserInput.to_sym
+
+      UI.CloseDialog
+
+      action
+    end
+
+    # Displays the Mount Options dialog to the user
+    #
+    # FIXME: this dialog should live in its own class. However, extracting it to a method
+    # looks like a good compromise in the context of the PBI it has been addressed. So please,
+    # feel free to make it a first-class citizen in future changes.
+    #
+    # @param fspath [String] the filesytem path
+    # @param spec [String]
+    # @param mount_type [String]
+    #
+    # @return [Array<(String, String, String)>] an array holding the current (if the user
+    #   cancels) or the new (when user accepts) values for fspath, spec, and mount_type
+    def user_mount_options(fspath, spec, mount_type)
+      UI.OpenDialog(
+        VBox(
+          Heading(_("Mount Options")),
+          VSpacing(0.6),
+          TextEntry(Id(:mp), _("&Mount Point"), fspath),
+          VSpacing(0.4),
+          TextEntry(Id(:device), _("&Device"), spec),
+          VSpacing(0.4),
+          TextEntry(Id(:fs), _("&File System\n(empty for autodetection)"), mount_type),
+          VSpacing(1),
+          HBox(
+            PushButton(Id(:ok), Label.OKButton),
+            PushButton(Id(:cancel), Label.CancelButton)
+          )
+        )
+      )
+
+      action = UI.UserInput.to_sym
+
+      if action == :ok
+        fspath     = UI.QueryWidget(Id(:mp), :Value).to_s
+        spec       = UI.QueryWidget(Id(:device), :Value).to_s
+        mount_type = UI.QueryWidget(Id(:fs), :Value).to_s
+      end
+
+      UI.CloseDialog
+
+      [fspath, spec, mount_type]
     end
 
     def has_pam_mount
@@ -1303,64 +1087,57 @@ module Yast
           message = _("No fstab found.")
           success = false
         else
-          tmp_msg = MountVarIfRequired(fstab, true)
-          if !tmp_msg.nil?
-            Builtins.y2error("failed to mount /var!")
-            message = tmp_msg
+          tmp = ""
+
+          if !(
+              tmp_ref = arg_ref(tmp)
+              check_root_device_result = check_root_device(
+                root_device_current,
+                fstab,
+                tmp_ref
+              )
+              tmp = tmp_ref.value
+              check_root_device_result
+            )
+            Builtins.y2error("fstab has wrong root device!")
+
+            # TRANSLATORS: Error message, where %{root} and %{tmp} are replaced by
+            # device names (e.g., /dev/sda1 and /dev/sda2).
+            message = format(
+              _("The root partition in /etc/fstab has an invalid root device.\n" \
+                "It is currently mounted as %{root} but listed as %{tmp}."),
+              root: root_device_current,
+              tmp:  tmp
+            )
+
             success = false
           else
-            tmp = ""
+            Builtins.y2milestone("fstab %1", fstab)
 
-            if !(
-                tmp_ref = arg_ref(tmp)
-                check_root_device_result = check_root_device(
-                  root_device_current,
-                  fstab,
-                  tmp_ref
+            legacy_filesystems =
+              Y2Storage::Filesystems::Type.legacy_home_filesystems.map(&:to_s)
+
+            legacy_entries = fstab.select { |e| legacy_filesystems.include?(e["vfstype"]) }
+
+            # Removed ReiserFS support for system upgrade (fate#323394).
+            if !legacy_entries.empty?
+              message =
+                Builtins.sformat(
+                  _("The mount points listed below are using legacy filesystems " \
+                    "that are not supported anymore:\n\n%1\n\n"                    \
+                    "Before upgrade you should migrate all "                 \
+                    "your data to another filesystem.\n"),
+                  legacy_entries.map { |e| "#{e["file"]} (#{e["vfstype"]})" }.join("\n")
                 )
-                tmp = tmp_ref.value
-                check_root_device_result
-              )
-              Builtins.y2error("fstab has wrong root device!")
-
-              # TRANSLATORS: Error message, where %{root} and %{tmp} are replaced by
-              # device names (e.g., /dev/sda1 and /dev/sda2).
-              message = format(
-                _("The root partition in /etc/fstab has an invalid root device.\n" \
-                  "It is currently mounted as %{root} but listed as %{tmp}."),
-                root: root_device_current,
-                tmp:  tmp
-              )
 
               success = false
-            else
-              Builtins.y2milestone("fstab %1", fstab)
-
-              legacy_filesystems =
-                Y2Storage::Filesystems::Type.legacy_home_filesystems.map(&:to_s)
-
-              legacy_entries = fstab.select { |e| legacy_filesystems.include?(e["vfstype"]) }
-
-              # Removed ReiserFS support for system upgrade (fate#323394).
-              if !legacy_entries.empty?
-                message =
-                  Builtins.sformat(
-                    _("The mount points listed below are using legacy filesystems " \
-                      "that are not supported anymore:\n\n%1\n\n"                    \
-                      "Before upgrade you should migrate all "                 \
-                      "your data to another filesystem.\n"),
-                    legacy_entries.map { |e| "#{e["file"]} (#{e["vfstype"]})" }.join("\n")
-                  )
-
-                success = false
-              elsif !(
-                  message_ref = arg_ref(message)
-                  _MountFSTab_result = MountFSTab(fstab, message_ref)
-                  message = message_ref.value
-                  _MountFSTab_result
-                )
-                success = false
-              end
+            elsif !(
+                message_ref = arg_ref(message)
+                _MountFSTab_result = MountFSTab(fstab, message_ref)
+                message = message_ref.value
+                _MountFSTab_result
+              )
+              success = false
             end
           end
         end
@@ -2006,10 +1783,7 @@ module Yast
       return false unless ALLOWED_FS.include?(vfstype)
       return false if mntops.include?("noauto")
 
-      # The conditions above are enough for any mount point except /var.
-      # In the /var case, it should have been already processed by
-      # #MountVarIfRequired... except when /var is a subvolume
-      path != "/var" || mntops.include?("subvol=")
+      true
     end
 
     # Creates a pre-update snapshot and stores its number
