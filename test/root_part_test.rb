@@ -69,6 +69,8 @@ describe Yast::RootPart do
     end
 
     context "mounting /var" do
+      let(:fsck_and_mount_result) { nil }
+
       before do
         allow(subject).to receive(:FsckAndMount).with("/var", any_args)
           .and_return(fsck_and_mount_result)
@@ -138,19 +140,27 @@ describe Yast::RootPart do
         end
       end
 
+      RSpec.shared_examples "mounting /var does not happen" do
+        it "does not try to mount /var" do
+          expect(subject).to_not receive(:FsckAndMount).with("/var", any_args)
+
+          subject.MountFSTab(fstab, message)
+        end
+      end
+
       context "if there is no separate partition" do
         context "and no @/var subvolume" do
           let(:fstab) { fstab_sda2 }
           let(:root_spec) { "UUID=d6e5c710-3067-48de-8363-433e54a9d0b5" }
 
-          pending
+          include_examples "mounting /var does not happen"
         end
 
         context "and there is a @/var subvolume" do
           let(:fstab) { fstab_sda1 }
           let(:root_spec) { "UUID=0a0ebfa7-e1a8-45f2-ad53-495e192fcc8d" }
 
-          pending
+          include_examples "mounting /var succeeds"
         end
       end
 
