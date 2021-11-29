@@ -840,7 +840,7 @@ module Yast
             mount_path = "#{Installation.destdir}/#{fspath}"
             log.error("mounting #{spec} (type #{mount_type}) on #{mount_path} failed")
 
-            action = mountFailedDialog(spec, mount_error)
+            action = mount_faild_action(spec, mount_error)
 
             case action
               when :cont
@@ -849,7 +849,7 @@ module Yast
                 success = false
                 break
               when :cmd
-                fspath, spec, mount_type = mountOptionsDialog(fspath, spec, mount_type)
+                fspath, spec, mount_type = user_mount_options(fspath, spec, mount_type)
             end
           end
 
@@ -882,8 +882,8 @@ module Yast
 
     # Displays a warning dialog to the suer when mount failed
     #
-    # Apart from informing, it lets on the user the next action: to ignore the error and continue,
-    # to check and/or specify the mount options, or too abort the update.
+    # Apart from informing, it lets on the user the next actions: to ignore the error and continue,
+    # to check and/or specify the mount options, or to abort the update.
     #
     # FIXME: this dialog should live in its own class. However, extracting it to a method
     # looks like a good compromise in the context of the PBI it has been addressed. So please,
@@ -895,7 +895,7 @@ module Yast
     #   :cont if decides to continue because the partition is not necessary for the update
     #   :cmd when wants to check or specify the mount options
     #   :cancel whether goes for aborting the update process
-    def mountFailedDialog(spec, error)
+    def mount_faild_action(spec, error)
       UI.OpenDialog(
         VBox(
           Label(
@@ -945,7 +945,7 @@ module Yast
     # @return [Array<(String, String, String)>] an array holding the values current (if
     #   users cancel) or the new (if users accpets the dialog) values for fspath,
     #   spec, and mount_type
-    def mountOptionsDialog(fspath, spec, mount_type)
+    def user_mount_options(fspath, spec, mount_type)
       UI.OpenDialog(
         VBox(
           Heading(_("Mount Options")),
