@@ -840,7 +840,7 @@ module Yast
             mount_path = "#{Installation.destdir}/#{fspath}"
             log.error("mounting #{spec} (type #{mount_type}) on #{mount_path} failed")
 
-            action = mount_faild_action(spec, mount_error)
+            action = mount_failed_action(spec, mount_error)
 
             case action
             when :cont
@@ -895,7 +895,7 @@ module Yast
     #   :cont if decides to continue because the partition is not necessary for the update
     #   :cmd when wants to check or specify the mount options
     #   :cancel whether goes for aborting the update process
-    def mount_faild_action(spec, error)
+    def mount_failed_action(spec, error)
       UI.OpenDialog(
         VBox(
           Label(
@@ -942,9 +942,8 @@ module Yast
     # @param spec [String]
     # @param mount_type [String]
     #
-    # @return [Array<(String, String, String)>] an array holding the values current (if
-    #   users cancel) or the new (if users accpets the dialog) values for fspath,
-    #   spec, and mount_type
+    # @return [Array<(String, String, String)>] an array holding the current (if the user
+    #   cancels) or the new (when user accepts) values for fspath, spec, and mount_type
     def user_mount_options(fspath, spec, mount_type)
       UI.OpenDialog(
         VBox(
