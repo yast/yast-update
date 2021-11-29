@@ -813,6 +813,8 @@ module Yast
 
       success = true
 
+      return success if Mode.test
+
       Builtins.foreach(fstab) do |mounts|
         vfstype = Ops.get_string(mounts, "vfstype", "")
         mntops = Ops.get_string(mounts, "mntops", "")
@@ -822,75 +824,71 @@ module Yast
         if mount_regular_fstab_entry?(mounts)
           Builtins.y2milestone("mounting %1 to %2", spec, fspath)
 
-          if !Mode.test
-            mount_type = ""
-            mount_type = vfstype if vfstype == "proc"
+          mount_type = ""
+          mount_type = vfstype if vfstype == "proc"
 
-            mount_err = ""
-            until mount_err.nil?
-              # An encryption device might be probed with a name that does not match with the name
-              # indicated in the fstab file. For example, when the fstab entry is:
-              #
-              #   /dev/mapper/cr_home   /home   ext4  defaults  0   0
-              #
-              # and that encryption device was probed as /dev/mapper/cr-auto-1.
-              #
-              # In that case, to mount /dev/mapper/cr_home would fail because there is not a device
-              # in the inst-sys with such name. To avoid possible failures when mounting the fstab
-              # device, the safest device name is used instead, that is, UUID= format or its uuid
-              # udev name, see {#safest_device_name}.
-              mount_err = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
-              next if mount_err.nil?
+          mount_err = ""
+          until mount_err.nil?
+            # An encryption device might be probed with a name that does not match with the name
+            # indicated in the fstab file. For example, when the fstab entry is:
+            #
+            #   /dev/mapper/cr_home   /home   ext4  defaults  0   0
+            #
+            # and that encryption device was probed as /dev/mapper/cr-auto-1.
+            #
+            # In that case, to mount /dev/mapper/cr_home would fail because there is not a device
+            # in the inst-sys with such name. To avoid possible failures when mounting the fstab
+            # device, the safest device name is used instead, that is, UUID= format or its uuid
+            # udev name, see {#safest_device_name}.
+            mount_err = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
+            next if mount_err.nil?
 
-              Builtins.y2error(
-                "mounting %1 (type %2) on %3 failed",
-                spec,
-                mount_type,
-                Ops.add(Installation.destdir, fspath)
-              )
+            Builtins.y2error(
+              "mounting %1 (type %2) on %3 failed",
+              spec,
+              mount_type,
+              Ops.add(Installation.destdir, fspath)
+            )
 
-              action = mountFailedDialog(spec, mount_err)
+            action = mountFailedDialog(spec, mount_err)
 
-              if action == :cancel
-                mount_err = nil
-                success = false
-              elsif action == :cont
-                mount_err = nil
-              elsif action == :cmd
-                fspath, spec, mount_type = mountOptionsDialog(fspath, spec, mount_type)
-              end
+            if action == :cancel
+              mount_err = nil
+              success = false
+            elsif action == :cont
+              mount_err = nil
+            elsif action == :cmd
+              fspath, spec, mount_type = mountOptionsDialog(fspath, spec, mount_type)
+            end
+          end
+
+          if fspath == "/boot" || fspath == "/boot/"
+            checkspec = spec
+
+            # translates new device name to the old one because
+            # storage still returns them in the old way
+            if Ops.get(@backward_translation, spec)
+              checkspec = Ops.get(@backward_translation, spec, spec)
             end
 
-            if fspath == "/boot" || fspath == "/boot/"
-              checkspec = spec
-
-              # translates new device name to the old one because
-              # storage still returns them in the old way
-              if Ops.get(@backward_translation, spec)
-                checkspec = Ops.get(@backward_translation, spec, spec)
-              end
-
-              success = false if !CheckBootSize(checkspec)
-            end
+            success = false if !CheckBootSize(checkspec)
           end
         elsif vfstype == "swap" && fspath == "swap"
           Builtins.y2milestone("mounting %1 to %2", spec, fspath)
 
-          if !Mode.test
-            command = "/sbin/swapon "
-            if spec != ""
-              # swap-partition
-              command = Ops.add(command, spec)
+          command = "/sbin/swapon "
+          if spec != ""
+            # swap-partition
+            command = Ops.add(command, spec)
 
-              # run /sbin/swapon
-              ret_from_shell = Convert.to_integer(
-                SCR.Execute(path(".target.bash"), command)
-              )
-              if ret_from_shell != 0
-                Builtins.y2error("swapon failed: %1", command)
-              else
-                AddMountedPartition(type: "swap", device: spec)
-              end
+            # run /sbin/swapon
+            ret_from_shell = Convert.to_integer(
+              SCR.Execute(path(".target.bash"), command)
+            )
+            if ret_from_shell != 0
+              Builtins.y2error("swapon failed: %1", command)
+            else
+              AddMountedPartition(type: "swap", device: spec)
             end
           end
         end
