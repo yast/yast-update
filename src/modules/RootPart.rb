@@ -100,10 +100,6 @@ module Yast
       #   `mntpt    The mount point, only for `type = "mount".  Does not
       #             include Installation::destdir.
       @activated = []
-
-      # translation from new to old device names
-      # such as /dev/sdc4 -> /dev/hdb4
-      @backward_translation = {}
     end
 
     # Returns currently activated partitions.
@@ -669,7 +665,6 @@ module Yast
     # @param list <map> ('pointer' to) crtab
     # @param string root device
     def read_fstab_and_cryptotab(fstab, crtab, _root_device_current)
-      @backward_translation = {}
       # /etc/cryptotab was deprecated in favor of /etc/crypttab
       #
       # crypttab file is processed by storage-ng, see {#MountPartitions}.
@@ -859,15 +854,7 @@ module Yast
           end
 
           if fspath == "/boot" || fspath == "/boot/"
-            checkspec = spec
-
-            # translates new device name to the old one because
-            # storage still returns them in the old way
-            if Ops.get(@backward_translation, spec)
-              checkspec = Ops.get(@backward_translation, spec, spec)
-            end
-
-            success = false if !CheckBootSize(checkspec)
+            success = false unless CheckBootSize(spec)
           end
         elsif vfstype == "swap" && fspath == "swap"
           log.info("mounting #{spec} to #{fspath}")
