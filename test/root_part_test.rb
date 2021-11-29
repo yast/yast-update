@@ -97,7 +97,7 @@ describe Yast::RootPart do
             let(:user_input) { :cont }
 
             it "returns true" do
-              result = subject.MountFSTab(fstab, message) 
+              result = subject.MountFSTab(fstab, message)
               expect(result).to eq(true)
             end
           end
@@ -106,7 +106,7 @@ describe Yast::RootPart do
             let(:user_input) { :cancel }
 
             it "returns false" do
-              result = subject.MountFSTab(fstab, message) 
+              result = subject.MountFSTab(fstab, message)
               expect(result).to eq(false)
             end
           end
@@ -134,7 +134,7 @@ describe Yast::RootPart do
           let(:fsck_and_mount_result) { nil }
 
           it "returns true" do
-            result = subject.MountFSTab(fstab, message) 
+            result = subject.MountFSTab(fstab, message)
             expect(result).to eq(true)
           end
         end
@@ -188,7 +188,7 @@ describe Yast::RootPart do
           let(:var_spec) { "/dev/sdc1" }
 
           include_examples "mounting /var fails"
-         end
+        end
       end
 
       context "if /var is a separate LVM logical volume" do

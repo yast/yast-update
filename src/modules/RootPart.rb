@@ -843,13 +843,13 @@ module Yast
             action = mount_faild_action(spec, mount_error)
 
             case action
-              when :cont
-                break
-              when :cancel
-                success = false
-                break
-              when :cmd
-                fspath, spec, mount_type = user_mount_options(fspath, spec, mount_type)
+            when :cont
+              break
+            when :cancel
+              success = false
+              break
+            when :cmd
+              fspath, spec, mount_type = user_mount_options(fspath, spec, mount_type)
             end
           end
 
@@ -890,7 +890,7 @@ module Yast
     # feel free to make it a first-class citizen in future changes.
     #
     # @param spec [String]
-    # @param error [String] the error returned by #FsckAndMount
+    # @param error [String] the error returned by {#FsckAndMount}
     # @return [Symbol] the action chosen by the user, namely
     #   :cont if decides to continue because the partition is not necessary for the update
     #   :cmd when wants to check or specify the mount options
