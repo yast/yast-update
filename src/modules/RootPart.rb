@@ -914,7 +914,7 @@ module Yast
                   fspath = Convert.to_string(UI.QueryWidget(Id(:mp), :Value))
                   spec = Convert.to_string(
                     UI.QueryWidget(Id(:device), :Value)
-                  )
+                  ) || ""
                   mount_type = Convert.to_string(
                     UI.QueryWidget(Id(:fs), :Value)
                   )
