@@ -976,14 +976,6 @@ module Yast
       [fspath, spec, mount_type]
     end
 
-    # Finds a filesystem that matches the given fstab spec
-    #
-    # @param spec [String]
-    # @return [Y2Storage::Filesystem, nil]
-    def find_filesystem_by_fstab_spec(spec)
-      probed.blk_filesystems.find { |f| f.match_fstab_spec?(spec) }
-    end
-
     def has_pam_mount
       # detect pam_mount encrypted homes
       pam_mount_path = Installation.destdir + "/etc/security/pam_mount.conf.xml"
