@@ -848,78 +848,16 @@ module Yast
                 mount_type,
                 Ops.add(Installation.destdir, fspath)
               )
-              UI.OpenDialog(
-                VBox(
-                  Label(
-                    Builtins.sformat(
-                      # label in a popup, %1 is device (eg. /dev/hda1),
-                      # %2 is output of the 'mount' command
-                      _(
-                        "The partition %1 could not be mounted.\n" \
-                          "\n" \
-                          "%2\n" \
-                          "\n" \
-                          "If you are sure that the partition is not necessary for the\n" \
-                          "update (not a system partition), click Continue.\n" \
-                          "To check or fix the mount options, click Specify Mount Options.\n" \
-                          "To abort the update, click Cancel.\n"
-                      ),
-                      spec,
-                      mount_err
-                    )
-                  ),
-                  VSpacing(1),
-                  HBox(
-                    PushButton(Id(:cont), Label.ContinueButton),
-                    # push button
-                    PushButton(Id(:cmd), _("&Specify Mount Options")),
-                    PushButton(Id(:cancel), Label.CancelButton)
-                  )
-                )
-              )
-              act = Convert.to_symbol(UI.UserInput)
-              UI.CloseDialog
-              if act == :cancel
+
+              action = mountFailedDialog(spec, mount_err)
+
+              if action == :cancel
                 mount_err = nil
                 success = false
-              elsif act == :cont
+              elsif action == :cont
                 mount_err = nil
-              elsif act == :cmd
-                UI.OpenDialog(
-                  VBox(
-                    # popup heading
-                    Heading(_("Mount Options")),
-                    VSpacing(0.6),
-                    # text entry label
-                    TextEntry(Id(:mp), _("&Mount Point"), fspath),
-                    VSpacing(0.4),
-                    # tex entry label
-                    TextEntry(Id(:device), _("&Device"), spec),
-                    VSpacing(0.4),
-                    # text entry label
-                    TextEntry(
-                      Id(:fs),
-                      _("&File System\n(empty for autodetection)"),
-                      mount_type
-                    ),
-                    VSpacing(1),
-                    HBox(
-                      PushButton(Id(:ok), Label.OKButton),
-                      PushButton(Id(:cancel), Label.CancelButton)
-                    )
-                  )
-                )
-                act = Convert.to_symbol(UI.UserInput)
-                if act == :ok
-                  fspath = Convert.to_string(UI.QueryWidget(Id(:mp), :Value))
-                  spec = Convert.to_string(
-                    UI.QueryWidget(Id(:device), :Value)
-                  ) || ""
-                  mount_type = Convert.to_string(
-                    UI.QueryWidget(Id(:fs), :Value)
-                  )
-                end
-                UI.CloseDialog
+              elsif action == :cmd
+                fspath, spec, mount_type = mountOptionsDialog(fspath, spec, mount_type)
               end
             end
 
@@ -959,6 +897,102 @@ module Yast
       end
 
       success
+    end
+
+    # Displays a warning dialog to the suer when mount failed
+    #
+    # Apart from informing, it lets on the user the next action: to ignore the error and continue,
+    # to check and/or specify the mount options, or too abort the update.
+    #
+    # FIXME: this dialog should live in its own class. However, extracting it to a method
+    # looks like a good compromise in the context of the PBI it has been addressed. So please,
+    # feel free to make it a first-class citizen in future changes.
+    #
+    # @param spec [String]
+    # @param error [String] the error returned by #FsckAndMount
+    # @return [Symbol] the action chosen by the user, namely
+    #   :cont if decides to continue because the partition is not necessary for the update
+    #   :cmd when wants to check or specify the mount options
+    #   :cancel whether goes for aborting the update process
+    def mountFailedDialog(spec, error)
+      UI.OpenDialog(
+        VBox(
+          Label(
+            Builtins.sformat(
+              # label in a popup, %1 is device (eg. /dev/hda1),
+              # %2 is output of the 'mount' command
+              _(
+                "The partition %1 could not be mounted.\n" \
+                  "\n" \
+                  "%2\n" \
+                  "\n" \
+                  "If you are sure that the partition is not necessary for the\n" \
+                  "update (not a system partition), click Continue.\n" \
+                  "To check or fix the mount options, click Specify Mount Options.\n" \
+                  "To abort the update, click Cancel.\n"
+              ),
+              spec,
+              error
+            )
+          ),
+          VSpacing(1),
+          HBox(
+            PushButton(Id(:cont), Label.ContinueButton),
+            PushButton(Id(:cmd), _("&Specify Mount Options")),
+            PushButton(Id(:cancel), Label.CancelButton)
+          )
+        )
+      )
+
+      action = UI.UserInput.to_sym
+
+      UI.CloseDialog
+
+      action
+    end
+
+    # Displays the Mount Options dialog to the user
+    #
+    # FIXME: this dialog should live in its own class. However, extracting it to a method
+    # looks like a good compromise in the context of the PBI it has been addressed. So please,
+    # feel free to make it a first-class citizen in future changes.
+    #
+    # @param fspath [String] the filesytem path
+    # @param spec [String]
+    # @param mount_type [String]
+    #
+    # @return [Array<(String, String, String)>] an array holding the values current (if
+    #   users cancel) or the new (if users accpets the dialog) values for fspath,
+    #   spec, and mount_type
+    def mountOptionsDialog(fspath, spec, mount_type)
+      UI.OpenDialog(
+        VBox(
+          Heading(_("Mount Options")),
+          VSpacing(0.6),
+          TextEntry(Id(:mp), _("&Mount Point"), fspath),
+          VSpacing(0.4),
+          TextEntry(Id(:device), _("&Device"), spec),
+          VSpacing(0.4),
+          TextEntry(Id(:fs), _("&File System\n(empty for autodetection)"), mount_type),
+          VSpacing(1),
+          HBox(
+            PushButton(Id(:ok), Label.OKButton),
+            PushButton(Id(:cancel), Label.CancelButton)
+          )
+        )
+      )
+
+      action = UI.UserInput.to_sym
+
+      if action == :ok
+        fspath     = UI.QueryWidget(Id(:mp), :Value).to_s
+        spec       = UI.QueryWidget(Id(:device), :Value).to_s
+        mount_type = UI.QueryWidget(Id(:fs), :Value).to_s
+      end
+
+      UI.CloseDialog
+
+      [fspath, spec, mount_type]
     end
 
     # Finds a filesystem that matches the given fstab spec
