@@ -822,8 +822,7 @@ module Yast
           mount_type = ""
           mount_type = vfstype if vfstype == "proc"
 
-          mount_err = ""
-          until mount_err.nil?
+          loop do
             # An encryption device might be probed with a name that does not match with the name
             # indicated in the fstab file. For example, when the fstab entry is:
             #
@@ -835,21 +834,22 @@ module Yast
             # in the inst-sys with such name. To avoid possible failures when mounting the fstab
             # device, the safest device name is used instead, that is, UUID= format or its uuid
             # udev name, see {#safest_device_name}.
-            mount_err = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
-            next if mount_err.nil?
+            mount_error = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
+            break if mount_error.nil?
 
             mount_path = "#{Installation.destdir}/#{fspath}"
             log.error("mounting #{spec} (type #{mount_type}) on #{mount_path} failed")
 
-            action = mountFailedDialog(spec, mount_err)
+            action = mountFailedDialog(spec, mount_error)
 
-            if action == :cancel
-              mount_err = nil
-              success = false
-            elsif action == :cont
-              mount_err = nil
-            elsif action == :cmd
-              fspath, spec, mount_type = mountOptionsDialog(fspath, spec, mount_type)
+            case action
+              when :cont
+                break
+              when :cancel
+                success = false
+                break
+              when :cmd
+                fspath, spec, mount_type = mountOptionsDialog(fspath, spec, mount_type)
             end
           end
 
