@@ -815,14 +815,14 @@ module Yast
 
       return success if Mode.test
 
-      Builtins.foreach(fstab) do |mounts|
-        vfstype = Ops.get_string(mounts, "vfstype", "")
-        mntops = Ops.get_string(mounts, "mntops", "")
-        spec = Ops.get_string(mounts, "spec", "")
-        fspath = Ops.get_string(mounts, "file", "")
+      fstab.each do |mounts|
+        vfstype = mounts.fetch("vfstype", "")
+        mntops  = mounts.fetch("mntops", "")
+        spec    = mounts.fetch("spec", "")
+        fspath  = mounts.fetch("file", "")
 
         if mount_regular_fstab_entry?(mounts)
-          Builtins.y2milestone("mounting %1 to %2", spec, fspath)
+          log.info("mounting #{spec} to #{fspath}")
 
           mount_type = ""
           mount_type = vfstype if vfstype == "proc"
@@ -843,12 +843,8 @@ module Yast
             mount_err = FsckAndMount(fspath, safest_device_name(spec), mount_type, mntops)
             next if mount_err.nil?
 
-            Builtins.y2error(
-              "mounting %1 (type %2) on %3 failed",
-              spec,
-              mount_type,
-              Ops.add(Installation.destdir, fspath)
-            )
+            mount_path = "#{Installation.destdir}/#{fspath}"
+            log.error("mounting #{spec} (type #{mount_type}) on #{mount_path} failed")
 
             action = mountFailedDialog(spec, mount_err)
 
@@ -874,7 +870,7 @@ module Yast
             success = false if !CheckBootSize(checkspec)
           end
         elsif vfstype == "swap" && fspath == "swap"
-          Builtins.y2milestone("mounting %1 to %2", spec, fspath)
+          log.info("mounting #{spec} to #{fspath}")
 
           command = "/sbin/swapon "
           if spec != ""
@@ -886,7 +882,7 @@ module Yast
               SCR.Execute(path(".target.bash"), command)
             )
             if ret_from_shell != 0
-              Builtins.y2error("swapon failed: %1", command)
+              log.error("swapon failed: #{command}")
             else
               AddMountedPartition(type: "swap", device: spec)
             end
