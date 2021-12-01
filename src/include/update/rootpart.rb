@@ -523,12 +523,9 @@ module Yast
 
     def target_distribution
       # FIXME: this is the same as in src/lib/update/clients/inst_update_partition_auto.rb:113
-      if Y2Packager::MediumType.online?
-        control_product = Y2Packager::ProductSpec.base_products
-          .find { |p| p.respond_to?(:register_target) }
-        # currently all products have the same "register_target" value
-        return control_product&.register_target || ""
-      end
+      product_spec = Y2Packager::ProductSpec.base_products
+        .find { |p| p.respond_to?(:register_target) }
+      return product_spec.register_target || "" if product_spec
 
       base_products = Product.FindBaseProducts
 
