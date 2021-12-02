@@ -28,7 +28,6 @@
 #    calling this module.
 require "yast"
 
-require "y2packager/medium_type"
 require "y2packager/original_repository_setup"
 require "y2packager/product_spec"
 require "y2packager/repository"
@@ -521,23 +520,17 @@ module Yast
       Convert.to_symbol(ret)
     end
 
+    # Finds the target distribution (register_target)
+    #
+    # Currently, all products have the same "register_target".
+    #
+    # @return [String] Target distribution
     def target_distribution
       # FIXME: this is the same as in src/lib/update/clients/inst_update_partition_auto.rb:113
-      if Y2Packager::MediumType.online?
-        control_product = Y2Packager::ProductSpec.base_products
-          .find { |p| p.respond_to?(:register_target) }
-        # currently all products have the same "register_target" value
-        return control_product&.register_target || ""
-      end
-
-      base_products = Product.FindBaseProducts
-
-      # empty target distribution disables service compatibility check in case
-      # the base product cannot be found
-      target_distro = base_products ? base_products.first["register_target"] : ""
-      log.info "Base product target distribution: #{target_distro}"
-
-      target_distro
+      products = Y2Packager::ProductSpec.base_products
+      register_target = products.first&.register_target || ""
+      log.info "Base product target distribution: #{register_target}"
+      register_target
     end
   end
 end

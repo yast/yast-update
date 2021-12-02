@@ -111,12 +111,8 @@ module Yast
 
     # special version that respect online specific target distro
     def target_distro
-      product = Y2Packager::ProductSpec.base_products.find { |p| p.respond_to?(:register_target) }
-      if product
-        product.register_target || ""
-      else
-        target_distribution
-      end
+      products = Y2Packager::ProductSpec.base_products
+      products.first&.register_target || ""
     end
   end
 end
