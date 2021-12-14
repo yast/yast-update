@@ -1843,11 +1843,7 @@ module Yast
         # enter the mount points of the newly mounted partitions
         # in the target map of the storage module
         AddToTargetMap()
-        if Yast2::FsSnapshot.configured?
-          # TRANSLATORS: label for filesystem snapshot taken before system update
-          snapshot = Yast2::FsSnapshot.create_pre(_("before update"), cleanup: :number, important: true)
-          Yast2::FsSnapshotStore.save("update", snapshot.number)
-        end
+        create_pre_snapshot
         Update.clean_backup
         create_backup
       end
@@ -2322,6 +2318,26 @@ module Yast
     publish :function => :GetDistroArch, :type => "string ()"
     publish :function => :mount_target, :type => "boolean ()"
     publish :function => :Detect, :type => "void ()"
+
+  private
+
+    # Creates a pre-update snapshot and stores its number
+    #
+    # If something goes wrong, it reports the problem to the user.
+    def create_pre_snapshot
+      return unless Yast2::FsSnapshot.configured?
+
+      # as of bsc #1092757 snapshot descriptions are not translated
+      snapshot = Yast2::FsSnapshot.create_pre("before update", cleanup: :number, important: true)
+      Yast2::FsSnapshotStore.save("update", snapshot.number)
+    rescue Yast2::SnapshotCreationFailed => error
+      log.error("Error creating a pre-update snapshot: #{error}")
+      Yast::Report.Error(
+        _("A pre-update snapshot could not be created. You can continue with the \n" \
+          "installation, but beware that you cannot roll back to a pre-update state \n" \
+          "unless you have created a snapshot manually.")
+      )
+    end
   end
 
   RootPart = RootPartClass.new
