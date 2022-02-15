@@ -400,4 +400,35 @@ describe Yast::RootPart do
       end
     end
   end
+
+  describe "#CheckPartition" do
+    before do
+      stub_storage(scenario)
+      allow(Yast::SCR).to receive(:Execute)
+    end
+
+    let(:scenario) { "two-disks-two-btrfs.xml" }
+
+    it "uses 'norecovery' mount option for Btrfs" do
+      # return failure to avoid scanning for /etc/fstab
+      expect(Yast::SCR).to receive(:Execute)
+        .with(Yast.path(".target.mount"), Array, "-o ro,norecovery")
+        .and_return(false)
+
+      fs = Y2Storage::StorageManager.instance.probed.blk_filesystems.first
+      subject.CheckPartition(fs)
+    end
+
+    it "does not use 'norecovery` mount option for Ext2" do
+      # return failure to avoid scanning for /etc/fstab
+      expect(Yast::SCR).to receive(:Execute)
+        .with(Yast.path(".target.mount"), Array, "-o ro")
+        .and_return(false)
+
+      fs = Y2Storage::StorageManager.instance.probed.blk_filesystems.first
+      allow(fs).to receive(:type).and_return(Y2Storage::Filesystems::Type::EXT2)
+
+      subject.CheckPartition(fs)
+    end
+  end
 end
