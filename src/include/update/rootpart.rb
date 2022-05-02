@@ -120,20 +120,20 @@ module Yast
           if system == "unknown"
             if !part_fs.nil?
               system = if CanBeLinuxRootFS(part_fs) || legacy_filesystem?(part_fs)
-                # Table item (unknown system)
+                # TRANSLATORS: Table item (unknown system)
                 _("Unknown Linux")
               else
-                # Table item (unknown system)
+                # TRANSLATORS: Table item (unknown system)
                 _("Unknown or Non-Linux")
               end
-            # Table item (unknown system [neither openSUSE 11.1 nor SLES 14 nor ...])
+            # TRANSLATORS: Table item (unknown system [neither openSUSE 11.1 nor SLES 14 nor ...])
             elsif system == "unknown"
               system = _("Unknown")
             end
           end
 
           arch = Ops.get_string(i, :arch, "error")
-          # Table item (unknown architecture)
+          # TRANSLATORS: Table item (unknown architecture)
           arch = _("Unknown") if arch == "unknown"
 
           # fist, use the name of file system (with short name for Linux)
@@ -153,7 +153,7 @@ module Yast
           else
             Ops.get_string(i, :fstype, Ops.get_string(i, :fs, ""))
           end
-          # Table item (unknown file system)
+          # TRANSLATORS: Table item (unknown file system)
           fs = _("Unknown") if fs == ""
 
           label = Ops.get_string(i, :label, "")
@@ -204,20 +204,20 @@ module Yast
       help_text = ""
 
       if flavor == :boot_popup
-        # label for selection of root partition (for boot)
+        # TRANSLATORS: label for selection of root partition (for boot)
         label = _("Partition or System to Boot:")
 
-        # help text for root partition dialog (for boot)
+        # TRANSLATORS: help text for root partition dialog (for boot)
         help_text = _(
           "<p>\n" \
             "Select the partition or system to boot.\n" \
             "</p>\n"
         )
       else
-        # label for selection of root partition (for update)
+        # TRANSLATORS: label for selection of root partition (for update)
         label = _("Partition or System to Update:")
 
-        # help text for root partition dialog (for update)
+        # TRANSLATORS: help text for root partition dialog (for update)
         help_text = _(
           "<p>\n" \
             "Select the partition or system to update.\n" \
@@ -225,12 +225,12 @@ module Yast
         )
 
         if flavor == :update_dialog || flavor == :update_dialog_proposal
-          # headline for dialog "Select for update"
+          # TRANSLATORS: headline for dialog "Select for update"
           title = _("Select for Update")
         end
       end
 
-      # help text for root partition dialog (general part)
+      # TRANSLATORS: help text for root partition dialog (general part)
       help_text = Ops.add(
         help_text,
         _(
@@ -252,15 +252,15 @@ module Yast
               Id(:partition),
               Opt(:hstretch),
               Header(
-                # table header
+                # TRANSLATORS: table header
                 _("System"),
-                # table header item
+                # TRANSLATORS: table header item
                 _("Partition"),
-                # table header item
+                # TRANSLATORS: table header item
                 _("Architecture"),
-                # table header item
+                # TRANSLATORS: table header item
                 _("File System"),
-                # table header item
+                # TRANSLATORS: table header item
                 _("Label")
               ),
               partition_list
@@ -270,7 +270,7 @@ module Yast
             CheckBox(
               Id(:showall),
               Opt(:notify),
-              # check box
+              # TRANSLATORS: check box
               _("&Show All Partitions"),
               false
             )
@@ -301,7 +301,7 @@ module Yast
         if flavor == :boot_popup
           buttons = HBox(
             HStretch(),
-            # pushbutton to (rightaway) boot the system selected above
+            # TRANSLATORS: pushbutton to (rightaway) boot the system selected above
             HWeight(1, PushButton(Id(:next), Opt(:default), _("&Boot"))),
             HSpacing(1),
             HWeight(1, PushButton(Id(:cancel), Label.CancelButton)),
@@ -371,13 +371,14 @@ module Yast
           # Removed ReiserFS support for system upgrade (fate#323394).
           if freshman[:fs] == :reiserfs
             cont = false
+            # TRANSLATORS: error message
             Report.Error(_("ReiserFS is not supported anymore.\n" \
                             "Please migrate your data to another " \
                             "filesystem before performing the upgrade.\n\n"))
           elsif (freshman[:name] || "unknown") == "unknown"
             cont = false
             Popup.Error(
-              # error popup
+              # TRANSLATORS: error popup
               _(
                 "No installed system that can be upgraded with this product was found\n" \
                   "on the selected partition."
@@ -388,7 +389,7 @@ module Yast
             RootPart.GetDistroArch
           )
             cont = Popup.ContinueCancel(
-              # continue-cancel popup
+              # TRANSLATORS: continue-cancel popup
               _(
                 "The architecture of the system installed in the selected partition\n " \
                   "is different from the one of this product.\n"
@@ -410,7 +411,7 @@ module Yast
 
             # Not mounted correctly
             if !RootPart.targetOk
-              # error report
+              # TRANSLATORS: error report
               Report.Error(_("Failed to mount target system"))
               UmountMountedPartition()
               next
@@ -419,12 +420,12 @@ module Yast
             elsif RootPart.IncompleteInstallationDetected(Installation.destdir)
               if Popup.AnyQuestion(
                 Label.WarningMsg,
-                # pop-up question
+                # TRANSLATORS: pop-up question
                 _(
                   "A possibly incomplete installation has been detected on the selected " \
                     "partition.\nAre sure you want to use it anyway?"
                 ),
-                # button label
+                # TRANSLATORS: button label
                 _("&Yes, Use It"),
                 Label.CancelButton,
                 :focus_no
@@ -463,12 +464,14 @@ module Yast
           Builtins.y2error("Pkg::TargetInitialize failed")
           if Popup.AnyQuestion(
             Label.ErrorMsg,
+            # TRANSLATORS: error message
             _(
               "Initializing the system for upgrade has failed for unknown reason.\n" \
                 "It is highly recommended not to continue the upgrade process.\n" \
                 "\n" \
                 "Are you sure you want to continue?"
             ),
+            # TRANSLATORS: button label
             _("&Yes, Continue"),
             Label.CancelButton,
             :focus_no
@@ -488,12 +491,14 @@ module Yast
             Builtins.y2error("Pkg::TargetLoad failed")
             if Popup.AnyQuestion(
               Label.ErrorMsg,
+              # TRANSLATORS: error message
               _(
                 "Initializing the system for upgrade has failed for unknown reason.\n" \
                   "It is highly recommended not to continue the upgrade process.\n" \
                   "\n" \
                   "Are you sure you want to continue?"
               ),
+              # TRANSLATORS: button label
               _("&Yes, Continue"),
               Label.CancelButton,
               :focus_no

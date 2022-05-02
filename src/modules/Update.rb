@@ -274,6 +274,7 @@ module Yast
         next product.summary unless product.summary.empty?
         next product.name unless product.name.empty?
 
+        # TRANSLATORS: label for unknown product
         _("Unknown Product")
       end
     end
@@ -743,11 +744,13 @@ module Yast
       failed_packages = select_for_installation(:package, install_packages)
 
       failed_patterns.empty? or Report.Error(
+        # TRANSLATORS: error message, %{patterns} is replaced by list of patterns
         format(_("Cannot select these patterns required for installation:\n%{patterns}"),
           patterns: failed_patterns.join("\n"))
       )
 
       failed_packages.empty? or Report.Error(
+        # TRANSLATORS: error message, %{packages} is replaced by list of packages
         format(_("Cannot select these packages required for installation:\n%{packages}"),
           packages: failed_packages.join("\n"))
       )

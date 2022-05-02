@@ -63,7 +63,7 @@ module Yast
 
           @ret = {
             "warning"       =>
-                               # Proposal for system to update
+                               # TRANSLATORS: Warning in update proposal
                                _("No root partition found"),
             "warning_level" => :fatal,
             "raw_proposal"  => []
@@ -88,7 +88,9 @@ module Yast
           else
             {
               "raw_proposal" =>
-                                # Proposal for system to update
+                                # TRANSLATORS: Proposal for system to update
+                                # %1 is a product name name (e.g. "openSUSE Leap 15.4")
+                                # %2 is a partition name (e.g. "/dev/sda1")
                                 [
                                   Builtins.sformat(
                                     _("%1 on root partition %2"),
@@ -104,6 +106,7 @@ module Yast
             @ret = Builtins.add(
               @ret,
               "warning",
+              # TRANSLATORS: error message
               _("Failed to mount target system")
             )
             @ret = Builtins.add(@ret, "warning_level", :fatal)
@@ -142,9 +145,9 @@ module Yast
           {}
         else
           {
-            # this is a heading
+            # TRANSLATORS: proposal heading
             "rich_text_title" => _("Selected for Update"),
-            # this is a menu entry
+            # TRANSLATORS: proposal menu entry
             "menu_title"      => _(
               "&Selected for Update"
             ),

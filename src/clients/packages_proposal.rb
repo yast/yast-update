@@ -116,34 +116,34 @@ module Yast
 
           @tmp = []
 
-          # proposal for packages during update, %1 is count of packages
           @tmp = Builtins.add(
             @tmp,
             Builtins.sformat(
+              # TRANSLATORS: proposal for packages during update, %1 is count of packages
               _("Packages to Update: %1"),
               Update.packages_to_update
             )
           )
-          # proposal for packages during update, %1 is count of packages
           @tmp = Builtins.add(
             @tmp,
             Builtins.sformat(
+              # TRANSLATORS: proposal for packages during update, %1 is count of packages
               _("New Packages to Install: %1"),
               Update.packages_to_install
             )
           )
-          # proposal for packages during update, %1 is count of packages
           @tmp = Builtins.add(
             @tmp,
             Builtins.sformat(
+              # TRANSLATORS: proposal for packages during update, %1 is count of packages
               _("Packages to Remove: %1"),
               Update.packages_to_remove
             )
           )
-          # part of summary, %1 is size of packages (in MB or GB)
           @tmp = Builtins.add(
             @tmp,
             Builtins.sformat(
+              # TRANSLATORS: part of summary, %1 is size of packages (in MB or GB)
               _("Total Size of Packages to Update: %1"),
               Packages.CountSizeToBeInstalled
             )
@@ -205,9 +205,9 @@ module Yast
           # Static values do just nicely here, no need to call a function.
 
           @ret = {
-            # this is a heading
+            # TRANSLATORS: proposal heading
             "rich_text_title" => _("Packages"),
-            # this is a menu entry
+            # TRANSLATORS: proposal a menu entry
             "menu_title"      => _("&Packages"),
             "id"              => "packages_stuff"
           }

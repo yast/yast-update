@@ -59,6 +59,7 @@ module Yast
         log.info "Release file #{release_file} not found"
         raise(
           SUSEReleaseFileMissingError,
+          # TRANSLATORS: error message, %{file} is replaced with file name
           format(_("Release file %{file} not found"), file: release_file)
         )
       end
@@ -68,6 +69,7 @@ module Yast
         log.error "Cannot read file #{release_file}"
         raise(
           IOError,
+          # TRANSLATORS: error message, %{file} is replaced with file name
           format(_("Cannot read release file %{file}"), file: release_file)
         )
       end

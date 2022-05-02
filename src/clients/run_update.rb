@@ -51,6 +51,7 @@ module Yast
       ProductControl.custom_control_file = "/usr/share/YaST2/control/update.xml"
 
       Wizard.OpenNextBackStepsDialog
+      # TRANSLATORS: button label
       Wizard.SetNextButton(:next, _("&Update"))
       if !ProductControl.Init
         Builtins.y2error(

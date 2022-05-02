@@ -47,7 +47,7 @@ module Yast
       )
       Builtins.y2milestone("evaluate partitions: %1", @partition)
 
-      # screen title for software selection
+      # TRANSLATORS: screen title for software selection
       @title = _("Backup System Before Update")
 
       # Build and show dialog
@@ -60,7 +60,7 @@ module Yast
             CheckBox(
               Id(:modified),
               Opt(:notify),
-              # checkbox label if user wants to backup modified files
+              # TRANSLATORS: checkbox label if user wants to backup modified files
               _("Create &Backup of Modified Files")
             )
           ),
@@ -68,7 +68,7 @@ module Yast
             CheckBox(
               Id(:sysconfig),
               Opt(:notify),
-              # checkbox label if user wants to backup /etc/sysconfig
+              # TRANSLATORS: checkbox label if user wants to backup /etc/sysconfig
               _("Create a &Complete Backup of /etc/sysconfig")
             )
           ),
@@ -77,20 +77,20 @@ module Yast
             CheckBox(
               Id(:remove),
               Opt(:notify),
-              # checkbox label if user wants remove old backup stuff
+              # TRANSLATORS: checkbox label if user wants remove old backup stuff
               _("Remove &Old Backups from the Backup Directory")
             )
           )
         )
       )
 
-      # help text for backup dialog during update 1/7
+      # TRANSLATORS: help text for backup dialog during update 1/7
       @help_text = _(
         "<p>To avoid any loss of information during update,\n" \
           "create a <b>backup</b> prior to updating.</p>\n"
       )
 
-      # help text for backup dialog during update 2/7
+      # TRANSLATORS: help text for backup dialog during update 2/7
       @help_text = Ops.add(
         @help_text,
         _(
@@ -99,13 +99,13 @@ module Yast
         )
       )
 
-      # help text for backup dialog during update 3/7
+      # TRANSLATORS: help text for backup dialog during update 3/7
       @help_text = Ops.add(
         @help_text,
         _("<p>Select the desired options.</p>\n")
       )
 
-      # help text for backup dialog during update 4/7
+      # TRANSLATORS: help text for backup dialog during update 4/7
       @help_text = Ops.add(
         @help_text,
         _(
@@ -114,7 +114,7 @@ module Yast
         )
       )
 
-      # help text for backup dialog during update 5/7
+      # TRANSLATORS: help text for backup dialog during update 5/7
       @help_text = Ops.add(
         @help_text,
         _(
@@ -124,7 +124,7 @@ module Yast
         )
       )
 
-      # help text for backup dialog during update 6/7
+      # TRANSLATORS: help text for backup dialog during update 6/7
       @help_text = Ops.add(
         @help_text,
         _(
@@ -135,7 +135,7 @@ module Yast
         )
       )
 
-      # help text for backup dialog during update 7/7
+      # TRANSLATORS: help text for backup dialog during update 7/7
       @help_text = Ops.add(
         @help_text,
         Builtins.sformat(
@@ -216,7 +216,7 @@ module Yast
 
       if Ops.less_or_equal(Builtins.size(backup_path), 1) ||
           Builtins.substring(backup_path, 0, 1) != "/"
-        # error popup, user did not enter a valid directory specification
+        # TRANSLATORS: error popup, user did not enter a valid directory specification
         Popup.Message(_("Invalid backup path."))
         return false
       end
@@ -255,6 +255,7 @@ module Yast
       # there is not enough space for the backup during update
       # inform the user about this (MB==megabytes)
       message = Builtins.sformat(
+        # TRANSLATORS: popup message
         _("Minimum disk space of %1 MB required."),
         min_space
       )

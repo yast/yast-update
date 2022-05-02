@@ -62,12 +62,13 @@ module Yast
 
         # Not mounted correctly
         if !RootPart.targetOk
-          # error report
+          # TRANSLATORS: error message
           Report.Error(_("Failed to mount target system"))
           UmountMountedPartition()
           # Correctly mounted but incomplete installation found
         elsif RootPart.IncompleteInstallationDetected(Installation.destdir)
           Report.Error(
+            # TRANSLATORS: error message
             _("A possibly incomplete installation has been detected.")
           )
           UmountMountedPartition()
