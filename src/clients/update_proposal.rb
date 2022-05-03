@@ -82,7 +82,7 @@ module Yast
           # packager will then suggest some set of packages
           if !CheckRPMDBforExistency()
             return {
-              # error message in proposal
+              # TRANSLATORS: error message in proposal
               "warning"       => _(
                 "Cannot read the current RPM Database."
               ),
@@ -124,7 +124,7 @@ module Yast
 
         if Update.products_incompatible
           return {
-            # error message in proposal
+            # TRANSLATORS: error message in proposal
             "warning"       => format(
               _(
                 "The installed product (%{update_from}) is not compatible with " \
@@ -171,15 +171,15 @@ module Yast
               "Warning: Updating from '%1' to '%2', products do not exactly match."
             ),
             Ops.get_locale(
-              # TRANSLATORS: unknown product name
               Installation.installedVersion,
               "show",
+              # TRANSLATORS: unknown product name
               _("Unknown product")
             ),
             Ops.get_locale(
-              # TRANSLATORS: unknown product name
               Installation.updateVersion,
               "show",
+              # TRANSLATORS: unknown product name
               _("Unknown product")
             )
           )
@@ -220,6 +220,7 @@ module Yast
         Pkg.CreateSolverTestCase("/var/log/YaST2/solver-upgrade-proposal") if @ret["warning"]
       elsif @func == "AskUser"
         # With proper control file, this should never be reached
+        # TRANSLATORS: error message
         Report.Error(_("The update summary is read only and cannot be changed."))
         @ret = { "workflow_sequence" => :back }
       elsif @func == "Description"
@@ -228,9 +229,9 @@ module Yast
         # Static values do just nicely here, no need to call a function.
 
         @ret = {
-          # this is a heading
+          # TRANSLATORS: proposal heading
           "rich_text_title" => _("Update Options"),
-          # this is a menu entry
+          # TRANSLATORS: proposal menu entry
           "menu_title"      => _("&Update Options"),
           "id"              => "update_stuff"
         }
@@ -339,9 +340,10 @@ module Yast
             Label(
               Ops.add(
                 Ops.add(
-                  # part of error popup message
+                  # TRANSLATORS: part of error popup message
                   _("Cannot read the current RPM Database.") + "\n\n",
-                  # part of error popup message, %1 stands for newline-separated list of files
+                  # TRANSLATORS: part of error popup message,
+                  # %1 stands for newline-separated list of files
                   Builtins.sformat(
                     _("None of these files exist:%1"),
                     missing_files
@@ -479,7 +481,7 @@ module Yast
       # check product compatibility
       if !(Update.ProductsCompatible || Update.products_incompatible) || update_not_possible
         if Popup.ContinueCancel(
-          # continue-cancel popup
+          # TRANSLATORS: continue-cancel popup
           _(
             "The installed product is not compatible with the product\n" \
               "on the installation media. If you try to update using the\n" \

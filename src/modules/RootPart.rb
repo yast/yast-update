@@ -120,7 +120,7 @@ module Yast
     def GetInfoOfSelected(what)
       i = Ops.get(@rootPartitions, @selectedRootPartition, {})
 
-      # label - name of sustem to update
+      # TRANSLATORS: label - name of system to update was not found
       return Ops.get_locale(i, what, _("Unknown")) if what != :name
 
       # Name is known
@@ -132,12 +132,12 @@ module Yast
         FileSystems.possible_root_fs,
         Ops.get_symbol(i, :fs, :nil)
       )
-        # label - name of sustem to update
+        # TRANSLATORS: label - name of system to update
         _("Unknown Linux System")
 
         # Non-Linux
       else
-        # label - name of sustem to update
+        # TRANSLATORS: label - name of system to update
         _("Non-Linux System")
       end
     end
@@ -192,7 +192,7 @@ module Yast
               Ops.get_string(info, :mntpt, "")
             )
             if !Convert.to_boolean(SCR.Execute(path(".target.umount"), file))
-              # error report, %1 is device (eg. /dev/hda1)
+              # TRANSLATORS: error report, %1 is device (eg. /dev/hda1)
               Report.Error(
                 Builtins.sformat(
                   _(
@@ -260,7 +260,7 @@ module Yast
     def FSCKPartition(partition)
       detected_fs = fstype_for_device(probed, partition)
       if detected_fs == "ext2"
-        # label, %1 is partition
+        # TRANSLATORS: label, %1 is partition
         out = Builtins.sformat(_("Checking partition %1"), partition)
         UI.OpenDialog(Opt(:decorated), Label(out))
 
@@ -295,6 +295,7 @@ module Yast
       details_checkbox = if has_details
         VBox(
           VSpacing(1),
+          # TRANSLATORS: check box label
           Left(CheckBox(Id(:details), Opt(:notify), _("Show &Details"), false))
         )
       else
@@ -378,6 +379,7 @@ module Yast
         end
 
         UI.OpenDialog(
+          # TRANSLATORS: progress status, %1 is a device name, e.g. "/dev/sda1"
           Label(Builtins.sformat(_("Checking file system on %1..."), device))
         )
 
@@ -409,10 +411,10 @@ module Yast
           end
 
           return AnyQuestionAnyButtonsDetails(
-            # popup headline
+            # TRANSLATORS: popup headline
             _("File System Check Failed"),
             Builtins.sformat(
-              # popup question (continue/cancel dialog)
+              # TRANSLATORS: popup question (continue/cancel dialog)
               # %1 is a device name such as /dev/hda5
               _(
                 "The file system check of device %1 has failed.\n" \
@@ -422,7 +424,7 @@ module Yast
               device
             ),
             Label.ContinueButton,
-            # button
+            # TRANSLATORS: button label
             _("&Skip Mounting"),
             details
           )
@@ -903,7 +905,7 @@ module Yast
         VBox(
           Label(
             Builtins.sformat(
-              # label in a popup, %1 is device (eg. /dev/hda1),
+              # TRANSLATORS: label in a popup, %1 is device (eg. /dev/hda1),
               # %2 is output of the 'mount' command
               _(
                 "The partition %1 could not be mounted.\n" \
@@ -922,6 +924,7 @@ module Yast
           VSpacing(1),
           HBox(
             PushButton(Id(:cont), Label.ContinueButton),
+            # TRANSLATORS: button label
             PushButton(Id(:cmd), _("&Specify Mount Options")),
             PushButton(Id(:cancel), Label.CancelButton)
           )
@@ -950,12 +953,16 @@ module Yast
     def user_mount_options(fspath, spec, mount_type)
       UI.OpenDialog(
         VBox(
+          # TRANSLATORS: dialog heading
           Heading(_("Mount Options")),
           VSpacing(0.6),
+          # TRANSLATORS: input field
           TextEntry(Id(:mp), _("&Mount Point"), fspath),
           VSpacing(0.4),
+          # TRANSLATORS: input field
           TextEntry(Id(:device), _("&Device"), spec),
           VSpacing(0.4),
+          # TRANSLATORS: input field
           TextEntry(Id(:fs), _("&File System\n(empty for autodetection)"), mount_type),
           VSpacing(1),
           HBox(
@@ -1001,7 +1008,7 @@ module Yast
 
       success = true
 
-      # popup message, %1 will be replace with the name of the logfile
+      # TRANSLATORS: popup message, %1 will be replace with the name of the logfile
       message = Builtins.sformat(
         _(
           "Partitions could not be mounted.\n" \
@@ -1053,6 +1060,7 @@ module Yast
             root_device_current
           )
           warning = Builtins.sformat(
+            # TRANSLATORS: warning popup
             _(
               "Some partitions in the system on %1 are mounted by kernel-device name. This is\n" \
                 "not reliable for the update since kernel-device names are unfortunately not\n" \
@@ -1070,6 +1078,7 @@ module Yast
 
         if has_pam_mount
           warning = Builtins.sformat(
+            # TRANSLATORS: warning popup
             _(
               "Some home directories in the system on %1 are encrypted. This release does not\n" \
                 "support cryptconfig any longer and those home directories " \
@@ -1086,7 +1095,7 @@ module Yast
 
         if Builtins.size(fstab) == 0
           Builtins.y2error("no or empty fstab found!")
-          # error message
+          # TRANSLATORS: error message
           message = _("No fstab found.")
           success = false
         else
@@ -1126,6 +1135,7 @@ module Yast
             if !legacy_entries.empty?
               message =
                 Builtins.sformat(
+                  # TRANSLATORS: popup message
                   _("The mount points listed below are using legacy filesystems " \
                     "that are not supported anymore:\n\n%1\n\n"                    \
                     "Before upgrade you should migrate all "                 \
@@ -1453,6 +1463,7 @@ module Yast
           Id("search_progress"),
           ProgressBar(
             Id("search_pb"),
+            # TRANSLATORS: progress bar label
             _("Evaluating root partition. One moment please..."),
             100,
             0
@@ -1496,7 +1507,7 @@ module Yast
     def mount_target
       UI.OpenDialog(
         Opt(:decorated),
-        # intermediate popup while mounting partitions
+        # TRANSLATORS: intermediate popup while mounting partitions
         Label(_("Mounting partitions. One moment please..."))
       )
 
@@ -1804,6 +1815,7 @@ module Yast
     rescue Yast2::SnapshotCreationFailed => e
       log.error("Error creating a pre-update snapshot: #{e}")
       Yast::Report.Error(
+        # TRANSLATORS: error message
         _("A pre-update snapshot could not be created. You can continue with the \n" \
           "installation, but beware that you cannot roll back to a pre-update state \n" \
           "unless you have created a snapshot manually.")

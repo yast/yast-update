@@ -59,23 +59,24 @@ module Yast
         if Installation.update_backup_modified ||
             Installation.update_backup_sysconfig
           if Installation.update_backup_modified
-            # Proposal for backup during update
+            # TRANSLATORS: proposal item in the update summary
             @tmp = Builtins.add(@tmp, _("Create Backup of Modified Files"))
           end
 
           if Installation.update_backup_sysconfig
-            # Proposal for backup during update
             @tmp = Builtins.add(
               @tmp,
+              # TRANSLATORS: item in the update summary
               _("Create Backup of /etc/sysconfig Directory")
             )
           end
         else
+          # TRANSLATORS: proposal item in the update summary
           @tmp = Builtins.add(@tmp, _("Do Not Create Backups"))
         end
 
         if Installation.update_remove_old_backups
-          # Proposal for backup during update
+          # TRANSLATORS: proposal item in the update summary
           @tmp = Builtins.add(@tmp, _("Remove Backups from Previous Updates"))
         end
 
@@ -101,9 +102,9 @@ module Yast
         # Static values do just nicely here, no need to call a function.
 
         @ret = {
-          # this is a heading
+          # TRANSLATORS: proposal heading
           "rich_text_title" => _("Backup"),
-          # this is a menu entry
+          # TRANSLATORS: a menu entry
           "menu_title"      => _("&Backup"),
           "id"              => "backup_stuff"
         }
