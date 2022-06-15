@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Jun 15 15:24:01 UTC 2022 - Ladislav Slezák <lslezak@suse.cz>
+
+- Do not reinitialize the package manager, that might remove
+  the configured installation repositories (bsc#1200127)
+- Sync the YaST and libzypp repositories to avoid possible
+  crashes (bsc#1189590)
+- 4.2.23
+
+-------------------------------------------------------------------
 Fri Jul 23 08:56:04 UTC 2021 - José Iván López González <jlopez@suse.com>
 
 - Avoid to bind-mount /run twice (bsc#1181066).
