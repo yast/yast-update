@@ -37,6 +37,9 @@ module Yast
     include Logger
     NON_MODULAR_FS = ["devtmpfs", "none", "proc", "sysfs"].freeze
 
+    # filesystems which support the "norecovery" mount options
+    NORECOVERY_FS = [:btrfs, :ext3, :ext4, :xfs].freeze
+
     def main
       Yast.import "UI"
 
@@ -1526,13 +1529,16 @@ module Yast
           SCR.Execute(path(".target.modprobe"), mount_type, "")
         end
 
+        mount_options = ["ro"]
+        mount_options << "norecovery" if NORECOVERY_FS.include?(freshman[:fs])
+
         # mount (read-only) partition to Installation::destdir
-        log.debug("Mounting #{[p_dev, Installation.destdir, Installation.mountlog].inspect}")
+        log.info "Mounting #{p_dev} with options #{mount_options}"
         mount =
           SCR.Execute(
             path(".target.mount"),
             [p_dev, Installation.destdir, Installation.mountlog],
-            "-o ro"
+            "-o #{mount_options.join(",")}"
           )
 
         if Convert.to_boolean(mount)

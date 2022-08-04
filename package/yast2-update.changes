@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb 14 17:20:32 UTC 2022 - Ladislav Slezák <lslezak@suse.cz>
+
+- Use the "norecovery" mount option when searching the root
+  partitions (bsc#1195894)
+- 4.3.4
+
+-------------------------------------------------------------------
 Fri Jul 23 08:56:04 UTC 2021 - José Iván López González <jlopez@suse.com>
 
 - Avoid to bind-mount /run twice (bsc#1181066).
