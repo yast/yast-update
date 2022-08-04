@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug  4 15:06:09 UTC 2022 - Ladislav Slezák <lslezak@suse.cz>
+
+- Use the "norecovery" mount option when searching the root
+  partitions (bsc#1195894)
+- 4.4.7
+
+-------------------------------------------------------------------
 Wed Dec  1 07:50:46 UTC 2021 - Imobach Gonzalez Sosa <igonzalezsosa@suse.com>
 
 - Do not crash after selecting the system to upgrade when using
