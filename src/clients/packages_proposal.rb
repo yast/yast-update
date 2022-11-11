@@ -23,7 +23,6 @@
 #
 # Purpose:  Let user choose packages during update.
 #
-# $Id$
 
 require "y2packager/resolvable"
 
@@ -160,6 +159,9 @@ module Yast
             }
           }
 
+          orphaned_warning = orphaned_packages_warning
+          @warning << orphaned_warning if orphaned_warning
+
           if Ops.greater_than(Update.solve_errors, 0)
             # the proposal for the packages requires manual invervention
             @ret.merge!(
@@ -233,6 +235,68 @@ module Yast
         end
 
         ret
+      end
+
+      # Summary with with the list of uninstalled 3rd party packages
+      # @return [String,nil] Rich text summary or `nil` if no 3rd party package
+      #   is uninstalled
+      def orphaned_packages_warning
+        orphaned_packages = find_orphaned_packages
+        return nil if orphaned_packages.empty?
+
+        list = HTML.List(orphaned_packages_summary(orphaned_packages))
+        # TRANSLATORS: warning displayed in the upgrade summary, this informs the
+        # user that some manually installed non-SUSE packages will uninstalled,
+        # user should check if that is OK, it is possible to manually change the
+        # package status and keep it in the system
+        _("Warning: These 3rd party packages will be automatically removed: %s") % list
+      end
+
+      # find the orphaned non-SUSE packages which will be uninstalled from the system
+      # @return [Y2Packager::Resolvable] list of orphaned packages
+      def find_orphaned_packages
+        # preload the "vendor" attribute so the vendor matching below is faster
+        orphaned = Y2Packager::Resolvable.find(
+          { kind: :package, status: :removed, orphaned: true },
+          [:vendor]
+        )
+        # ignore SUSE or openSUSE packages, but include packages from OBS projects
+        # where vendor is like "obs://build.opensuse.org/YaST"
+        # TODO: what about the SUSE Hub packages?
+        orphaned.reject! { |o| o.vendor.start_with?("SUSE") || o.vendor.start_with?("openSUSE") }
+        # sort the packages alphabetically by name for easier reading (case insensitive)
+        orphaned.sort_by! { |o| o.name.downcase }
+        log.info "Found #{orphaned.size} non-SUSE orphaned packages: " +
+          orphaned.map { |p| package_label(p) }.to_s
+        orphaned
+      end
+
+      # limit the list of the displayed orphaned packages, the list might be potentially huge,
+      # let's display just first few packages in the summary, the full list can be
+      # displayed in the package manager
+      ORPHANED_MAX_SIZE = 10
+
+      # create summary list
+      # @param packages [Array<Y2Packager::Resolvable>] list of packages
+      # @return [Array<String>] list of text items
+      def orphaned_packages_summary(packages)
+        summary = packages.first(ORPHANED_MAX_SIZE).map { |p| package_label(p) }
+
+        if packages.size > ORPHANED_MAX_SIZE
+          # TRANSLATORS: %s is replaced by a number of remaining items
+          summary << _("... and %s more") % (packages.size - ORPHANED_MAX_SIZE)
+        end
+
+        summary
+      end
+
+      # create short description label for a package
+      # @param package [Y2Packager::Resolvable] the package object
+      # @return [String] human readable package label
+      def package_label(package)
+        label = "#{package.name}-#{package.version}"
+        label << " (#{package.vendor})" if !package.vendor.empty?
+        label
       end
     end
   end
