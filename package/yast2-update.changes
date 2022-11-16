@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 15 09:40:14 UTC 2022 - Ladislav Slezák <lslezak@suse.cz>
+
+- Display a warning in the upgrade summary when removing orphaned
+  3rd party packages (bsc#1202007)
+- 4.4.8
+
+-------------------------------------------------------------------
 Thu Aug  4 15:06:09 UTC 2022 - Ladislav Slezák <lslezak@suse.cz>
 
 - Use the "norecovery" mount option when searching the root
