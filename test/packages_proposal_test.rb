@@ -24,11 +24,12 @@ describe Yast::PackagesProposalClient do
 
       before do
         allow(Yast::SpaceCalculation).to receive(:GetPartitionWarning)
-          .and_return(nil)
+          .and_return([])
         allow(Yast::Packages).to receive(:proposal_for_update)
         allow(Yast::Pkg).to receive(:GetPackages).with(anything, true) do |status, _names_only|
           PACKAGES[status]
         end
+        allow(Y2Packager::Resolvable).to receive(:find).and_return([])
       end
 
       it "asks for a packages selection proposal" do
@@ -51,6 +52,30 @@ describe Yast::PackagesProposalClient do
           "expect" => { "class" => "Yast::Packages", "method" => "PackagesProposalChanged" },
           "value"  => false
         )
+      end
+
+      it "returns a warning with removed 3rd party orphaned packages" do
+        orphaned = Y2Packager::Resolvable.new(
+          arch:     "x86_64",
+          kind:     :package,
+          name:     "orphaned",
+          path:     "",
+          source:   -1,
+          status:   :removed,
+          vendor:   "Foo Corporation",
+          version:  "42.0.0",
+          orphaned: true
+        )
+
+        expect(Y2Packager::Resolvable).to receive(:find).with(
+          { kind: :package, status: :removed, orphaned: true },
+          [:vendor]
+        ).and_return([orphaned])
+
+        result = client.main
+
+        expect(result["warning"]).to include("orphaned-42.0.0.x86_64 (Foo Corporation)")
+        expect(result["warning_level"]).to eq(:warning)
       end
     end
   end
