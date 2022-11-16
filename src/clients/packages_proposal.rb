@@ -220,6 +220,8 @@ module Yast
         @ret
       end
 
+    private
+
       def call_packageselector
         options = {}
 
@@ -238,7 +240,7 @@ module Yast
         ret
       end
 
-      # Summary with with the list of uninstalled 3rd party packages
+      # Summary with the list of uninstalled 3rd party packages
       # @return [String,nil] Rich text summary or `nil` if no 3rd party package
       #   is uninstalled
       def orphaned_packages_warning
@@ -247,14 +249,14 @@ module Yast
 
         list = HTML.List(orphaned_packages_summary(orphaned_packages))
         # TRANSLATORS: warning displayed in the upgrade summary, this informs the
-        # user that some manually installed non-SUSE packages will uninstalled,
+        # user that some manually installed non-SUSE packages will be uninstalled,
         # user should check if that is OK, it is possible to manually change the
         # package status and keep it in the system
         _("<b>Warning: These packages will be removed:</b> %s") % list
       end
 
       # find the orphaned non-SUSE packages which will be uninstalled from the system
-      # @return [Y2Packager::Resolvable] list of orphaned packages
+      # @return [Array<Y2Packager::Resolvable>] list of orphaned packages
       def find_orphaned_packages
         # preload the "vendor" attribute so the vendor matching below is faster
         orphaned = Y2Packager::Resolvable.find(
@@ -276,6 +278,7 @@ module Yast
       # let's display just first few packages in the summary, the full list can be
       # displayed in the package manager
       ORPHANED_MAX_SIZE = 10
+      private_constant :ORPHANED_MAX_SIZE
 
       # create summary list
       # @param packages [Array<Y2Packager::Resolvable>] list of packages
