@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr 11 13:14:48 UTC 2023 - Ladislav Slezák <lslezak@suse.com>
+
+- Rebuild the RPM database during upgrade (--rebuilddb) (bsc#1209565)
+- 4.3.5
+
+-------------------------------------------------------------------
 Mon Feb 14 17:20:32 UTC 2022 - Ladislav Slezák <lslezak@suse.cz>
 
 - Use the "norecovery" mount option when searching the root
