@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 12 08:37:15 UTC 2023 - Ladislav Slezák <lslezak@suse.com>
+
+- Rebuild the RPM database during upgrade (--rebuilddb) (bsc#1209565)
+- 4.5.3
+
+-------------------------------------------------------------------
 Wed Nov 16 14:33:33 UTC 2022 - Ladislav Slezák <lslezak@suse.cz>
 
 - Display a warning in the upgrade summary when removing orphaned
