@@ -458,8 +458,10 @@ module Yast
         # override the current target distribution at the system and use
         # the target distribution from the base product to make the new service
         # repositories compatible with the base product at upgrade (bnc#881320)
-        if Pkg.TargetInitializeOptions(Installation.destdir,
-          "target_distro" => target_distribution) != true
+        if !Pkg.TargetInitializeOptions(Installation.destdir,
+          # enable DB rebuild at upgrade (bsc#1209565)
+          "rebuild_db"    => true,
+          "target_distro" => target_distribution)
           # Target load failed, #466803
           Builtins.y2error("Pkg::TargetInitialize failed")
           if Popup.AnyQuestion(
