@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Oct 27 13:58:30 UTC 2023 - Ladislav Slezák <lslezak@suse.com>
+
+- Drop the previously used repositories when going back to the
+  partition selection at upgrade, this ensures the repositories
+  are correctly reinitialized later (bsc#1215884)
+- 4.5.4
+
+-------------------------------------------------------------------
 Wed Apr 12 08:37:15 UTC 2023 - Ladislav Slezák <lslezak@suse.com>
 
 - Rebuild the RPM database during upgrade (--rebuilddb) (bsc#1209565)
