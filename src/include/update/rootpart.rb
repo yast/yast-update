@@ -456,8 +456,9 @@ module Yast
 
       # New partition has been mounted
       if flavor == :update_dialog && ret == :next
-        # drop all loaded repositories after going back in SLE, the installation medium is added later
-        # FIXME: what to do in Leap? we need to keep the already added installation repository... :-/
+        # drop all loaded repositories after going back in SLE, the installation
+        # medium is added later FIXME: what to do in Leap? we need to keep the
+        # already added installation repository... :-/
         Pkg.SourceFinishAll if !Y2Packager::MediumType.standard?
 
         # override the current target distribution at the system and use
