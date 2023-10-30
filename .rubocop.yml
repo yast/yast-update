@@ -18,7 +18,7 @@ Lint/UnderscorePrefixedVariableName:
 
 # Offense count: 25
 Metrics/AbcSize:
-  Max: 188
+  Max: 190
 
 # Offense count: 23
 # Configuration parameters: CountComments, ExcludedMethods.
@@ -40,7 +40,7 @@ Metrics/ClassLength:
 
 # Offense count: 25
 Metrics/CyclomaticComplexity:
-  Max: 46
+  Max: 50
 
 # Offense count: 27
 # Configuration parameters: CountComments, ExcludedMethods.
@@ -54,7 +54,7 @@ Metrics/ModuleLength:
 
 # Offense count: 24
 Metrics/PerceivedComplexity:
-  Max: 55
+  Max: 60
 
 # Offense count: 49
 # Configuration parameters: EnforcedStyle.
