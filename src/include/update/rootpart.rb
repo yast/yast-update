@@ -28,6 +28,7 @@
 #    calling this module.
 require "yast"
 
+require "y2packager/medium_type"
 require "y2packager/original_repository_setup"
 require "y2packager/product_spec"
 require "y2packager/repository"
@@ -455,6 +456,11 @@ module Yast
 
       # New partition has been mounted
       if flavor == :update_dialog && ret == :next
+        # drop all loaded repositories after going back in SLE, the installation
+        # medium is added later FIXME: what to do in Leap? we need to keep the
+        # already added installation repository... :-/
+        Pkg.SourceFinishAll if !Y2Packager::MediumType.standard?
+
         # override the current target distribution at the system and use
         # the target distribution from the base product to make the new service
         # repositories compatible with the base product at upgrade (bnc#881320)
