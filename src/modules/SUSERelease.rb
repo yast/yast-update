@@ -29,9 +29,6 @@ require "yast"
 
 module Yast
   class SUSEReleaseFileMissingError < StandardError
-    def initialize(message)
-      super message
-    end
   end
 
   class SUSEReleaseClass < Module
@@ -40,6 +37,8 @@ module Yast
     RELEASE_FILE_PATH = "/etc/SuSE-release".freeze
 
     def initialize
+      super
+
       textdomain "update"
 
       Yast.import "FileUtils"
@@ -80,7 +79,7 @@ module Yast
 
     # Removes all unneeded stuff such as architecture or product nickname
     def shorten(long_name)
-      long_name.gsub(/[ ]*\(.*/, "")
+      long_name.gsub(/ *\(.*/, "")
     end
 
     publish function: :ReleaseInformation, type: "string (string)"

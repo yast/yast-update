@@ -87,7 +87,7 @@ module Yast
       # TRANSLATORS: help text for backup dialog during update 1/7
       @help_text = _(
         "<p>To avoid any loss of information during update,\n" \
-          "create a <b>backup</b> prior to updating.</p>\n"
+        "create a <b>backup</b> prior to updating.</p>\n"
       )
 
       # TRANSLATORS: help text for backup dialog during update 2/7
@@ -95,7 +95,7 @@ module Yast
         @help_text,
         _(
           "<p><b>Warning:</b> This will not be a complete\n" \
-            "backup. Only modified files will be saved.</p>\n"
+          "backup. Only modified files will be saved.</p>\n"
         )
       )
 
@@ -110,7 +110,7 @@ module Yast
         @help_text,
         _(
           "<p><b>Create a Backup of Modified Files:</b>\n" \
-            "Stores only those modified files that will be replaced during update.</p>\n"
+          "Stores only those modified files that will be replaced during update.</p>\n"
         )
       )
 
@@ -119,8 +119,8 @@ module Yast
         @help_text,
         _(
           "<p><b>Create a Complete Backup of\n" \
-            "/etc/sysconfig:</b> This covers all configuration files that are part of the\n" \
-            "sysconfig mechanism, even those that will not be replaced.</p>\n"
+          "/etc/sysconfig:</b> This covers all configuration files that are part of the\n" \
+          "sysconfig mechanism, even those that will not be replaced.</p>\n"
         )
       )
 
@@ -129,9 +129,9 @@ module Yast
         @help_text,
         _(
           "<p><b>Remove Old Backups from the Backup\n" \
-            "Directory:</b> If your current system already is the result of an earlier\n" \
-            "update, there may be old configuration file backups. Select this option to\n" \
-            "remove them.</p>\n"
+          "Directory:</b> If your current system already is the result of an earlier\n" \
+          "update, there may be old configuration file backups. Select this option to\n" \
+          "remove them.</p>\n"
         )
       )
 

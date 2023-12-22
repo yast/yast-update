@@ -59,7 +59,8 @@ module Yast
 
       @rpm_db_existency_checked_already = false
 
-      if @func == "MakeProposal"
+      case @func
+      when "MakeProposal"
         @force_reset = Ops.get_boolean(@param, "force_reset", false)
         @language_changed = Ops.get_boolean(@param, "language_changed", false)
 
@@ -147,9 +148,9 @@ module Yast
               # %2 is the version being installed
               _(
                 "Updating system to another version (%1 -> %2) is not supported on " \
-                  "the running system.<br>\n" \
-                  "Boot from the installation media and use a normal upgrade\n" \
-                  "or disable software repositories of products with different versions.\n"
+                "the running system.<br>\n" \
+                "Boot from the installation media and use a normal upgrade\n" \
+                "or disable software repositories of products with different versions.\n"
               ),
               @update_from,
               @update_to
@@ -196,9 +197,9 @@ module Yast
         # TRANSLATORS: proposal dialog help
         @update_options_help = _(
           "<p><b><big>Update Options</big></b> Select how your system will be updated.\n" \
-            "Choose if only installed packages should be updated or new ones should be\n" \
-            "installed as well (default). Decide whether unmaintained packages should be\n" \
-            "deleted.</p>\n"
+          "Choose if only installed packages should be updated or new ones should be\n" \
+          "installed as well (default). Decide whether unmaintained packages should be\n" \
+          "deleted.</p>\n"
         )
 
         @ret = {
@@ -218,12 +219,12 @@ module Yast
         end
         # save the solver test case with details for later debugging
         Pkg.CreateSolverTestCase("/var/log/YaST2/solver-upgrade-proposal") if @ret["warning"]
-      elsif @func == "AskUser"
+      when "AskUser"
         # With proper control file, this should never be reached
         # TRANSLATORS: error message
         Report.Error(_("The update summary is read only and cannot be changed."))
         @ret = { "workflow_sequence" => :back }
-      elsif @func == "Description"
+      when "Description"
         # Fill return map.
         #
         # Static values do just nicely here, no need to call a function.
@@ -363,11 +364,12 @@ module Yast
 
         ui_r = UI.UserInput
 
-        if ui_r == :cancel || ui_r == :abort
+        case ui_r
+        when :cancel, :abort
           ret = false
           file_found_or_error_skipped = true
           Builtins.y2milestone("Check failed, returning error.")
-        elsif ui_r == :retry
+        when :retry
           file_found_or_error_skipped = false
           Builtins.y2milestone("Trying again...")
           # } else if (ui_r == `ignore) {
@@ -474,9 +476,9 @@ module Yast
       Update.solve_errors = Pkg.PkgSolve(false) ? 0 : Pkg.PkgSolveErrors
 
       log.info "Update compatibility: " \
-        "Update.ProductsCompatible: #{Update.ProductsCompatible}, " \
-        "Update.products_incompatible: #{Update.products_incompatible}, " \
-        "update_not_possible: #{update_not_possible}"
+               "Update.ProductsCompatible: #{Update.ProductsCompatible}, " \
+               "Update.products_incompatible: #{Update.products_incompatible}, " \
+               "update_not_possible: #{update_not_possible}"
 
       # check product compatibility
       if !(Update.ProductsCompatible || Update.products_incompatible) || update_not_possible
@@ -484,9 +486,9 @@ module Yast
           # TRANSLATORS: continue-cancel popup
           _(
             "The installed product is not compatible with the product\n" \
-              "on the installation media. If you try to update using the\n" \
-              "current installation media, the system may not start or\n" \
-              "some applications may not run properly."
+            "on the installation media. If you try to update using the\n" \
+            "current installation media, the system may not start or\n" \
+            "some applications may not run properly."
           )
         )
           Update.IgnoreProductCompatibility
