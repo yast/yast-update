@@ -31,6 +31,8 @@ module Yast
     DATA_PATH = "/var/lib/YaST2/update_partition_auto.yaml".freeze
 
     def initialize
+      super
+
       Yast.import "Pkg"
       Yast.import "UI"
 

@@ -1101,14 +1101,12 @@ module Yast
         else
           tmp = ""
 
-          if tmp_ref = arg_ref(tmp)
-            check_root_device_result = check_root_device(
+          if (tmp_ref = arg_ref(tmp))
+            check_root_device(
               root_device_current,
               fstab,
               tmp_ref
             )
-            tmp = tmp_ref.value
-            check_root_device_result
 
             Builtins.y2milestone("fstab %1", fstab)
 

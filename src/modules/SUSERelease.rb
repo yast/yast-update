@@ -37,6 +37,8 @@ module Yast
     RELEASE_FILE_PATH = "/etc/SuSE-release".freeze
 
     def initialize
+      super
+
       textdomain "update"
 
       Yast.import "FileUtils"
