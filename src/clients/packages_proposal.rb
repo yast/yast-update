@@ -288,7 +288,7 @@ module Yast
 
         if packages.size > ORPHANED_MAX_SIZE
           # TRANSLATORS: %s is replaced by a number of remaining items
-          summary << _("... and %s more") % (packages.size - ORPHANED_MAX_SIZE)
+          summary << (_("... and %s more") % (packages.size - ORPHANED_MAX_SIZE))
         end
 
         summary

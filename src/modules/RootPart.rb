@@ -197,10 +197,10 @@ module Yast
                 Builtins.sformat(
                   _(
                     "Cannot unmount partition %1.\n" \
-                      "\n" \
-                      "It is currently in use. If the partition stays mounted,\n" \
-                      "the data may be lost. Unmount the partition manually\n" \
-                      "or restart your computer.\n"
+                    "\n" \
+                    "It is currently in use. If the partition stays mounted,\n" \
+                    "the data may be lost. Unmount the partition manually\n" \
+                    "or restart your computer.\n"
                   ),
                   file
                 )
@@ -395,7 +395,15 @@ module Yast
         UI.CloseDialog
 
         # failed
-        if Ops.get(cmd, "exit") != 0
+        if Ops.get(cmd, "exit") == 0
+          # add device into the list of already checked partitions (with exit status 0);
+          @already_checked_jfs_partitions = Builtins.add(
+            @already_checked_jfs_partitions,
+            device
+          )
+          Builtins.y2milestone("Result: %1", cmd)
+          return true
+        else
           Builtins.y2error("Result: %1", cmd)
           error_message.value = Builtins.tostring(Ops.get(cmd, "stderr"))
 
@@ -418,8 +426,8 @@ module Yast
               # %1 is a device name such as /dev/hda5
               _(
                 "The file system check of device %1 has failed.\n" \
-                  "\n" \
-                  "Do you want to continue mounting the device?\n"
+                "\n" \
+                "Do you want to continue mounting the device?\n"
               ),
               device
             ),
@@ -429,14 +437,6 @@ module Yast
             details
           )
           # succeeded
-        else
-          # add device into the list of already checked partitions (with exit status 0);
-          @already_checked_jfs_partitions = Builtins.add(
-            @already_checked_jfs_partitions,
-            device
-          )
-          Builtins.y2milestone("Result: %1", cmd)
-          return true
         end
       end
 
@@ -595,7 +595,7 @@ module Yast
       fstab_file = Ops.add(Installation.destdir, "/etc/fstab")
 
       if FileUtils.Exists(fstab_file)
-        # Note: this is a copy from etc_fstab.scr file (yast2.rpm),
+        # NOTE: this is a copy from etc_fstab.scr file (yast2.rpm),
         # keep the files in sync!
         SCR.RegisterAgent(
           path(".target.etc.fstab"),
@@ -705,15 +705,15 @@ module Yast
         SCR.Execute(path(".target.bash_output"), cmd)
       )
 
-      if Ops.get_integer(bootsizeout, "exit", -1) != 0
-        Builtins.y2error("Error: '%1' -> %2", cmd, bootsizeout)
-      else
+      if Ops.get_integer(bootsizeout, "exit", -1) == 0
         scriptout = Builtins.splitstring(
           Ops.get_string(bootsizeout, "stdout", ""),
           " "
         )
         Builtins.y2milestone("Scriptout: %1", scriptout)
         bootsize = Builtins.tointeger(Ops.get(scriptout, 1, "0"))
+      else
+        Builtins.y2error("Error: '%1' -> %2", cmd, bootsizeout)
       end
 
       if bootsize.nil? || bootsize == 0
@@ -745,11 +745,11 @@ module Yast
         Builtins.sformat(
           _(
             "Your /boot partition is too small (%1 MB).\n" \
-              "We recommend a size of no less than %2 MB or else the new Kernel may not fit.\n" \
-              "It is safer to either enlarge the partition\n" \
-              "or not use a /boot partition at all.\n" \
-              "\n" \
-              "Do you want to continue updating the current system?\n"
+            "We recommend a size of no less than %2 MB or else the new Kernel may not fit.\n" \
+            "It is safer to either enlarge the partition\n" \
+            "or not use a /boot partition at all.\n" \
+            "\n" \
+            "Do you want to continue updating the current system?\n"
           ),
           current_bs,
           suggested_bs
@@ -760,12 +760,12 @@ module Yast
         Builtins.y2warning(
           "User decided to continue despite small a /boot partition"
         )
-        return true
+        true
       else
         Builtins.y2milestone(
           "User decided not to continue with small /boot partition"
         )
-        return false
+        false
       end
     end
 
@@ -858,9 +858,7 @@ module Yast
             end
           end
 
-          if fspath == "/boot" || fspath == "/boot/"
-            success = false unless CheckBootSize(spec)
-          end
+          success = false if (fspath == "/boot" || fspath == "/boot/") && !CheckBootSize(spec)
         elsif vfstype == "swap" && fspath == "swap"
           log.info("mounting #{spec} to #{fspath}")
 
@@ -873,10 +871,10 @@ module Yast
             ret_from_shell = Convert.to_integer(
               SCR.Execute(path(".target.bash"), command)
             )
-            if ret_from_shell != 0
-              log.error("swapon failed: #{command}")
-            else
+            if ret_from_shell == 0
               AddMountedPartition(type: "swap", device: spec)
+            else
+              log.error("swapon failed: #{command}")
             end
           end
         end
@@ -909,13 +907,13 @@ module Yast
               # %2 is output of the 'mount' command
               _(
                 "The partition %1 could not be mounted.\n" \
-                  "\n" \
-                  "%2\n" \
-                  "\n" \
-                  "If you are sure that the partition is not necessary for the\n" \
-                  "update (not a system partition), click Continue.\n" \
-                  "To check or fix the mount options, click Specify Mount Options.\n" \
-                  "To abort the update, click Cancel.\n"
+                "\n" \
+                "%2\n" \
+                "\n" \
+                "If you are sure that the partition is not necessary for the\n" \
+                "update (not a system partition), click Continue.\n" \
+                "To check or fix the mount options, click Specify Mount Options.\n" \
+                "To abort the update, click Cancel.\n"
               ),
               spec,
               error
@@ -1012,8 +1010,8 @@ module Yast
       message = Builtins.sformat(
         _(
           "Partitions could not be mounted.\n" \
-            "\n" \
-            "Check the log file %1."
+          "\n" \
+          "Check the log file %1."
         ),
         Ops.add(Directory.logdir, "/y2log")
       )
@@ -1063,9 +1061,9 @@ module Yast
             # TRANSLATORS: warning popup
             _(
               "Some partitions in the system on %1 are mounted by kernel-device name. This is\n" \
-                "not reliable for the update since kernel-device names are unfortunately not\n" \
-                "persistent. It is strongly recommended to start the old system and change the\n" \
-                "mount-by method to any other method for all partitions."
+              "not reliable for the update since kernel-device names are unfortunately not\n" \
+              "persistent. It is strongly recommended to start the old system and change the\n" \
+              "mount-by method to any other method for all partitions."
             ),
             root_device_current
           )
@@ -1081,12 +1079,12 @@ module Yast
             # TRANSLATORS: warning popup
             _(
               "Some home directories in the system on %1 are encrypted. This release does not\n" \
-                "support cryptconfig any longer and those home directories " \
-                "will not be accessible\n" \
-                "after upgrade. In order to access these home directories, " \
-                "they need to be decrypted\n" \
-                "before performing upgrade.\n" \
-                "You can consider encrypting whole volume via LUKS."
+              "support cryptconfig any longer and those home directories " \
+              "will not be accessible\n" \
+              "after upgrade. In order to access these home directories, " \
+              "they need to be decrypted\n" \
+              "before performing upgrade.\n" \
+              "You can consider encrypting whole volume via LUKS."
             ),
             root_device_current
           )
@@ -1101,29 +1099,15 @@ module Yast
         else
           tmp = ""
 
-          if !(
-              tmp_ref = arg_ref(tmp)
-              check_root_device_result = check_root_device(
-                root_device_current,
-                fstab,
-                tmp_ref
-              )
-              tmp = tmp_ref.value
-              check_root_device_result
+          if tmp_ref = arg_ref(tmp)
+            check_root_device_result = check_root_device(
+              root_device_current,
+              fstab,
+              tmp_ref
             )
-            Builtins.y2error("fstab has wrong root device!")
+            tmp = tmp_ref.value
+            check_root_device_result
 
-            # TRANSLATORS: Error message, where %{root} and %{tmp} are replaced by
-            # device names (e.g., /dev/sda1 and /dev/sda2).
-            message = format(
-              _("The root partition in /etc/fstab has an invalid root device.\n" \
-                "It is currently mounted as %{root} but listed as %{tmp}."),
-              root: root_device_current,
-              tmp:  tmp
-            )
-
-            success = false
-          else
             Builtins.y2milestone("fstab %1", fstab)
 
             legacy_filesystems =
@@ -1152,6 +1136,19 @@ module Yast
               )
               success = false
             end
+          else
+            Builtins.y2error("fstab has wrong root device!")
+
+            # TRANSLATORS: Error message, where %{root} and %{tmp} are replaced by
+            # device names (e.g., /dev/sda1 and /dev/sda2).
+            message = format(
+              _("The root partition in /etc/fstab has an invalid root device.\n" \
+                "It is currently mounted as %{root} but listed as %{tmp}."),
+              root: root_device_current,
+              tmp:  tmp
+            )
+
+            success = false
           end
         end
       else
@@ -1170,19 +1167,19 @@ module Yast
       )
       Builtins.y2milestone("activated %1", @activated)
 
-      if !success
-        Popup.Message(message)
-
-        # some mount failed, unmount all mounted fs
-        UnmountPartitions(false)
-        @did_try_mount_partitions = true
-      else
+      if success
         # enter the mount points of the newly mounted partitions
         update_staging!
         create_pre_snapshot
         Update.clean_backup
         create_backup
         inject_intsys_files
+      else
+        Popup.Message(message)
+
+        # some mount failed, unmount all mounted fs
+        UnmountPartitions(false)
+        @did_try_mount_partitions = true
       end
 
       success
@@ -1479,7 +1476,7 @@ module Yast
 
       filesystems.each_with_index do |fs, counter|
         if UI.WidgetExists(Id("search_progress"))
-          percent = 100 * (counter + 1 / filesystems.size)
+          percent = 100 * (counter + (1 / filesystems.size))
           UI.ChangeWidget(Id("search_pb"), :Value, percent)
         end
 
@@ -1578,7 +1575,7 @@ module Yast
     publish function: :SetSelectedToValid, type: "void ()"
     publish function: :UnmountPartitions, type: "void (boolean)"
     publish function: :AnyQuestionAnyButtonsDetails,
-            type:     "boolean (string, string, string, string, string)"
+      type:     "boolean (string, string, string, string, string)"
     publish function: :MountPartitions, type: "boolean (string)"
     publish function: :IncompleteInstallationDetected, type: "boolean (string)"
     publish function: :FindRootPartitions, type: "void ()"
@@ -1717,8 +1714,8 @@ module Yast
 
       # log which devicegraph we operate on
       graph = "?"
-      graph = "probed" if devicegraph.object_id == probed.object_id
-      if devicegraph.object_id == staging.object_id
+      graph = "probed" if devicegraph.equal?(probed)
+      if devicegraph.equal?(staging)
         graph = "staging#" + Y2Storage::StorageManager.instance.staging_revision.to_s
       end
       log.info("fs_by_devicename(#{graph}, #{device_spec}) = #{"sid#" + fs.sid.to_s if fs}")

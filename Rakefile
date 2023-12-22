@@ -11,5 +11,5 @@ end
 # additionally validate the control XML files as a part of the unit tests
 task "test:unit" do
   sh "xmllint --noout --relaxng #{Packaging::Configuration::YAST_DIR.shellescape}"\
-    "/control/control.rng control/*.xml"
+     "/control/control.rng control/*.xml"
 end

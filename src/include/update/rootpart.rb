@@ -107,7 +107,7 @@ module Yast
         # see bugzilla #288201
         # architecture needs to be valid when updating, not booting
         arch_is_valid = flavor == :boot || Ops.get_boolean(i, :arch_valid, false)
-        if withall || Ops.get_boolean(i, :valid, false) && arch_is_valid
+        if withall || (Ops.get_boolean(i, :valid, false) && arch_is_valid)
           # `ext2, `jfs, ...
           part_fs = Ops.get_symbol(i, :fs)
           part_fs_name = Builtins.tostring(part_fs)
@@ -211,8 +211,8 @@ module Yast
         # TRANSLATORS: help text for root partition dialog (for boot)
         help_text = _(
           "<p>\n" \
-            "Select the partition or system to boot.\n" \
-            "</p>\n"
+          "Select the partition or system to boot.\n" \
+          "</p>\n"
         )
       else
         # TRANSLATORS: label for selection of root partition (for update)
@@ -221,8 +221,8 @@ module Yast
         # TRANSLATORS: help text for root partition dialog (for update)
         help_text = _(
           "<p>\n" \
-            "Select the partition or system to update.\n" \
-            "</p>\n"
+          "Select the partition or system to update.\n" \
+          "</p>\n"
         )
 
         if flavor == :update_dialog || flavor == :update_dialog_proposal
@@ -236,9 +236,9 @@ module Yast
         help_text,
         _(
           "<p>\n" \
-            "<b>Show All Partitions</b> expands the list to a\n" \
-            "general overview of your system's partitions.\n" \
-            "</p>\n"
+          "<b>Show All Partitions</b> expands the list to a\n" \
+          "general overview of your system's partitions.\n" \
+          "</p>\n"
         )
       )
 
@@ -374,15 +374,15 @@ module Yast
             cont = false
             # TRANSLATORS: error message
             Report.Error(_("ReiserFS is not supported anymore.\n" \
-                            "Please migrate your data to another " \
-                            "filesystem before performing the upgrade.\n\n"))
+                           "Please migrate your data to another " \
+                           "filesystem before performing the upgrade.\n\n"))
           elsif (freshman[:name] || "unknown") == "unknown"
             cont = false
             Popup.Error(
               # TRANSLATORS: error popup
               _(
                 "No installed system that can be upgraded with this product was found\n" \
-                  "on the selected partition."
+                "on the selected partition."
               )
             )
           elsif !DoArchitecturesMatch(
@@ -393,7 +393,7 @@ module Yast
               # TRANSLATORS: continue-cancel popup
               _(
                 "The architecture of the system installed in the selected partition\n " \
-                  "is different from the one of this product.\n"
+                "is different from the one of this product.\n"
               )
             )
           end
@@ -424,7 +424,7 @@ module Yast
                 # TRANSLATORS: pop-up question
                 _(
                   "A possibly incomplete installation has been detected on the selected " \
-                    "partition.\nAre sure you want to use it anyway?"
+                  "partition.\nAre sure you want to use it anyway?"
                 ),
                 # TRANSLATORS: button label
                 _("&Yes, Use It"),
@@ -475,9 +475,9 @@ module Yast
             # TRANSLATORS: error message
             _(
               "Initializing the system for upgrade has failed for unknown reason.\n" \
-                "It is highly recommended not to continue the upgrade process.\n" \
-                "\n" \
-                "Are you sure you want to continue?"
+              "It is highly recommended not to continue the upgrade process.\n" \
+              "\n" \
+              "Are you sure you want to continue?"
             ),
             # TRANSLATORS: button label
             _("&Yes, Continue"),
@@ -493,30 +493,27 @@ module Yast
         end
 
         # not aborted
-        if ret != :back
-          # Target load failed, #466803
-          if Pkg.TargetLoad != true
-            Builtins.y2error("Pkg::TargetLoad failed")
-            if Popup.AnyQuestion(
-              Label.ErrorMsg,
-              # TRANSLATORS: error message
-              _(
-                "Initializing the system for upgrade has failed for unknown reason.\n" \
-                  "It is highly recommended not to continue the upgrade process.\n" \
-                  "\n" \
-                  "Are you sure you want to continue?"
-              ),
-              # TRANSLATORS: button label
-              _("&Yes, Continue"),
-              Label.CancelButton,
-              :focus_no
+        if ret != :back && (Pkg.TargetLoad != true)
+          Builtins.y2error("Pkg::TargetLoad failed")
+          if Popup.AnyQuestion(
+            Label.ErrorMsg,
+            # TRANSLATORS: error message
+            _(
+              "Initializing the system for upgrade has failed for unknown reason.\n" \
+              "It is highly recommended not to continue the upgrade process.\n" \
+              "\n" \
+              "Are you sure you want to continue?"
+            ),
+            # TRANSLATORS: button label
+            _("&Yes, Continue"),
+            Label.CancelButton,
+            :focus_no
+          )
+            ret = :back
+          else
+            Builtins.y2warning(
+              "User decided to continue despite the error above (Pkg::TargetLoad() failed)"
             )
-              ret = :back
-            else
-              Builtins.y2warning(
-                "User decided to continue despite the error above (Pkg::TargetLoad() failed)"
-              )
-            end
           end
         end
 

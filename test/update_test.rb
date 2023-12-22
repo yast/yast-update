@@ -53,7 +53,7 @@ describe Yast::Update do
     end
 
     it "returns product name from SUSE-release if os-release is missing and " \
-        "SUSE-release exists in Installation.destdir" do
+       "SUSE-release exists in Installation.destdir" do
       allow(Yast::Installation).to receive(:destdir)
         .and_return(File.join(DATA_DIR, "update-test-2"))
       expect(Yast::Update.installed_product).to eq("SUSE Linux Enterprise Server 11")
@@ -251,7 +251,7 @@ describe Yast::Update do
       it "logs info and error" do
         expect(Yast::Update.log).to receive(:info)
           .with("Version expected: opensuse-leap-15.0. " \
-            "Backup version: opensuse-tumbleweed-20180911")
+                "Backup version: opensuse-tumbleweed-20180911")
           .and_call_original
         expect(Yast::Update.log).to receive(:error).with(/not restored/).and_call_original
 
@@ -284,7 +284,7 @@ describe Yast::Update do
     end
 
     context "if there is no windowmanager sysconfig file present " \
-        "on the system selected for upgrade" do
+            "on the system selected for upgrade" do
       it "returns true as there is nothing to do" do
         default_product_control_desktop
         allow(Yast::FileUtils).to receive(:Exists).with(/windowmanager/).and_return(false)
@@ -425,10 +425,10 @@ describe Yast::Update do
           allow(Yast::ProductFeatures).to receive(:GetFeature)
             .with("software", "upgrade")
             .and_return("product_upgrades" => [{
-                          "from"               => "openSUSE",
-                          "to"                 => "SLES",
-                          "compatible_vendors" => ["openSUSE", "SLES LCC"]
-                        }])
+              "from"               => "openSUSE",
+              "to"                 => "SLES",
+              "compatible_vendors" => ["openSUSE", "SLES LCC"]
+            }])
         end
 
         it "does not set compatible vendors at all" do
@@ -443,9 +443,9 @@ describe Yast::Update do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
               .and_return("product_upgrades" => [{
-                            "from" => "openSUSE Leap",
-                            "to"   => "openSUSE Jump"
-                          }])
+                "from" => "openSUSE Leap",
+                "to"   => "openSUSE Jump"
+              }])
           end
 
           it "does not set compatible vendors at all" do
@@ -459,10 +459,10 @@ describe Yast::Update do
             allow(Yast::ProductFeatures).to receive(:GetFeature)
               .with("software", "upgrade")
               .and_return("product_upgrades" => [{
-                            "from"               => "openSUSE Leap",
-                            "to"                 => "openSUSE Jump",
-                            "compatible_vendors" => ["openSUSE", "SLES LCC"]
-                          }])
+                "from"               => "openSUSE Leap",
+                "to"                 => "openSUSE Jump",
+                "compatible_vendors" => ["openSUSE", "SLES LCC"]
+              }])
           end
 
           it "set it in the solver" do

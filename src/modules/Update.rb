@@ -947,7 +947,7 @@ module Yast
 
       command = "tar cv -C '#{root}'"
       # no shell escaping here, but we backup reasonable files and want to allow globs
-      command << " " + paths_without_prefix.join(" ")
+      command << (" " + paths_without_prefix.join(" "))
       # use parallel gzip for faster compression (uses all available CPU cores)
       command << " | pigz - > '#{tarball_path}'"
       res = SCR.Execute(path(".target.bash_output"), command)
@@ -997,7 +997,7 @@ module Yast
 
       if !FileUtils.Exists(windowmanager_sysconfig)
         log.warn "Sysconfig file #{windowmanager_sysconfig} does not exist, " \
-          "desktop upgrade will not be handled"
+                 "desktop upgrade will not be handled"
         return nil
       end
 

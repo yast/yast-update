@@ -80,7 +80,7 @@ module Yast
 
     # Removes all unneeded stuff such as architecture or product nickname
     def shorten(long_name)
-      long_name.gsub(/[ ]*\(.*/, "")
+      long_name.gsub(/ *\(.*/, "")
     end
 
     publish function: :ReleaseInformation, type: "string (string)"
