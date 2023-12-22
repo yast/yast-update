@@ -59,7 +59,8 @@ module Yast
 
       @rpm_db_existency_checked_already = false
 
-      if @func == "MakeProposal"
+      case @func
+      when "MakeProposal"
         @force_reset = Ops.get_boolean(@param, "force_reset", false)
         @language_changed = Ops.get_boolean(@param, "language_changed", false)
 
@@ -218,12 +219,12 @@ module Yast
         end
         # save the solver test case with details for later debugging
         Pkg.CreateSolverTestCase("/var/log/YaST2/solver-upgrade-proposal") if @ret["warning"]
-      elsif @func == "AskUser"
+      when "AskUser"
         # With proper control file, this should never be reached
         # TRANSLATORS: error message
         Report.Error(_("The update summary is read only and cannot be changed."))
         @ret = { "workflow_sequence" => :back }
-      elsif @func == "Description"
+      when "Description"
         # Fill return map.
         #
         # Static values do just nicely here, no need to call a function.
@@ -363,11 +364,12 @@ module Yast
 
         ui_r = UI.UserInput
 
-        if ui_r == :cancel || ui_r == :abort
+        case ui_r
+        when :cancel, :abort
           ret = false
           file_found_or_error_skipped = true
           Builtins.y2milestone("Check failed, returning error.")
-        elsif ui_r == :retry
+        when :retry
           file_found_or_error_skipped = false
           Builtins.y2milestone("Trying again...")
           # } else if (ui_r == `ignore) {

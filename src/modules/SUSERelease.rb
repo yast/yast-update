@@ -29,9 +29,6 @@ require "yast"
 
 module Yast
   class SUSEReleaseFileMissingError < StandardError
-    def initialize(message)
-      super message
-    end
   end
 
   class SUSEReleaseClass < Module

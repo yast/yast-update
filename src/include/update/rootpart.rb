@@ -284,10 +284,11 @@ module Yast
       # finishing the target before selecting a new system to load
       Pkg.TargetFinish if flavor == :update_dialog
 
-      if flavor == :update_dialog
+      case flavor
+      when :update_dialog
         Wizard.SetContents(title, contents, help_text, true, true)
         Wizard.EnableAbortButton if Mode.autoupgrade
-      elsif flavor == :update_dialog_proposal
+      when :update_dialog_proposal
         Wizard.CreateDialog
         Wizard.SetContentsButtons(
           title,

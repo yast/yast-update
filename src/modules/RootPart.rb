@@ -186,7 +186,8 @@ module Yast
         Builtins.y2milestone("Unmounting %1", info)
         type = Ops.get_string(info, :type, "")
         if type != ""
-          if type == "mount"
+          case type
+          when "mount"
             file = Ops.add(
               Installation.destdir,
               Ops.get_string(info, :mntpt, "")
@@ -206,7 +207,7 @@ module Yast
                 )
               )
             end
-          elsif type == "swap"
+          when "swap"
             device = Ops.get_string(info, :device, "")
             # FIXME? is it safe?
             if SCR.Execute(
@@ -215,7 +216,7 @@ module Yast
             ) != 0
               Builtins.y2error("Cannot deactivate swap %1", device)
             end
-          elsif type == "crypt"
+          when "crypt"
             dmname = Ops.get_string(info, :device, "")
             dmname = Ops.add(
               "cr_",
@@ -333,10 +334,11 @@ module Yast
       loop do
         userinput = UI.UserInput
 
-        if userinput == :yes
+        case userinput
+        when :yes
           ret = true
           break
-        elsif userinput == :details
+        when :details
           curr_status = Convert.to_boolean(UI.QueryWidget(Id(:details), :Value))
 
           if curr_status == false
