@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jan 17 11:56:33 UTC 2024 - Josef Reidinger <jreidinger@suse.com>
+
+- Show the block device selected for upgrade in the installation
+  proposal (jsc#PED-3773)
+- 5.0.2
+
+-------------------------------------------------------------------
 Tue Oct 31 12:29:07 UTC 2023 - Ladislav Slezák <lslezak@suse.com>
 
 - Drop the previously used repositories when going back to the
