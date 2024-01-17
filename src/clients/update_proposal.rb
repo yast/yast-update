@@ -187,8 +187,15 @@ module Yast
 
         products = Y2Packager::Resolvable.find(kind: :product)
         # stores the proposal text output
-        @summary_text = Packages.product_update_summary(products)
+        summary_text = Packages.product_update_summary(products)
           .map { |item| "<li>#{item}</li>" }.join
+        product_info = "<li>" + format(
+          _("Updating %{product} on root %{partition}"),
+          product:   RootPart.GetInfoOfSelected(:name),
+          partition: RootPart.selectedRootPartition
+        ) + "</li>"
+
+        summary_text = product_info + summary_text
 
         # recalculate the disk space usage data
         SpaceCalculation.GetPartitionInfo
@@ -203,7 +210,7 @@ module Yast
 
         @ret = {
           "preformatted_proposal" => Ops.add(
-            Ops.add(HTML.ListStart, @summary_text),
+            Ops.add(HTML.ListStart, summary_text),
             HTML.ListEnd
           ),
           "help"                  => @update_options_help
