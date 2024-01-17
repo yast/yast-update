@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Wed Jan 17 11:56:33 UTC 2024 - Josef Reidinger <jreidinger@suse.com>
 
-- Show the partition selected for upgrade in the installation
+- Show the block device selected for upgrade in the installation
   proposal (jsc#PED-3773)
 - 4.6.3
 
