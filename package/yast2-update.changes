@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Sep 06 07:14:32 UTC 2024 - Ladislav Slezák <lslezak@suse.com>
+
+- Branch package for SP7 (bsc#1230201)
+
+-------------------------------------------------------------------
 Wed Jan 17 11:56:33 UTC 2024 - Josef Reidinger <jreidinger@suse.com>
 
 - Show the block device selected for upgrade in the installation
